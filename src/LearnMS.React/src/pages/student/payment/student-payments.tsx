@@ -134,30 +134,6 @@ const StudentPayments = () => {
               </Form>
             </CardContent>
           </Card>
-
-          {/* Credit Top-up Section */}
-          <div className="rounded-lg border border-border bg-background/70 p-4 shadow-sm">
-            <h2 className="text-2xl font-bold text-foreground">
-              {t("topup.title")}
-            </h2>
-            <p className="mt-1 text-sm text-muted-foreground">
-              {t("topup.description")}
-            </p>
-
-            <a
-              href="https://forms.gle/UWyyKWD95TpssLCr7" // 🔁 Replace this with your actual Google Form URL
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-md border border-blue-600 bg-blue-600 px-4 py-3 text-sm font-medium text-white transition hover:bg-blue-700 focus:outline-none"
-            >
-              <span className="text-lg">＋</span>
-              {t("topup.button")}
-            </a>
-
-            <p className="mt-2 text-xs text-muted-foreground">
-              {t("topup.note")}
-            </p>
-          </div>
         </div>
       </div>
 
