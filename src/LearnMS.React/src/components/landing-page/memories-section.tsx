@@ -21,20 +21,43 @@ import { Camera, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-import marinaGallery1 from "@/assets/images/marina-gallery-1.png";
-import marinaGallery2 from "@/assets/images/marina-gallery-2.png";
-import marinaGallery3 from "@/assets/images/marina-gallery-3.png";
-import marinaAbout from "@/assets/images/marina-about.png";
-import marinaHero from "@/assets/images/marina-hero.png";
-import marinaLogo from "@/assets/images/marina-logo.png";
-
 const memories = [
-  { id: "2", src: marinaHero, key: "2", bg: "from-gold/20 to-color2/10" },
-  { id: "3", src: marinaAbout, key: "3", bg: "from-color1/15 to-teal/20" },
-  { id: "4", src: marinaGallery1, key: "4", bg: "from-color2/15 to-gold/15" },
-  { id: "5", src: marinaGallery2, key: "5", bg: "from-teal/25 to-color1/10" },
-  { id: "6", src: marinaGallery3, key: "6", bg: "from-gold/20 to-teal/15" },
-  { id: "1", src: marinaLogo, key: "1", bg: "from-teal/20 to-gold/15" },
+  {
+    id: "1",
+    src: "https://i.ibb.co/8LYmmjdw/image.png",
+    key: "1",
+    bg: "from-teal/20 to-gold/15",
+  },
+  {
+    id: "2",
+    src: "https://i.ibb.co/SXqy325z/image.png",
+    key: "2",
+    bg: "from-gold/20 to-color2/10",
+  },
+  {
+    id: "3",
+    src: "https://i.ibb.co/RpGH652t/image.png",
+    key: "3",
+    bg: "from-color1/15 to-teal/20",
+  },
+  {
+    id: "4",
+    src: "https://i.ibb.co/7JmjqzWq/image.png",
+    key: "4",
+    bg: "from-color2/15 to-gold/15",
+  },
+  {
+    id: "5",
+    src: "https://i.ibb.co/SXrCQJvB/image.png",
+    key: "5",
+    bg: "from-teal/25 to-color1/10",
+  },
+  {
+    id: "6",
+    src: "https://i.ibb.co/qYSFBZHP/image.png",
+    key: "6",
+    bg: "from-gold/20 to-teal/15",
+  },
 ];
 
 function MemoriesSection() {
@@ -120,14 +143,17 @@ function MemoriesSection() {
                   >
                     <div
                       className={cn(
-                        "relative flex aspect-[4/5] items-end justify-center overflow-hidden bg-gradient-to-b sm:aspect-[16/11]",
+                        "relative aspect-[4/5] overflow-hidden bg-gradient-to-b sm:aspect-[16/11]",
                         bg
                       )}
                     >
                       <img
                         src={src}
                         alt={t(`memories.items.${key}.title`)}
-                        className="relative z-10 h-[92%] w-auto max-w-full object-contain object-bottom transition duration-700 group-hover:scale-[1.03]"
+                        loading="lazy"
+                        decoding="async"
+                        referrerPolicy="no-referrer"
+                        className="absolute inset-0 size-full object-cover transition duration-700 group-hover:scale-[1.03]"
                       />
 
                       <div className="absolute inset-x-0 bottom-0 z-20 bg-gradient-to-t from-heading/80 via-heading/35 to-transparent p-5 sm:p-7">
