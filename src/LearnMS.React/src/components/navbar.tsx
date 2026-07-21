@@ -13,7 +13,6 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { useLogoutMutation } from "@/api/auth-api";
-import { useAppleStoreStatusQuery } from "@/api/rewards-api";
 import { useGetProfile } from "@/generated/api";
 import { useModalStore } from "@/store/use-modal-store";
 import { Link } from "react-router-dom";
@@ -52,7 +51,6 @@ const NavBar: React.FC<NavBarProps> = ({
 
   const isStudent =
     !!profile?.data && profile.data.$type === "GetStudentProfileResult";
-  const { data: storeStatus } = useAppleStoreStatusQuery(isStudent);
 
   const coursesHref = (() => {
     if (!isStudent) return "/sign-in-sign-up";
@@ -68,17 +66,13 @@ const NavBar: React.FC<NavBarProps> = ({
 
   const links = useMemo(() => {
     if (propLinks) return propLinks;
-    const base = [
+    return [
       { href: "/", label: t("navbar.links.home") },
       { href: coursesHref, label: t("navbar.links.courses") },
       { href: "/payments", label: t("navbar.links.payments") },
       { href: "/parent", label: t("navbar.links.parent") },
     ];
-    if (isStudent && storeStatus?.data?.isOpen) {
-      base.splice(3, 0, { href: "/apple-rewards", label: "Apple Rewards" });
-    }
-    return base;
-  }, [propLinks, t, coursesHref, isStudent, storeStatus?.data?.isOpen]);
+  }, [propLinks, t, coursesHref]);
 
   useEffect(() => {
     const unsubscribe = scrollYProgress.on("change", (latest) => {

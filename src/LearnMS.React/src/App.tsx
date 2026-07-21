@@ -36,7 +36,6 @@ import StudentLecturePage from "@/pages/student/lectures/student-lecture-page";
 import StudentLessonPage from "@/pages/student/lessons/student-lesson-page";
 import StudentPayments from "@/pages/student/payment/student-payments";
 import StudentQuizPage from "@/pages/student/quizzes/student-quiz-page";
-import StudentAppleRewardsPage from "@/pages/student/rewards/student-apple-rewards-page";
 import ParentLoginPage from "@/pages/parent/parent-login-page";
 import ParentDashboardPage from "@/pages/parent/parent-dashboard-page";
 import { QueryErrorResetBoundary } from "@tanstack/react-query";
@@ -114,7 +113,6 @@ function App() {
                 element={<StudentQuizPage />}
               />
               <Route path="payments" element={<StudentPayments />} />
-              <Route path="apple-rewards" element={<StudentAppleRewardsPage />} />
             </Route>
             <Route
               path="/dashboard"
