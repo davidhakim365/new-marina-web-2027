@@ -1,5 +1,4 @@
 import HeroSection from "@/components/landing-page/hero-section";
-import MemoriesSection from "@/components/landing-page/memories-section";
 import AboutSection from "@/components/landing-page/about-section";
 import FeaturesSection from "@/components/landing-page/features-section";
 import ParentFollowUpSection from "@/components/landing-page/parent-follow-up-section";
@@ -24,7 +23,6 @@ const StudentHomePage = () => {
         {!isSignedIn && <GradesSection />}
         {isSignedIn && <ImportantLecturesSection />}
         {isSignedIn && <LatestLecturesSection />}
-        <MemoriesSection />
         <AboutSection />
       </main>
       <Footer />
