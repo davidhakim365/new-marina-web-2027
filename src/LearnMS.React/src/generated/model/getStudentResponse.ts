@@ -11,6 +11,7 @@ export interface GetStudentResponse {
   credit?: number;
   email?: string;
   fullName?: string;
+  governorate?: string;
   id?: string;
   level?: StudentLevel;
   parentPhoneNumber?: string;

@@ -6,13 +6,16 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { LanguageSwitcher } from "@/components/ui/language-switcher";
 import { useIsFetching } from "@tanstack/react-query";
 import { DownloadCloud, Menu } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Outlet, useLocation } from "react-router-dom";
 import DashboardSideBar from "./dashboard-side-bar";
 
 export const DashboardLayout = () => {
+  const { t } = useTranslation();
   const isFetching = useIsFetching();
   const location = useLocation();
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
@@ -25,7 +28,7 @@ export const DashboardLayout = () => {
     <div className="relative flex h-[100dvh] flex-col overflow-hidden bg-dashboard lg:flex-row">
       <PhysicsGrid className="opacity-50" />
       <GlowOrb
-        className="pointer-events-none absolute right-0 top-0 h-96 w-96 opacity-25 blur-3xl"
+        className="pointer-events-none absolute end-0 top-0 h-96 w-96 opacity-25 blur-3xl"
         color="from-color2/20 to-transparent"
       />
 
@@ -35,7 +38,7 @@ export const DashboardLayout = () => {
           size="icon"
           className="h-9 w-9"
           onClick={() => setMobileNavOpen(true)}
-          aria-label="Open navigation menu"
+          aria-label={t("admin.openMenu")}
         >
           <Menu className="h-5 w-5" />
         </Button>
@@ -43,14 +46,19 @@ export const DashboardLayout = () => {
           <p className="text-[10px] font-semibold uppercase tracking-wider text-color2">
             Marina
           </p>
-          <p className="text-sm font-bold text-foreground">Dashboard</p>
+          <p className="text-sm font-bold text-foreground">
+            {t("admin.dashboard")}
+          </p>
         </div>
-        <ThemeToggle />
+        <div className="flex items-center gap-1">
+          <LanguageSwitcher className="w-[88px] text-foreground" />
+          <ThemeToggle />
+        </div>
       </header>
 
       <Sheet open={mobileNavOpen} onOpenChange={setMobileNavOpen}>
         <SheetContent side="left" className="w-[min(85vw,280px)] p-0">
-          <SheetTitle className="sr-only">Dashboard navigation</SheetTitle>
+          <SheetTitle className="sr-only">{t("admin.navTitle")}</SheetTitle>
           <DashboardSideBar
             variant="mobile"
             onNavigate={() => setMobileNavOpen(false)}
@@ -73,7 +81,7 @@ export const DashboardLayout = () => {
       {isFetching > 0 && (
         <div className="absolute bottom-4 left-1/2 z-50 flex -translate-x-1/2 items-center gap-2 rounded-full border border-color2/20 bg-card/90 px-4 py-2 text-sm text-foreground shadow-lg backdrop-blur-md">
           <DownloadCloud className="h-4 w-4 animate-bounce text-color2" />
-          Syncing data...
+          {t("admin.syncing")}
         </div>
       )}
     </div>

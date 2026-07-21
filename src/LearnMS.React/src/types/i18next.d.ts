@@ -407,6 +407,94 @@ declare module "i18next" {
           reloadPage: string;
           goToHomepage: string;
         };
+        admin: {
+          dashboard: string;
+          logout: string;
+          syncing: string;
+          openMenu: string;
+          navTitle: string;
+          common: {
+            error: string;
+          };
+          navGroups: {
+            materials: string;
+            users: string;
+          };
+          nav: {
+            statistics: string;
+            courses: string;
+            importantLectures: string;
+            creditCodes: string;
+            files: string;
+            questions: string;
+            students: string;
+            grantedAccess: string;
+            expirationTime: string;
+            assistants: string;
+            myProfile: string;
+          };
+          levels: {
+            all: string;
+            level0: string;
+            level1: string;
+            level2: string;
+            level3: string;
+          };
+          students: {
+            title: string;
+            description: string;
+            addStudent: string;
+            searchPlaceholder: string;
+            export: string;
+            unspecified: string;
+            deviceLinked: string;
+            deviceNotLinked: string;
+            stats: {
+              total: string;
+              linkedDevices: string;
+              byLevel: string;
+              byGovernorate: string;
+              noGovernorateData: string;
+            };
+            columns: {
+              actions: string;
+              id: string;
+              credit: string;
+              email: string;
+              fullName: string;
+              governorate: string;
+              level: string;
+              device: string;
+            };
+            actions: {
+              unlink: string;
+              openMenu: string;
+              addCredit: string;
+              view: string;
+              delete: string;
+              deleteConfirmTitle: string;
+              deleteConfirmDesc: string;
+            };
+            toasts: {
+              creditAdded: string;
+              creditAddedDesc: string;
+              creditFailed: string;
+            };
+          };
+          assistants: {
+            description: string;
+            add: string;
+            code: string;
+            permissions: string;
+          };
+          profile: {
+            description: string;
+            assistantsOnly: string;
+            assistant: string;
+            more: string;
+            askTeacher: string;
+          };
+        };
       };
     };
   }

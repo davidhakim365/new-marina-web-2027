@@ -1,5 +1,6 @@
 import { useLogoutMutation } from "@/api/auth-api";
 import { Button } from "@/components/ui/button";
+import { LanguageSwitcher } from "@/components/ui/language-switcher";
 import { GlowOrb, PhysicsGrid } from "@/components/ui/physics-graphics";
 import { useDashboardPermissions } from "@/hooks/use-dashboard-permissions";
 import { Permission } from "@/generated/model";
@@ -14,7 +15,6 @@ import {
   HelpCircle,
   LayoutDashboard,
   LogOut,
-  Apple,
   QrCode,
   Shield,
   Star,
@@ -22,12 +22,24 @@ import {
   Users,
 } from "lucide-react";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Link, useLocation } from "react-router-dom";
 import { ThemeToggle } from "./theme-toggle";
 
 type NavItem = {
   to: string;
-  label: string;
+  labelKey:
+    | "admin.nav.statistics"
+    | "admin.nav.courses"
+    | "admin.nav.importantLectures"
+    | "admin.nav.creditCodes"
+    | "admin.nav.files"
+    | "admin.nav.questions"
+    | "admin.nav.students"
+    | "admin.nav.grantedAccess"
+    | "admin.nav.expirationTime"
+    | "admin.nav.assistants"
+    | "admin.nav.myProfile";
   icon: React.ElementType;
   match: (pathname: string) => boolean;
   permission?: Permission;
@@ -39,42 +51,42 @@ type NavItem = {
 const materialItems: NavItem[] = [
   {
     to: "/dashboard",
-    label: "Statistics",
+    labelKey: "admin.nav.statistics",
     icon: LayoutDashboard,
     match: (pathname) => pathname === "/dashboard",
     permission: Permission.ViewStatistics,
   },
   {
     to: "/dashboard/courses",
-    label: "Courses",
+    labelKey: "admin.nav.courses",
     icon: BookOpen,
     match: (pathname) => pathname.startsWith("/dashboard/courses"),
     permission: Permission.ManageCourses,
   },
   {
     to: "/dashboard/important-lectures",
-    label: "Important Lectures",
+    labelKey: "admin.nav.importantLectures",
     icon: Star,
     match: (pathname) => pathname.startsWith("/dashboard/important-lectures"),
     permission: Permission.ManageLecture,
   },
   {
     to: "/dashboard/credit-codes",
-    label: "Credit Codes",
+    labelKey: "admin.nav.creditCodes",
     icon: QrCode,
     match: (pathname) => pathname.startsWith("/dashboard/credit-codes"),
     anyPermissions: [Permission.ManageCreditCodes, Permission.GenerateCreditCodes],
   },
   {
     to: "/dashboard/files",
-    label: "Files",
+    labelKey: "admin.nav.files",
     icon: FileText,
     match: (pathname) => pathname.startsWith("/dashboard/files"),
     permission: Permission.ManageFiles,
   },
   {
     to: "/dashboard/questions",
-    label: "Questions",
+    labelKey: "admin.nav.questions",
     icon: HelpCircle,
     match: (pathname) => pathname.startsWith("/dashboard/questions"),
     permission: Permission.ManageFiles,
@@ -84,65 +96,37 @@ const materialItems: NavItem[] = [
 const userItems: NavItem[] = [
   {
     to: "/dashboard/students",
-    label: "Students",
+    labelKey: "admin.nav.students",
     icon: Users,
     match: (pathname) => pathname.startsWith("/dashboard/students"),
     permission: Permission.ManageStudents,
   },
   {
     to: "/dashboard/granted-access",
-    label: "Granted Access",
+    labelKey: "admin.nav.grantedAccess",
     icon: Gift,
     match: (pathname) => pathname.startsWith("/dashboard/granted-access"),
     permission: Permission.ManageGrantedAccess,
   },
   {
     to: "/dashboard/expiration-time",
-    label: "Expiration Time",
+    labelKey: "admin.nav.expirationTime",
     icon: Clock,
     match: (pathname) => pathname.startsWith("/dashboard/expiration-time"),
     permission: Permission.ManageExpirationTime,
   },
   {
     to: "/dashboard/assistants",
-    label: "Assistants",
+    labelKey: "admin.nav.assistants",
     icon: Shield,
     match: (pathname) => pathname.startsWith("/dashboard/assistants"),
     permission: Permission.ManageAssistants,
   },
   {
-    to: "/dashboard/assistant-rewards-scanner",
-    label: "Reward Scanner",
-    icon: QrCode,
-    match: (pathname) => pathname.startsWith("/dashboard/assistant-rewards-scanner"),
-    teacherOnly: true,
-  },
-  {
-    to: "/dashboard/student-apples-scanner",
-    label: "Apple Scanner",
-    icon: Apple,
-    match: (pathname) => pathname.startsWith("/dashboard/student-apples-scanner"),
-    permission: Permission.ManageStudentApples,
-  },
-  {
-    to: "/dashboard/apple-rewards-store",
-    label: "Apple Rewards Store",
-    icon: Gift,
-    match: (pathname) => pathname.startsWith("/dashboard/apple-rewards-store"),
-    permission: Permission.ManageAppleRewardsStore,
-  },
-  {
     to: "/dashboard/my-profile",
-    label: "My Profile",
+    labelKey: "admin.nav.myProfile",
     icon: UserRound,
     match: (pathname) => pathname.startsWith("/dashboard/my-profile"),
-    assistantOnly: true,
-  },
-  {
-    to: "/dashboard/my-rewards",
-    label: "My Rewards",
-    icon: Apple,
-    match: (pathname) => pathname.startsWith("/dashboard/my-rewards"),
     assistantOnly: true,
   },
 ];
@@ -173,11 +157,13 @@ function NavLinkItem({
   onNavigate?: () => void;
 }) {
   const { pathname } = useLocation();
+  const { t } = useTranslation();
   const active = item.match(pathname);
   const Icon = item.icon;
+  const label = t(item.labelKey);
 
   return (
-    <Link to={item.to} title={collapsed ? item.label : undefined} onClick={onNavigate}>
+    <Link to={item.to} title={collapsed ? label : undefined} onClick={onNavigate}>
       <div
         className={cn(
           "group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200",
@@ -187,7 +173,7 @@ function NavLinkItem({
         )}
       >
         {active && (
-          <span className="absolute left-0 top-1/2 h-6 w-1 -translate-y-1/2 rounded-r-full bg-white/80" />
+          <span className="absolute start-0 top-1/2 h-6 w-1 -translate-y-1/2 rounded-e-full bg-white/80" />
         )}
         <Icon
           className={cn(
@@ -195,7 +181,7 @@ function NavLinkItem({
             active ? "text-white" : "text-color2 group-hover:text-color2"
           )}
         />
-        {!collapsed && <span className="truncate">{item.label}</span>}
+        {!collapsed && <span className="truncate">{label}</span>}
       </div>
     </Link>
   );
@@ -210,6 +196,7 @@ const DashboardSideBar = ({
   variant = "desktop",
   onNavigate,
 }: DashboardSideBarProps) => {
+  const { t } = useTranslation();
   const [collapsed, setCollapsed] = useState(false);
   const logoutMutation = useLogoutMutation();
   const { hasPermission, hasAnyPermission, isTeacher } = useDashboardPermissions();
@@ -220,7 +207,9 @@ const DashboardSideBar = ({
   const visibleMaterialItems = materialItems.filter((item) =>
     canSeeNavItem(item, filterOpts)
   );
-  const visibleUserItems = userItems.filter((item) => canSeeNavItem(item, filterOpts));
+  const visibleUserItems = userItems.filter((item) =>
+    canSeeNavItem(item, filterOpts)
+  );
 
   const Wrapper = isMobile ? "div" : "aside";
 
@@ -228,13 +217,13 @@ const DashboardSideBar = ({
     <Wrapper
       className={cn(
         "relative flex h-full flex-col border-color2/10 bg-card/70 backdrop-blur-xl transition-all duration-300",
-        !isMobile && "shrink-0 border-r",
+        !isMobile && "shrink-0 border-e",
         !isMobile && (isCollapsed ? "w-[4.5rem]" : "w-64")
       )}
     >
       <PhysicsGrid className="opacity-40" />
       <GlowOrb
-        className="absolute -left-10 top-10 h-32 w-32 opacity-30 blur-2xl"
+        className="absolute -start-10 top-10 h-32 w-32 opacity-30 blur-2xl"
         color="from-color2/20 to-color1/10"
       />
 
@@ -250,11 +239,18 @@ const DashboardSideBar = ({
               <p className="text-xs font-semibold uppercase tracking-wider text-color2">
                 Marina
               </p>
-              <p className="text-sm font-bold text-foreground">Dashboard</p>
+              <p className="text-sm font-bold text-foreground">
+                {t("admin.dashboard")}
+              </p>
             </div>
           )}
           <div className="flex items-center gap-1">
-            {!isCollapsed && !isMobile && <ThemeToggle />}
+            {!isCollapsed && !isMobile && (
+              <>
+                <LanguageSwitcher className="w-[88px] text-foreground" />
+                <ThemeToggle />
+              </>
+            )}
             {!isMobile && (
               <Button
                 size="icon"
@@ -263,21 +259,27 @@ const DashboardSideBar = ({
                 onClick={() => setCollapsed((prev) => !prev)}
               >
                 {isCollapsed ? (
-                  <ChevronRight className="h-4 w-4" />
+                  <ChevronRight className="h-4 w-4 rtl:rotate-180" />
                 ) : (
-                  <ChevronLeft className="h-4 w-4" />
+                  <ChevronLeft className="h-4 w-4 rtl:rotate-180" />
                 )}
               </Button>
             )}
           </div>
         </div>
 
+        {isMobile && (
+          <div className="px-1">
+            <LanguageSwitcher className="w-full text-foreground" />
+          </div>
+        )}
+
         <nav className="flex-1 space-y-6 overflow-y-auto overscroll-contain">
           {visibleMaterialItems.length > 0 && (
             <div className="space-y-1">
               {!isCollapsed && (
                 <p className="px-3 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
-                  Materials
+                  {t("admin.navGroups.materials")}
                 </p>
               )}
               {visibleMaterialItems.map((item) => (
@@ -295,7 +297,7 @@ const DashboardSideBar = ({
             <div className="space-y-1">
               {!isCollapsed && (
                 <p className="px-3 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
-                  Users
+                  {t("admin.navGroups.users")}
                 </p>
               )}
               {visibleUserItems.map((item) => (
@@ -319,7 +321,9 @@ const DashboardSideBar = ({
           onClick={() => logoutMutation.mutate()}
         >
           <LogOut className="h-4 w-4" />
-          {!isCollapsed && <span className="ml-2">Log out</span>}
+          {!isCollapsed && (
+            <span className="ms-2">{t("admin.logout")}</span>
+          )}
         </Button>
       </div>
     </Wrapper>

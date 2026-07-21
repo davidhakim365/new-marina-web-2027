@@ -584,5 +584,93 @@
     "noErrorDetails": "No error details available",
     "reloadPage": "Reload Page",
     "goToHomepage": "Go to Homepage"
+  },
+  "admin": {
+    "dashboard": "Dashboard",
+    "logout": "Log out",
+    "syncing": "Syncing data...",
+    "openMenu": "Open navigation menu",
+    "navTitle": "Dashboard navigation",
+    "common": {
+      "error": "Error"
+    },
+    "navGroups": {
+      "materials": "Materials",
+      "users": "Users"
+    },
+    "nav": {
+      "statistics": "Statistics",
+      "courses": "Courses",
+      "importantLectures": "Important Lectures",
+      "creditCodes": "Credit Codes",
+      "files": "Files",
+      "questions": "Questions",
+      "students": "Students",
+      "grantedAccess": "Granted Access",
+      "expirationTime": "Expiration Time",
+      "assistants": "Assistants",
+      "myProfile": "My Profile"
+    },
+    "levels": {
+      "all": "All Levels",
+      "level0": "2nd Prep",
+      "level1": "3rd Prep",
+      "level2": "1st Secondary",
+      "level3": "2nd Secondary"
+    },
+    "students": {
+      "title": "Students",
+      "description": "Search, manage, and export your student roster.",
+      "addStudent": "Add Student",
+      "searchPlaceholder": "Search students...",
+      "export": "Export",
+      "unspecified": "Unspecified",
+      "deviceLinked": "Device Linked",
+      "deviceNotLinked": "Device Not Linked",
+      "stats": {
+        "total": "Total students",
+        "linkedDevices": "Linked devices",
+        "byLevel": "By level",
+        "byGovernorate": "By governorate",
+        "noGovernorateData": "No governorate data yet"
+      },
+      "columns": {
+        "actions": "Actions",
+        "id": "ID",
+        "credit": "Credit",
+        "email": "Email",
+        "fullName": "Full Name",
+        "governorate": "Governorate",
+        "level": "Level",
+        "device": "Device"
+      },
+      "actions": {
+        "unlink": "Unlink",
+        "openMenu": "Open menu",
+        "addCredit": "Add Credit",
+        "view": "View",
+        "delete": "Delete",
+        "deleteConfirmTitle": "Are you sure you want to delete this student?",
+        "deleteConfirmDesc": "This action cannot be undone."
+      },
+      "toasts": {
+        "creditAdded": "Credit Added",
+        "creditAddedDesc": "Added 90 credits to {{name}}.",
+        "creditFailed": "Failed to add credit."
+      }
+    },
+    "assistants": {
+      "description": "Manage teaching assistants and permissions.",
+      "add": "Add Assistant",
+      "code": "Code",
+      "permissions": "Permissions"
+    },
+    "profile": {
+      "description": "Your profile preview. Only a teacher can update your name or photo.",
+      "assistantsOnly": "This page is for assistants only.",
+      "assistant": "Assistant",
+      "more": "more",
+      "askTeacher": "Ask your teacher if you need your name or profile photo updated."
+    }
   }
 }

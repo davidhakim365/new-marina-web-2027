@@ -20,11 +20,7 @@ import LectureBarcodeScannerPage from "@/pages/dashboard/lectures/lecture-barcod
 import LessonDetailsPage from "@/pages/dashboard/lessons/lesson-details-page";
 import QuestionsPage from "@/pages/dashboard/questions/questions-page";
 import QuizPage from "@/pages/dashboard/quizzes/quiz-page";
-import AssistantRewardsScannerPage from "@/pages/dashboard/rewards/assistant-rewards-scanner-page";
 import MyProfilePage from "@/pages/dashboard/rewards/my-profile-page";
-import MyRewardsPage from "@/pages/dashboard/rewards/my-rewards-page";
-import StudentApplesScannerPage from "@/pages/dashboard/rewards/student-apples-scanner-page";
-import AppleRewardsStorePage from "@/pages/dashboard/rewards/apple-rewards-store-page";
 import StatisticsPage from "@/pages/dashboard/statistics/statistics-page";
 import StudentDetailsPage from "@/pages/dashboard/students/student-details-page";
 import StudentsPage from "@/pages/dashboard/students/students-page";
@@ -325,48 +321,10 @@ function App() {
                 }
               />
               <Route
-                path="assistant-rewards-scanner"
-                element={
-                  <RequireAuth roles={["Teacher"]}>
-                    <AssistantRewardsScannerPage />
-                  </RequireAuth>
-                }
-              />
-              <Route
-                path="student-apples-scanner"
-                element={
-                  <RequireAuth
-                    roles={["Teacher", "Assistant"]}
-                    permissions={["ManageStudentApples"]}
-                  >
-                    <StudentApplesScannerPage />
-                  </RequireAuth>
-                }
-              />
-              <Route
-                path="apple-rewards-store"
-                element={
-                  <RequireAuth
-                    roles={["Teacher", "Assistant"]}
-                    permissions={["ManageAppleRewardsStore"]}
-                  >
-                    <AppleRewardsStorePage />
-                  </RequireAuth>
-                }
-              />
-              <Route
                 path="my-profile"
                 element={
                   <RequireAuth roles={["Assistant"]}>
                     <MyProfilePage />
-                  </RequireAuth>
-                }
-              />
-              <Route
-                path="my-rewards"
-                element={
-                  <RequireAuth roles={["Assistant"]}>
-                    <MyRewardsPage />
                   </RequireAuth>
                 }
               />

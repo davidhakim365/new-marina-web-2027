@@ -9,6 +9,7 @@ export type Student = {
   studentCode: string;
   isVerified: boolean;
   schoolName: string;
+  governorate?: string;
   credit: number;
   apples: number;
   level: "Level0" | "Level1" | "Level2" | "Level3";

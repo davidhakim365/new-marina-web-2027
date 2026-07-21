@@ -169,7 +169,8 @@ public async Task ExecuteAsync(DeleteStudentCommand command)
                 StudentCode = students.StudentCode,
                 PhoneNumber = students.PhoneNumber,
                 ProfilePicture = accounts.ProfilePicture,
-                SchoolName = students.SchoolName
+                SchoolName = students.SchoolName,
+                Governorate = students.Governorate
             };
 
         return await PageList<SingleStudent>.CreateAsync(
@@ -195,6 +196,7 @@ public async Task ExecuteAsync(DeleteStudentCommand command)
                 StudentCode = students.StudentCode,
                 PhoneNumber = students.PhoneNumber,
                 SchoolName = students.SchoolName,
+                Governorate = students.Governorate,
                 Credit = students.Credit,
                 Apples = students.Apples,
                 Email = accounts.Email,
@@ -230,11 +232,49 @@ public async Task ExecuteAsync(DeleteStudentCommand command)
                     Level = x.Level,
                     PhoneNumber = x.PhoneNumber,
                     SchoolName = x.SchoolName,
+                    Governorate = x.Governorate,
                     ParentPhoneNumber = x.ParentPhoneNumber
                 })
                 .ToListAsync();
             yield return records;
         }
+    }
+
+    public async Task<StudentsStatisticsResult> QueryAsync(GetStudentsStatisticsQuery _)
+    {
+        var students = db.Set<Student>().AsNoTracking();
+
+        var totalStudents = await students.CountAsync();
+        var deviceLinkedCount = await students.CountAsync(x => !string.IsNullOrWhiteSpace(x.DeviceKey));
+
+        var byLevel = await students
+            .GroupBy(x => x.Level)
+            .Select(g => new StudentsLevelBucket
+            {
+                Level = g.Key,
+                Count = g.Count()
+            })
+            .OrderBy(x => x.Level)
+            .ToListAsync();
+
+        var byGovernorate = await students
+            .GroupBy(x => string.IsNullOrWhiteSpace(x.Governorate) ? "غير محدد" : x.Governorate)
+            .Select(g => new StudentsGovernorateBucket
+            {
+                Governorate = g.Key,
+                Count = g.Count()
+            })
+            .OrderByDescending(x => x.Count)
+            .ThenBy(x => x.Governorate)
+            .ToListAsync();
+
+        return new StudentsStatisticsResult
+        {
+            TotalStudents = totalStudents,
+            DeviceLinkedCount = deviceLinkedCount,
+            ByLevel = byLevel,
+            ByGovernorate = byGovernorate
+        };
     }
 
     public async Task<PageList<SingleStudentEvent>> QueryAsync(GetStudentEventsQuery query)

@@ -55,6 +55,7 @@ export const useCreateStudentMutation = () => {
   return useMutation<ApiResponse<{}>, {}, CreateStudentRequest>({
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["students"] });
+      qc.invalidateQueries({ queryKey: ["students-statistics"] });
     },
     mutationFn: (data) =>
       api.post("/api/students", data).then((res) => res.data),
@@ -130,5 +131,19 @@ export const useUpdateStudentMutation = () => {
     },
     mutationFn: ({ id, data }) =>
       api.patch(`/api/students/${id}`, data).then((res) => res.data),
+  });
+};
+
+export type StudentsStatistics = {
+  totalStudents: number;
+  deviceLinkedCount: number;
+  byLevel: { level: "Level0" | "Level1" | "Level2" | "Level3"; count: number }[];
+  byGovernorate: { governorate: string; count: number }[];
+};
+
+export const useStudentsStatisticsQuery = () => {
+  return useQuery<ApiResponse<StudentsStatistics>>({
+    queryKey: ["students-statistics"],
+    queryFn: () => api.get("/api/students/stats").then((res) => res.data),
   });
 };

@@ -18,5 +18,6 @@ public sealed record ExportStudentsResult
     public required string PhoneNumber { get; set; }
     public required string ParentPhoneNumber { get; set; }
     public required string SchoolName { get; set; }
+    public required string Governorate { get; set; }
     public required StudentLevel Level { get; set; }
 }

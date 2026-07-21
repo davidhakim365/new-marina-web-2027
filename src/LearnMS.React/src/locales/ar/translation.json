@@ -586,5 +586,93 @@
     "noErrorDetails": "لا توجد تفاصيل خطأ متاحة",
     "reloadPage": "إعادة تحميل الصفحة",
     "goToHomepage": "انتقل إلى الصفحة الرئيسية"
+  },
+  "admin": {
+    "dashboard": "لوحة التحكم",
+    "logout": "تسجيل الخروج",
+    "syncing": "جاري مزامنة البيانات...",
+    "openMenu": "فتح قائمة التنقل",
+    "navTitle": "تنقل لوحة التحكم",
+    "common": {
+      "error": "خطأ"
+    },
+    "navGroups": {
+      "materials": "المحتوى",
+      "users": "المستخدمون"
+    },
+    "nav": {
+      "statistics": "الإحصائيات",
+      "courses": "الدورات",
+      "importantLectures": "المحاضرات المهمة",
+      "creditCodes": "أكواد الرصيد",
+      "files": "الملفات",
+      "questions": "الأسئلة",
+      "students": "الطلاب",
+      "grantedAccess": "صلاحيات الوصول",
+      "expirationTime": "وقت الانتهاء",
+      "assistants": "المساعدون",
+      "myProfile": "ملفي الشخصي"
+    },
+    "levels": {
+      "all": "كل المستويات",
+      "level0": "ثاني إعدادي",
+      "level1": "ثالث إعدادي",
+      "level2": "أول ثانوي",
+      "level3": "ثاني ثانوي"
+    },
+    "students": {
+      "title": "الطلاب",
+      "description": "ابحث وأدر وصدّر قائمة الطلاب.",
+      "addStudent": "إضافة طالب",
+      "searchPlaceholder": "ابحث عن الطلاب...",
+      "export": "تصدير",
+      "unspecified": "غير محدد",
+      "deviceLinked": "جهاز مربوط",
+      "deviceNotLinked": "جهاز غير مربوط",
+      "stats": {
+        "total": "إجمالي الطلاب",
+        "linkedDevices": "الأجهزة المربوطة",
+        "byLevel": "حسب المستوى",
+        "byGovernorate": "حسب المحافظة",
+        "noGovernorateData": "لا توجد بيانات محافظات بعد"
+      },
+      "columns": {
+        "actions": "إجراءات",
+        "id": "الرقم",
+        "credit": "الرصيد",
+        "email": "البريد",
+        "fullName": "الاسم",
+        "governorate": "المحافظة",
+        "level": "المستوى",
+        "device": "الجهاز"
+      },
+      "actions": {
+        "unlink": "فك الربط",
+        "openMenu": "فتح القائمة",
+        "addCredit": "إضافة رصيد",
+        "view": "عرض",
+        "delete": "حذف",
+        "deleteConfirmTitle": "هل أنت متأكد من حذف هذا الطالب؟",
+        "deleteConfirmDesc": "لا يمكن التراجع عن هذا الإجراء."
+      },
+      "toasts": {
+        "creditAdded": "تمت إضافة الرصيد",
+        "creditAddedDesc": "تمت إضافة 90 رصيد إلى {{name}}.",
+        "creditFailed": "فشل إضافة الرصيد."
+      }
+    },
+    "assistants": {
+      "description": "إدارة المساعدين والصلاحيات.",
+      "add": "إضافة مساعد",
+      "code": "الكود",
+      "permissions": "الصلاحيات"
+    },
+    "profile": {
+      "description": "معاينة ملفك الشخصي. المعلم فقط يمكنه تحديث الاسم أو الصورة.",
+      "assistantsOnly": "هذه الصفحة للمساعدين فقط.",
+      "assistant": "مساعد",
+      "more": "المزيد",
+      "askTeacher": "اطلب من المعلم تحديث اسمك أو صورتك الشخصية عند الحاجة."
+    }
   }
 }

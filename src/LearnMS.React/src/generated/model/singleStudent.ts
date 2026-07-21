@@ -12,6 +12,7 @@ export interface SingleStudent {
   deviceLinked: boolean;
   email: string;
   fullName: string;
+  governorate?: string;
   id: string;
   level: StudentLevel;
   parentPhoneNumber: string;

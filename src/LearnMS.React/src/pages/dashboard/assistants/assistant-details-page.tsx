@@ -26,7 +26,6 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "@/lib/utils";
-import { AssistantRewardsTab } from "@/pages/dashboard/assistants/assistant-rewards-tab";
 import { assistantIncomesColumns } from "@/pages/dashboard/assistants/columns";
 import { AssistantIncomesDataTable } from "@/pages/dashboard/assistants/data-table";
 import { Assistant, assistantDisplayName } from "@/types/assistants";
@@ -70,16 +69,12 @@ const AssistantDetailsPage = () => {
         <TabsList className="m-0 h-auto w-full justify-start overflow-x-auto shadow-sm shadow-primary">
           <TabsTrigger value="details" className="shrink-0">Details</TabsTrigger>
           <TabsTrigger value="incomes" className="shrink-0">Incomes</TabsTrigger>
-          <TabsTrigger value="rewards" className="shrink-0">Rewards</TabsTrigger>
         </TabsList>
         <TabsContent value="details" className="px-4 py-6 sm:px-[10%] lg:px-[20%]">
           <AssistantDetails assistant={assistant!.data} />
         </TabsContent>
         <TabsContent value="incomes" className="p-6">
           <AssistantIncomes assistant={assistant!.data} />
-        </TabsContent>
-        <TabsContent value="rewards" className="p-6">
-          <AssistantRewardsTab assistant={assistant!.data} />
         </TabsContent>
       </Tabs>
     </div>
@@ -223,7 +218,7 @@ function AssistantDetails({ assistant }: { assistant: Assistant }) {
             control={form.control}
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Reward barcode / code</FormLabel>
+                <FormLabel>Assistant code</FormLabel>
                 <FormControl>
                   <Input {...field} />
                 </FormControl>

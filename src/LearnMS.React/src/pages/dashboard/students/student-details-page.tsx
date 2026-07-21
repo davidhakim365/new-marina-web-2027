@@ -41,7 +41,6 @@ import {
   studentExamsColumns,
   studentLecturesColumns,
 } from "@/pages/dashboard/students/columns";
-import { useModalStore } from "@/store/use-modal-store";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ResetIcon } from "@radix-ui/react-icons";
 import { PaginationState } from "@tanstack/react-table";
@@ -91,7 +90,6 @@ function StudentProfile({ studentId }: { studentId: string }) {
   const updateStudentMutation = useUpdateStudentMutation();
   const deleteStudentMutation = useDeleteStudentMutation();
   const navigate = useNavigate();
-  const { openModal } = useModalStore();
 
   const levelMap: { [key: string]: string } = {
     Level0: "2nd Prep",
@@ -173,17 +171,9 @@ function StudentProfile({ studentId }: { studentId: string }) {
           <p>{student!.data.email}</p>
         </div>
         <Badge className="ms-auto">{student!.data.credit} LE</Badge>
-        <Badge variant="secondary">{student!.data.apples ?? 0} apples</Badge>
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          onClick={() =>
-            openModal("add-apples-modal", { student: student!.data })
-          }
-        >
-          Edit apples
-        </Button>
+        {(student!.data.governorate || "").trim() && (
+          <Badge variant="outline">{student!.data.governorate}</Badge>
+        )}
       </div>
       <Separator />
       <Form {...form}>
