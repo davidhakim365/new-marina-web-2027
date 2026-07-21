@@ -38,12 +38,8 @@ import { toast } from "@/lib/utils";
 import { useTranslation } from "react-i18next";
 import { useMemo } from "react";
 
-const levelKeys = {
-  Level0: "admin.levels.level0",
-  Level1: "admin.levels.level1",
-  Level2: "admin.levels.level2",
-  Level3: "admin.levels.level3",
-} as const;
+import { ADMIN_LEVEL_I18N_KEYS } from "@/lib/student-levels";
+
 
 export const useStudentsColumns = (): ColumnDef<SingleStudent>[] => {
   const { t } = useTranslation();
@@ -275,7 +271,7 @@ export const useStudentsColumns = (): ColumnDef<SingleStudent>[] => {
           const student = row.original;
           return (
             <div className="text-xs sm:text-sm">
-              {t(levelKeys[student.level])}
+              {t(ADMIN_LEVEL_I18N_KEYS[student.level])}
             </div>
           );
         },

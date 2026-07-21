@@ -11,30 +11,18 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useGetAllStudents } from "@/generated/api";
-import { SingleStudent, StudentLevel } from "@/generated/model";
+import { SingleStudent } from "@/generated/model";
 import { Search, User, X } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import {
+  ADMIN_LEVEL_I18N_KEYS,
+  STUDENT_LEVEL_LABELS_EN,
+} from "@/lib/student-levels";
 
-export const levelMap: Record<StudentLevel, string> = {
-  Level0: "2nd Prep",
-  Level1: "3rd Prep",
-  Level2: "1st Secondary",
-  Level3: "2nd Secondary",
-};
+export const levelMap = STUDENT_LEVEL_LABELS_EN;
 
-const levelKeys: Record<
-  StudentLevel,
-  | "admin.levels.level0"
-  | "admin.levels.level1"
-  | "admin.levels.level2"
-  | "admin.levels.level3"
-> = {
-  Level0: "admin.levels.level0",
-  Level1: "admin.levels.level1",
-  Level2: "admin.levels.level2",
-  Level3: "admin.levels.level3",
-};
+const levelKeys = ADMIN_LEVEL_I18N_KEYS;
 
 type StudentPickerProps = {
   selectedStudent: SingleStudent | null;

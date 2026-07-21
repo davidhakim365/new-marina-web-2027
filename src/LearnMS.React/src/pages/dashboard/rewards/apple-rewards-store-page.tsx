@@ -582,10 +582,12 @@ function StudentsTab() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All levels</SelectItem>
-                  <SelectItem value="Level0">Level 0</SelectItem>
-                  <SelectItem value="Level1">Level 1</SelectItem>
-                  <SelectItem value="Level2">Level 2</SelectItem>
-                  <SelectItem value="Level3">Level 3</SelectItem>
+                  <SelectItem value="Level0">2nd Prep</SelectItem>
+                  <SelectItem value="Level1">3rd Prep</SelectItem>
+                  <SelectItem value="Level2">1st Secondary General</SelectItem>
+                  <SelectItem value="Level4">1st Secondary Baccalaureate</SelectItem>
+                  <SelectItem value="Level3">2nd Secondary General</SelectItem>
+                  <SelectItem value="Level5">2nd Secondary Baccalaureate</SelectItem>
                 </SelectContent>
               </Select>
             </div>

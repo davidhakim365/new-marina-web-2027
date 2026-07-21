@@ -30,13 +30,10 @@ import {
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSearchParams } from "react-router-dom";
-
-const levelKeys = {
-  Level0: "admin.levels.level0",
-  Level1: "admin.levels.level1",
-  Level2: "admin.levels.level2",
-  Level3: "admin.levels.level3",
-} as const;
+import {
+  ADMIN_LEVEL_I18N_KEYS,
+  STUDENT_LEVEL_ORDER,
+} from "@/lib/student-levels";
 
 const StudentsPage = () => {
   const { t } = useTranslation();
@@ -80,6 +77,8 @@ const StudentsPage = () => {
       Level1: 0,
       Level2: 0,
       Level3: 0,
+      Level4: 0,
+      Level5: 0,
     };
     for (const bucket of stats?.byLevel ?? []) {
       map[bucket.level] = bucket.count;
@@ -140,18 +139,16 @@ const StudentsPage = () => {
           <p className="mb-2 text-sm font-medium text-muted-foreground">
             {t("admin.students.stats.byLevel")}
           </p>
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-            {(Object.keys(levelKeys) as Array<keyof typeof levelKeys>).map(
-              (key) => (
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+            {STUDENT_LEVEL_ORDER.map((key) => (
                 <div
                   key={key}
                   className="rounded-lg border border-color2/10 bg-muted/30 px-3 py-2"
                 >
-                  <p className="text-xs text-muted-foreground">{t(levelKeys[key])}</p>
+                  <p className="text-xs text-muted-foreground">{t(ADMIN_LEVEL_I18N_KEYS[key])}</p>
                   <p className="text-lg font-semibold">{levelCounts[key] ?? 0}</p>
                 </div>
-              )
-            )}
+            ))}
           </div>
         </DashboardCard>
       </div>
@@ -213,18 +210,11 @@ const StudentsPage = () => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">{t("admin.levels.all")}</SelectItem>
-                <SelectItem value={StudentLevel.Level0}>
-                  {t("admin.levels.level0")}
-                </SelectItem>
-                <SelectItem value={StudentLevel.Level1}>
-                  {t("admin.levels.level1")}
-                </SelectItem>
-                <SelectItem value={StudentLevel.Level2}>
-                  {t("admin.levels.level2")}
-                </SelectItem>
-                <SelectItem value={StudentLevel.Level3}>
-                  {t("admin.levels.level3")}
-                </SelectItem>
+                {STUDENT_LEVEL_ORDER.map((lvl) => (
+                  <SelectItem key={lvl} value={lvl}>
+                    {t(ADMIN_LEVEL_I18N_KEYS[lvl])}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>

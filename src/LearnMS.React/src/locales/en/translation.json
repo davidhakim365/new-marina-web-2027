@@ -46,7 +46,7 @@
   "grades": {
     "badge": "Academic Levels",
     "title": "Choose Your Grade",
-    "description": "Social studies content from 2nd prep through 2nd secondary",
+    "description": "Social Studies for prep and secondary — general and Baccalaureate tracks",
     "items": {
       "secondMiddle": {
         "title": "2nd Prep",
@@ -57,12 +57,20 @@
         "description": "Final year before entering secondary education"
       },
       "firstSecondary": {
-        "title": "1st Secondary",
-        "description": "The beginning of high school studies"
+        "title": "1st Secondary General",
+        "description": "Secondary year one — general track"
       },
       "secondSecondary": {
-        "title": "2nd Secondary",
-        "description": "Deeper focus on history and geography"
+        "title": "2nd Secondary General",
+        "description": "Secondary year two — general track"
+      },
+      "firstSecondaryBaccalaureate": {
+        "title": "1st Secondary Baccalaureate",
+        "description": "Secondary year one — Baccalaureate track"
+      },
+      "secondSecondaryBaccalaureate": {
+        "title": "2nd Secondary Baccalaureate",
+        "description": "Secondary year two — Baccalaureate track"
       }
     }
   },
@@ -83,8 +91,10 @@
       "all": "All",
       "level0": "2nd Prep",
       "level1": "3rd Prep",
-      "level2": "1st Secondary",
-      "level3": "2nd Secondary"
+      "level2": "1st Secondary General",
+      "level3": "2nd Secondary General",
+      "level4": "1st Secondary Baccalaureate",
+      "level5": "2nd Secondary Baccalaureate"
     },
     "pagination": {
       "showing": "Showing page",
@@ -408,8 +418,8 @@
     "selectLevel": "Select your education level",
     "level3rdPrep": "2nd Prep",
     "level1stSecondary": "3rd Prep",
-    "level2ndSecondary": "1st Secondary",
-    "level3rdSecondary": "2nd Secondary",
+    "level2ndSecondary": "1st Secondary General",
+    "level3rdSecondary": "2nd Secondary General",
     "studentId": "Student ID",
     "studentIdDescription": "Your unique student identification code.",
     "balance": "Balance",
@@ -419,7 +429,9 @@
     "levelElementary": "Elementary",
     "levelMiddleSchool": "Middle School",
     "levelHighSchool": "High School",
-    "level2ndPrep": "2nd Prep"
+    "level2ndPrep": "2nd Prep",
+    "level1stBaccalaureate": "1st Secondary Baccalaureate",
+    "level2ndBaccalaureate": "2nd Secondary Baccalaureate"
   },
   "platformInstructions": {
     "title": "Mrs Marina Atef Platform Instructions",
@@ -505,8 +517,10 @@
         "options": {
           "level0": "2nd Prep",
           "level1": "3rd Prep",
-          "level2": "1st Secondary",
-          "level3": "2nd Secondary"
+          "level2": "1st Secondary General",
+          "level3": "2nd Secondary General",
+          "level4": "1st Secondary Baccalaureate",
+          "level5": "2nd Secondary Baccalaureate"
         }
       },
       "forgotPassword": "Forgot Password?",
@@ -622,8 +636,10 @@
       "all": "All Levels",
       "level0": "2nd Prep",
       "level1": "3rd Prep",
-      "level2": "1st Secondary",
-      "level3": "2nd Secondary"
+      "level2": "1st Secondary General",
+      "level3": "2nd Secondary General",
+      "level4": "1st Secondary Baccalaureate",
+      "level5": "2nd Secondary Baccalaureate"
     },
     "students": {
       "title": "Students",

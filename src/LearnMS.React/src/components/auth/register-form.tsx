@@ -9,6 +9,10 @@ import { cn } from "@/lib/utils";
 import InputField from "./input-field";
 import { useTranslation } from "react-i18next";
 import {
+  AUTH_LEVEL_I18N_KEYS,
+  STUDENT_LEVEL_ORDER,
+} from "@/lib/student-levels";
+import {
   Select,
   SelectTrigger,
   SelectValue,
@@ -265,10 +269,11 @@ const navigate = useNavigate();
                   <SelectValue placeholder={t("auth.forms.level.placeholder")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Level0">{t("auth.forms.level.options.level0")}</SelectItem>
-                  <SelectItem value="Level1">{t("auth.forms.level.options.level1")}</SelectItem>
-                  <SelectItem value="Level2">{t("auth.forms.level.options.level2")}</SelectItem>
-                  <SelectItem value="Level3">{t("auth.forms.level.options.level3")}</SelectItem>
+                  {STUDENT_LEVEL_ORDER.map((level) => (
+                    <SelectItem key={level} value={level}>
+                      {t(AUTH_LEVEL_I18N_KEYS[level])}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             )}

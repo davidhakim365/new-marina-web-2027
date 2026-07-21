@@ -144,6 +144,8 @@ function CourseHeader({ course }: { course: StudentCourseDetailsDto }) {
       Level1: t("latestLectures.levels.level1"),
       Level2: t("latestLectures.levels.level2"),
       Level3: t("latestLectures.levels.level3"),
+      Level4: t("latestLectures.levels.level4"),
+      Level5: t("latestLectures.levels.level5"),
     };
     return levelMap[level] || level;
   };

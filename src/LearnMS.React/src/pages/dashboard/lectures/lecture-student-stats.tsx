@@ -18,8 +18,10 @@ import { LucideIcon } from "lucide-react";
 const levelMap: Record<StudentLevel, string> = {
   Level0: "2nd Prep",
   Level1: "3rd Prep",
-  Level2: "1st Secondary",
-  Level3: "2nd Secondary",
+  Level2: "1st Secondary General",
+  Level3: "2nd Secondary General",
+  Level4: "1st Secondary Baccalaureate",
+  Level5: "2nd Secondary Baccalaureate",
 };
 
 type StatBoxProps = {

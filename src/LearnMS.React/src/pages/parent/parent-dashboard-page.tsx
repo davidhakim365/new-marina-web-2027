@@ -30,8 +30,10 @@ import { cn } from "@/lib/utils";
 const levelLabels: Record<string, { en: string; ar: string }> = {
   Level0: { en: "2nd Prep", ar: "ثاني إعدادي" },
   Level1: { en: "3rd Prep", ar: "ثالث إعدادي" },
-  Level2: { en: "1st Secondary", ar: "أول ثانوي" },
-  Level3: { en: "2nd Secondary", ar: "ثاني ثانوي" },
+  Level2: { en: "1st Secondary General", ar: "أول ثانوي عام" },
+  Level3: { en: "2nd Secondary General", ar: "ثاني ثانوي عام" },
+  Level4: { en: "1st Secondary Baccalaureate", ar: "أول ثانوي بكلوريا" },
+  Level5: { en: "2nd Secondary Baccalaureate", ar: "ثاني ثانوي بكلوريا" },
 };
 
 function formatDate(value: string | null | undefined, locale: string) {

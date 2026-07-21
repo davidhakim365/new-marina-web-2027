@@ -162,7 +162,7 @@ const UpdateCourseRequest = z.object({
     .number()
     .min(0, { message: "Expiration days must be greater than 0" }),
     imageUrl: z.string(),
-  level: z.enum(["Level0", "Level1", "Level2", "Level3"]),
+  level: z.enum(["Level0", "Level1", "Level2", "Level3", "Level4", "Level5"]),
 });
 
 type UpdateCourseRequest = z.infer<typeof UpdateCourseRequest>;
@@ -284,8 +284,10 @@ function CourseDetailsForm({
                   <SelectContent>
                     <SelectItem value='Level0'>2nd Prep</SelectItem>
                     <SelectItem value='Level1'>3rd Prep</SelectItem>
-                    <SelectItem value='Level2'>1st Secondary</SelectItem>
-                    <SelectItem value='Level3'>2nd Secondary</SelectItem>
+                    <SelectItem value='Level2'>1st Secondary General</SelectItem>
+                    <SelectItem value='Level4'>1st Secondary Baccalaureate</SelectItem>
+                    <SelectItem value='Level3'>2nd Secondary General</SelectItem>
+                    <SelectItem value='Level5'>2nd Secondary Baccalaureate</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />
