@@ -7,32 +7,8 @@ public class Lecture : IOrdered
     public int Order { get; set; }
     public required string Title { get; set; }
 
-    public string? Description { get; set; } =
-        @" *HomeWork*
-
-El-Moasser Book :
-
-__________________
-
-*Choose*
-
-HW:
-
-Choose Form : 
-
-__________________
-
-*Essay*
-
-HW:
-
-Essay Form :
-
-__________________
-
-Homework Video :
-
-";
+    public string? Description { get; set; } 
+       
 
     public string? ImageUrl { get; set; } = ".";
 
