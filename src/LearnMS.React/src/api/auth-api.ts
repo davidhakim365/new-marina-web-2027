@@ -19,6 +19,36 @@ export type LoginResponse = {
   token: string;
 };
 
+export const EGYPT_GOVERNORATES = [
+  "القاهرة",
+  "الجيزة",
+  "الإسكندرية",
+  "القليوبية",
+  "المنوفية",
+  "الغربية",
+  "الدقهلية",
+  "الشرقية",
+  "البحيرة",
+  "كفر الشيخ",
+  "دمياط",
+  "بورسعيد",
+  "الإسماعيلية",
+  "السويس",
+  "شمال سيناء",
+  "جنوب سيناء",
+  "مطروح",
+  "الفيوم",
+  "بني سويف",
+  "المنيا",
+  "أسيوط",
+  "سوهاج",
+  "قنا",
+  "الأقصر",
+  "أسوان",
+  "البحر الأحمر",
+  "الوادي الجديد",
+] as const;
+
 export const RegisterRequest = z
   .object({
     level: z.enum(["Level0", "Level1", "Level2", "Level3"], {
@@ -27,8 +57,9 @@ export const RegisterRequest = z
     fullName: z.string().min(1, { message: "Name is required" }),
     phoneNumber: z.string(),
     parentPhoneNumber: z.string(),
-    studentCode: z.string().optional(), // validate manually below
+    studentCode: z.string().optional(),
     school: z.string().min(1, { message: "School is required" }),
+    governorate: z.string().min(1, { message: "المحافظة مطلوبة" }),
     email: z.string().email({ message: "Email is required" }),
     password: z
       .string()
@@ -41,7 +72,6 @@ export const RegisterRequest = z
     }),
   })
   .superRefine((data, ctx) => {
-    // Check matching passwords
     if (data.password !== data.confirmPassword) {
       ctx.addIssue({
         path: ["confirmPassword"],
@@ -50,7 +80,6 @@ export const RegisterRequest = z
       });
     }
 
-    // Only require and validate studentCode if offline
     if (data.mode === "offline") {
       if (!data.studentCode || data.studentCode.length < 6) {
         ctx.addIssue({

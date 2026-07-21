@@ -19,7 +19,9 @@ public sealed record RegisterStudentRequest(
     [Required]
     string StudentCode,
     [Required]
-    StudentLevel Level
+    StudentLevel Level,
+    [Required]
+    string Governorate
 );
 
 public sealed record RegisterStudentExternalRequest(
@@ -38,6 +40,7 @@ public sealed record RegisterStudentCommand
     public required string StudentCode;
 
     public required StudentLevel Level;
+    public required string Governorate;
 };
 
 
@@ -60,5 +63,6 @@ public sealed record RegisterStudentExternalCommand
     public required string StudentCode;
     [Required]
     public required StudentLevel Level;
+    public string Governorate = string.Empty;
 
 }

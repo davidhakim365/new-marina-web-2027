@@ -47,7 +47,8 @@ public sealed class AuthController : Controller
             StudentCode = request.StudentCode,
             Password = request.Password,
             PhoneNumber = request.PhoneNumber,
-            School = request.School
+            School = request.School,
+            Governorate = request.Governorate
         });
 
         Response.StatusCode = StatusCodes.Status201Created;

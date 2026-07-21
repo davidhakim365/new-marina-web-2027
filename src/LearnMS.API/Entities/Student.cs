@@ -24,6 +24,7 @@ public class Student : User
     public required string StudentCode { get; set; }
     public string? DeviceKey { get; set; }
     public required string SchoolName { get; set; }
+    public string Governorate { get; set; } = string.Empty;
     public required StudentLevel Level { get; set; }
 
     public List<Course> PurchasedCourses { get; } = [];
@@ -257,7 +258,8 @@ public class Student : User
         string parentPhoneNumber,
         string studentCode,
         string schoolName,
-        StudentLevel level
+        StudentLevel level,
+        string? governorate = null
     )
     {
         var id = Guid.NewGuid();
@@ -273,6 +275,7 @@ public class Student : User
             StudentCode = studentCode,
             Level = level,
             SchoolName = schoolName,
+            Governorate = governorate?.Trim() ?? string.Empty,
             Accounts = new List<Account>() { account }
         };
     }

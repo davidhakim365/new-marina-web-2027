@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { RegisterRequest, useRegisterMutation, useLoginMutation } from "@/api/auth-api";
+import { RegisterRequest, useRegisterMutation, useLoginMutation, EGYPT_GOVERNORATES } from "@/api/auth-api";
 import { toast } from "@/components/ui/use-toast";
 import { UserPlus, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -39,9 +39,10 @@ const RegisterForm = ({ setIsLoginView }: RegisterFormProps) => {
       level: "" as any,
       phoneNumber: "",
       school: "",
+      governorate: "",
       parentPhoneNumber: "",
       studentCode: "",
-      mode: "offline", // <-- new default value
+      mode: "offline",
     },
   });
 
@@ -198,10 +199,10 @@ const navigate = useNavigate();
         </motion.div>
       </motion.div>
 
-      {/* Mode Select */}
+      {/* Mode Select — Arabic labels (not translated) */}
       <motion.div variants={inputVariants}>
         <label htmlFor="mode" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
-          Study Mode
+          بتشوف الحصة فين
         </label>
         <Controller
           control={registerForm.control}
@@ -209,11 +210,11 @@ const navigate = useNavigate();
           render={({ field }) => (
             <Select onValueChange={field.onChange} value={field.value}>
               <SelectTrigger className="w-full px-4 py-3 rounded-lg border bg-white dark:bg-zinc-800">
-                <SelectValue placeholder="Select study mode" />
+                <SelectValue placeholder="اختار نوع الطالب" />
               </SelectTrigger>
               <SelectContent>
-                 <SelectItem value="offline">{t("auth.forms.mode.options.offline")}</SelectItem>
-                <SelectItem value="online">{t("auth.forms.mode.options.online")}</SelectItem>
+                <SelectItem value="offline">طالب سنتر</SelectItem>
+                <SelectItem value="online">طالب منصة</SelectItem>
               </SelectContent>
             </Select>
           )}
@@ -238,8 +239,8 @@ const navigate = useNavigate();
         </motion.div>
       )}
 
-      {/* Level and School */}
-      <motion.div variants={gridContainerVariants} className="grid grid-cols-2 gap-6">
+      {/* Level, School, Governorate */}
+      <motion.div variants={gridContainerVariants} className="grid grid-cols-1 gap-6 sm:grid-cols-2">
         <motion.div variants={inputVariants} className="space-y-2">
           <label
             htmlFor="level"
@@ -279,7 +280,47 @@ const navigate = useNavigate();
           )}
         </motion.div>
 
-        <motion.div variants={inputVariants}>
+        <motion.div variants={inputVariants} className="space-y-2">
+          <label
+            htmlFor="governorate"
+            className="block text-sm font-medium text-zinc-700 dark:text-zinc-300"
+          >
+            المحافظة
+          </label>
+          <Controller
+            control={registerForm.control}
+            name="governorate"
+            render={({ field }) => (
+              <Select onValueChange={field.onChange} value={field.value}>
+                <SelectTrigger
+                  id="governorate"
+                  className={cn(
+                    "w-full px-4 py-3 rounded-lg border bg-white dark:bg-zinc-800",
+                    registerErrors?.governorate
+                      ? "border-red-400 dark:border-red-300"
+                      : "border-zinc-200 dark:border-zinc-700"
+                  )}
+                >
+                  <SelectValue placeholder="اختار المحافظة" />
+                </SelectTrigger>
+                <SelectContent>
+                  {EGYPT_GOVERNORATES.map((gov) => (
+                    <SelectItem key={gov} value={gov}>
+                      {gov}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+          />
+          {registerErrors?.governorate && (
+            <p className="text-sm text-red-400 dark:text-red-300">
+              {registerErrors.governorate.message}
+            </p>
+          )}
+        </motion.div>
+
+        <motion.div variants={inputVariants} className="sm:col-span-2">
           <InputField
             error={registerErrors?.school}
             register={registerForm.register}

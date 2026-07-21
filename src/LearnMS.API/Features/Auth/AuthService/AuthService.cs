@@ -70,7 +70,7 @@ public sealed class AuthService : IAuthService
             VerificationToken = token,
             Password = command.Password.Trim(),
             ProviderType = ProviderType.Local,
-        }, command.FullName, command.PhoneNumber, command.ParentPhoneNumber, command.StudentCode, command.School, command.Level);
+        }, command.FullName, command.PhoneNumber, command.ParentPhoneNumber, command.StudentCode, command.School, command.Level, command.Governorate);
 
 
         await _dbContext.Students.AddAsync(student);
