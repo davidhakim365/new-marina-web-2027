@@ -121,7 +121,7 @@ const NavBar: React.FC<NavBarProps> = ({
             "mx-auto max-w-7xl rounded-3xl px-3 sm:px-6 transition-all duration-300 lg:px-12",
             scrolled || !isHomeHero
               ? "bg-background/80 backdrop-blur-2xl border border-color1/10 shadow-lg shadow-color1/5"
-              : "bg-white/55 backdrop-blur-md border border-white/40 shadow-sm"
+              : "bg-background/55 backdrop-blur-md border border-border/50 shadow-sm"
           )}
         >
           <motion.div

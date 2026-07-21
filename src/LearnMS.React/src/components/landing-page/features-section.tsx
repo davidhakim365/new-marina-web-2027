@@ -75,8 +75,8 @@ function FeaturesSection() {
             <div
               key={i}
               className={cn(
-                "group relative p-6 rounded-2xl border border-color1/10 bg-background/70 backdrop-blur-sm",
-                "hover:border-color1/30 hover:shadow-lg hover:shadow-color1/5 transition-all duration-300",
+                "group relative p-6 rounded-2xl border border-color1/15 bg-card/80 backdrop-blur-sm",
+                "hover:border-color1/35 hover:shadow-lg hover:shadow-color1/10 transition-all duration-300",
                 "hover:-translate-y-1"
               )}
             >
@@ -142,8 +142,8 @@ function FeaturesSection() {
               key={i}
               variants={cardVariants}
               className={cn(
-                "group relative p-6 rounded-2xl border border-color1/10 bg-background/70 backdrop-blur-sm",
-                "hover:border-color1/30 hover:shadow-lg hover:shadow-color1/5 transition-all duration-300",
+                "group relative p-6 rounded-2xl border border-color1/15 bg-card/80 backdrop-blur-sm",
+                "hover:border-color1/35 hover:shadow-lg hover:shadow-color1/10 transition-all duration-300",
                 "hover:-translate-y-1"
               )}
             >

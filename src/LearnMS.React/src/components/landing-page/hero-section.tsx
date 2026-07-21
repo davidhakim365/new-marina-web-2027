@@ -101,7 +101,7 @@ const HeroSection = () => {
               </Link>
             )}
             <Link to={browseCoursesHref} className="relative z-10">
-              <button className="rounded-xl border-2 border-color1/40 bg-white/70 px-8 py-3.5 text-sm font-bold text-color1 backdrop-blur transition hover:border-color1 hover:bg-white">
+              <button className="rounded-xl border-2 border-color1/40 bg-card/80 px-8 py-3.5 text-sm font-bold text-color1 backdrop-blur transition hover:border-color1 hover:bg-card">
                 {t("hero.browseCourses")}
               </button>
             </Link>
@@ -111,7 +111,7 @@ const HeroSection = () => {
             {stats.map(({ icon: Icon, label }) => (
               <div
                 key={label}
-                className="flex items-center gap-2 rounded-full border border-color1/15 bg-white/70 px-4 py-2 text-sm text-paragraph shadow-sm backdrop-blur"
+                className="flex items-center gap-2 rounded-full border border-color1/20 bg-card/75 px-4 py-2 text-sm text-paragraph shadow-sm backdrop-blur"
               >
                 <Icon className="size-4 text-color1" />
                 <span>{label}</span>

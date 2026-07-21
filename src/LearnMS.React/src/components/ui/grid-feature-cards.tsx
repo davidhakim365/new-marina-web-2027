@@ -29,8 +29,8 @@ export const FeatureCard = ({
     <div
       className={cn(
         "group relative overflow-hidden px-8 py-8 cursor-pointer rounded-2xl",
-        "bg-background/70 backdrop-blur-sm border border-color2/10",
-        "hover:border-color2/30 hover:shadow-xl hover:shadow-color2/5 transition-all duration-300",
+        "bg-card/85 backdrop-blur-sm border border-color1/15",
+        "hover:border-color1/35 hover:shadow-xl hover:shadow-color1/10 transition-all duration-300",
         "hover:-translate-y-1",
         className
       )}
@@ -39,13 +39,13 @@ export const FeatureCard = ({
       onMouseLeave={() => setHovered(false)}
       onClick={() => navigate(`/courses/levels/${feature.level}`)}
     >
-      <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-color2/10 to-transparent rounded-bl-full opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+      <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-color1/10 to-transparent rounded-bl-full opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
       <div className="flex items-start justify-between mb-6">
-        <div className="flex items-center justify-center size-14 rounded-xl bg-gradient-to-br from-color1 to-color2 text-white shadow-md shadow-color2/20 group-hover:scale-110 transition-transform duration-300">
+        <div className="flex items-center justify-center size-14 rounded-xl bg-gradient-to-br from-color1 to-teal text-white shadow-md shadow-color1/20 group-hover:scale-110 transition-transform duration-300">
           <feature.icon className="size-7" strokeWidth={1.5} aria-hidden />
         </div>
-        <ArrowUpRight className="size-5 text-color2/40 group-hover:text-color2 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all duration-300" />
+        <ArrowUpRight className="size-5 text-color1/40 group-hover:text-color1 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all duration-300" />
       </div>
 
       <motion.div
@@ -61,7 +61,7 @@ export const FeatureCard = ({
         </Paragraph>
       </motion.div>
 
-      <div className="mt-4 text-xs font-semibold text-color2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+      <div className="mt-4 text-xs font-semibold text-color1 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
         Explore courses →
       </div>
     </div>
