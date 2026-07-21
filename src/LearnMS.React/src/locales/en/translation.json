@@ -121,10 +121,18 @@
       }
     }
   },
+  "intro": {
+    "badge": "Watch & Explore",
+    "title": "Start with a quick intro",
+    "description": "A short look at how Mrs Marina Atef teaches history and geography — clear, visual, and made for real understanding.",
+    "videoTitle": "Mrs Marina Atef — platform intro",
+    "play": "Play intro video",
+    "playHint": "Tap to watch the intro"
+  },
   "memories": {
-    "badge": "Memories",
-    "title": "Make Memories with Us",
-    "description": "Moments from learning history and geography with Mrs Marina Atef",
+    "badge": "Gallery",
+    "title": "Moments from the journey",
+    "description": "Photos from learning history and geography with Mrs Marina Atef",
     "items": {
       "1": {
         "title": "Miss Marina",

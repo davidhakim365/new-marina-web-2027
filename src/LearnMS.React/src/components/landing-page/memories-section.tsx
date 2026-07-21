@@ -29,12 +29,12 @@ import marinaHero from "@/assets/images/marina-hero.png";
 import marinaLogo from "@/assets/images/marina-logo.png";
 
 const memories = [
-  { id: "1", src: marinaLogo, key: "1", bg: "from-teal/20 to-gold/15" },
   { id: "2", src: marinaHero, key: "2", bg: "from-gold/20 to-color2/10" },
   { id: "3", src: marinaAbout, key: "3", bg: "from-color1/15 to-teal/20" },
   { id: "4", src: marinaGallery1, key: "4", bg: "from-color2/15 to-gold/15" },
   { id: "5", src: marinaGallery2, key: "5", bg: "from-teal/25 to-color1/10" },
   { id: "6", src: marinaGallery3, key: "6", bg: "from-gold/20 to-teal/15" },
+  { id: "1", src: marinaLogo, key: "1", bg: "from-teal/20 to-gold/15" },
 ];
 
 function MemoriesSection() {
