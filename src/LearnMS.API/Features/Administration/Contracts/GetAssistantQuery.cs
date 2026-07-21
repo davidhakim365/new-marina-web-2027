@@ -1,0 +1,40 @@
+namespace LearnMS.API.Features.Administration.Contracts;
+
+using LearnMS.API.Entities;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
+
+public sealed record GetAssistantQuery
+{
+    public Guid Id { get; set; }
+}
+
+public sealed record GetAssistantResult
+{
+
+    public required Guid Id { get; init; }
+    public required string FullName { get; init; }
+    public required string Email { get; init; }
+    public string? ProfilePicture { get; init; }
+    public required string Code { get; init; }
+    public required int Apples { get; init; }
+    public required int SessionsAttended { get; init; }
+
+    [JsonProperty(ItemConverterType = typeof(StringEnumConverter))]
+    public required List<Permission> Permissions { get; init; }
+}
+
+public sealed record GetAssistantResponse
+{
+
+    public required Guid Id { get; init; }
+    public required string FullName { get; init; }
+    public required string Email { get; init; }
+    public string? ProfilePicture { get; init; }
+    public required string Code { get; init; }
+    public required int Apples { get; init; }
+    public required int SessionsAttended { get; init; }
+
+    [JsonProperty(ItemConverterType = typeof(StringEnumConverter))]
+    public required List<Permission> Permissions { get; init; }
+}

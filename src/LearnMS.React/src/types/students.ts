@@ -1,0 +1,15 @@
+export type Student = {
+  id: string;
+  email: string;
+  profilePicture: string;
+  fullName: string;
+  phoneNumber: string;
+  parentPhoneNumber: string;
+  password: string;
+  studentCode: string;
+  isVerified: boolean;
+  schoolName: string;
+  credit: number;
+  apples: number;
+  level: "Level0" | "Level1" | "Level2" | "Level3";
+};
