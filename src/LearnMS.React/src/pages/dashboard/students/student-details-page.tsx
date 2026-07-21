@@ -91,12 +91,14 @@ function StudentProfile({ studentId }: { studentId: string }) {
   const deleteStudentMutation = useDeleteStudentMutation();
   const navigate = useNavigate();
 
-  const levelMap: { [key: string]: string } = {
+  const levelMap = {
     Level0: "2nd Prep",
     Level1: "3rd Prep",
-    Level2: "1st Secondary",
-    Level3: "2nd Secondary",
-  };
+    Level2: "1st Secondary General",
+    Level3: "2nd Secondary General",
+    Level4: "1st Secondary Baccalaureate",
+    Level5: "2nd Secondary Baccalaureate",
+  } as const;
 
   const form = useForm<UpdateStudentRequest>({
     resolver: zodResolver(UpdateStudentRequest),
@@ -285,8 +287,10 @@ function StudentProfile({ studentId }: { studentId: string }) {
                     <SelectContent>
                       <SelectItem value="Level0">2nd Prep</SelectItem>
                       <SelectItem value="Level1">3rd Prep</SelectItem>
-                      <SelectItem value="Level2">1st Secondary</SelectItem>
-                      <SelectItem value="Level3">2nd Secondary</SelectItem>
+                      <SelectItem value="Level2">1st Secondary General</SelectItem>
+                      <SelectItem value="Level4">1st Secondary Baccalaureate</SelectItem>
+                      <SelectItem value="Level3">2nd Secondary General</SelectItem>
+                      <SelectItem value="Level5">2nd Secondary Baccalaureate</SelectItem>
                     </SelectContent>
                   </Select>
                 </FormItem>

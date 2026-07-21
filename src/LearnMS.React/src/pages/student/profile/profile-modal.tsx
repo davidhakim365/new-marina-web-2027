@@ -243,8 +243,14 @@ function ProfileContent({ profile }: { profile: GetStudentProfileResult }) {
                     <SelectItem value="Level2">
                       {t("profile.level2ndSecondary")}
                     </SelectItem>
+                    <SelectItem value="Level4">
+                      {t("profile.level1stBaccalaureate")}
+                    </SelectItem>
                     <SelectItem value="Level3">
                       {t("profile.level3rdSecondary")}
+                    </SelectItem>
+                    <SelectItem value="Level5">
+                      {t("profile.level2ndBaccalaureate")}
                     </SelectItem>
                   </SelectContent>
                 </Select>

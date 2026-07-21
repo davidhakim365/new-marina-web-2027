@@ -5,25 +5,15 @@ import { StudentPicker } from "@/components/dashboard/student-picker";
 import Loading from "@/components/loading/loading";
 import { Input } from "@/components/ui/input";
 import { useGetStudentLectures } from "@/generated/api";
-import { SingleStudent, StudentLevel } from "@/generated/model";
+import { SingleStudent } from "@/generated/model";
 import { createExpirationTimeColumns } from "@/pages/dashboard/expiration-time/columns";
 import { PaginationState } from "@tanstack/react-table";
 import { Clock } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { ADMIN_LEVEL_I18N_KEYS } from "@/lib/student-levels";
 
-const levelKeys: Record<
-  StudentLevel,
-  | "admin.levels.level0"
-  | "admin.levels.level1"
-  | "admin.levels.level2"
-  | "admin.levels.level3"
-> = {
-  Level0: "admin.levels.level0",
-  Level1: "admin.levels.level1",
-  Level2: "admin.levels.level2",
-  Level3: "admin.levels.level3",
-};
+const levelKeys = ADMIN_LEVEL_I18N_KEYS;
 
 const ExpirationTimePage = () => {
   const { t } = useTranslation();

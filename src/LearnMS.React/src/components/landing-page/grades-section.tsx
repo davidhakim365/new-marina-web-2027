@@ -1,4 +1,4 @@
-import { BookOpenCheck, School, GraduationCap, ScrollText } from "lucide-react";
+import { BookOpenCheck, School, GraduationCap, ScrollText, Landmark, Library } from "lucide-react";
 import { motion, useReducedMotion } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import { FeatureCard } from "@/components/ui/grid-feature-cards";
@@ -49,10 +49,22 @@ function GradesSection() {
       level: 2,
     },
     {
+      title: t("grades.items.firstSecondaryBaccalaureate.title"),
+      icon: Landmark,
+      description: t("grades.items.firstSecondaryBaccalaureate.description"),
+      level: 4,
+    },
+    {
       title: t("grades.items.secondSecondary.title"),
       icon: GraduationCap,
       description: t("grades.items.secondSecondary.description"),
       level: 3,
+    },
+    {
+      title: t("grades.items.secondSecondaryBaccalaureate.title"),
+      icon: Library,
+      description: t("grades.items.secondSecondaryBaccalaureate.description"),
+      level: 5,
     },
   ];
 
@@ -73,7 +85,7 @@ function GradesSection() {
   );
 
   const grid = (
-    <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+    <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
       {grades.map((grade, i) => (
         <FeatureCard key={i} feature={grade} />
       ))}

@@ -40,7 +40,7 @@ export const CreateStudentRequest = z
       .min(1, { message: "ID must be at least 6 characters" }),
     governorate: z.string().min(1, { message: "المحافظة مطلوبة" }),
 
-    level: z.enum(["Level0", "Level1", "Level2", "Level3"]),
+    level: z.enum(["Level0", "Level1", "Level2", "Level3", "Level4", "Level5"]),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords do not match",
@@ -114,7 +114,7 @@ export const UpdateStudentRequest = z.object({
   studentCode: z
     .string(),
     
-  level: z.enum(["Level0", "Level1", "Level2", "Level3"]),
+  level: z.enum(["Level0", "Level1", "Level2", "Level3", "Level4", "Level5"]),
 });
 
 export type UpdateStudentRequest = z.infer<typeof UpdateStudentRequest>;
@@ -137,7 +137,7 @@ export const useUpdateStudentMutation = () => {
 export type StudentsStatistics = {
   totalStudents: number;
   deviceLinkedCount: number;
-  byLevel: { level: "Level0" | "Level1" | "Level2" | "Level3"; count: number }[];
+  byLevel: { level: "Level0" | "Level1" | "Level2" | "Level3" | "Level4" | "Level5"; count: number }[];
   byGovernorate: { governorate: string; count: number }[];
 };
 

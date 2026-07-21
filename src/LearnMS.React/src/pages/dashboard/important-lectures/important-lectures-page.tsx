@@ -18,6 +18,10 @@ import { StudentLevel } from "@/generated/model";
 import { ArrowRight, Heart, Star } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import {
+  ADMIN_LEVEL_I18N_KEYS,
+  STUDENT_LEVEL_ORDER,
+} from "@/lib/student-levels";
 import { Link } from "react-router-dom";
 
 const ImportantLecturesPage = () => {
@@ -52,10 +56,11 @@ const ImportantLecturesPage = () => {
             <SelectContent>
               <SelectGroup>
                 <SelectLabel>{t("admin.importantLectures.levels")}</SelectLabel>
-                <SelectItem value="Level0">{t("admin.levels.level0")}</SelectItem>
-                <SelectItem value="Level1">{t("admin.levels.level1")}</SelectItem>
-                <SelectItem value="Level2">{t("admin.levels.level2")}</SelectItem>
-                <SelectItem value="Level3">{t("admin.levels.level3")}</SelectItem>
+                {STUDENT_LEVEL_ORDER.map((lvl) => (
+                  <SelectItem key={lvl} value={lvl}>
+                    {t(ADMIN_LEVEL_I18N_KEYS[lvl])}
+                  </SelectItem>
+                ))}
               </SelectGroup>
             </SelectContent>
           </Select>
