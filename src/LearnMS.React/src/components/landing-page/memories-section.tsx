@@ -1,10 +1,3 @@
-import { useEffect, useState } from "react";
-import {
-  Carousel,
-  CarouselApi,
-  CarouselContent,
-  CarouselItem,
-} from "@/components/ui/carousel";
 import { motion, useReducedMotion } from "framer-motion";
 import { Heading } from "@/components/ui/heading";
 import { SubHeading } from "@/components/ui/sub-heading";
@@ -17,75 +10,44 @@ import {
   CompassRose,
 } from "@/components/ui/physics-graphics";
 import { useTranslation } from "react-i18next";
-import { Camera, ChevronLeft, ChevronRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { Camera } from "lucide-react";
 
 const memories = [
   {
     id: "1",
     src: "https://i.ibb.co/8LYmmjdw/image.png",
     key: "1",
-    bg: "from-teal/20 to-gold/15",
   },
   {
     id: "2",
     src: "https://i.ibb.co/SXqy325z/image.png",
     key: "2",
-    bg: "from-gold/20 to-color2/10",
   },
   {
     id: "3",
     src: "https://i.ibb.co/RpGH652t/image.png",
     key: "3",
-    bg: "from-color1/15 to-teal/20",
   },
   {
     id: "4",
     src: "https://i.ibb.co/7JmjqzWq/image.png",
     key: "4",
-    bg: "from-color2/15 to-gold/15",
   },
   {
     id: "5",
     src: "https://i.ibb.co/SXrCQJvB/image.png",
     key: "5",
-    bg: "from-teal/25 to-color1/10",
   },
   {
     id: "6",
     src: "https://i.ibb.co/qYSFBZHP/image.png",
     key: "6",
-    bg: "from-gold/20 to-teal/15",
   },
 ];
 
 function MemoriesSection() {
-  const [api, setApi] = useState<CarouselApi>();
-  const [currentSlide, setCurrentSlide] = useState(0);
   const reduceMotion = useReducedMotion();
   const { t } = useTranslation();
-
-  useEffect(() => {
-    if (!api) return;
-
-    const onSelect = () => setCurrentSlide(api.selectedScrollSnap());
-    onSelect();
-    api.on("select", onSelect);
-
-    const interval = setInterval(() => {
-      if (api.selectedScrollSnap() + 1 === api.scrollSnapList().length) {
-        api.scrollTo(0);
-      } else {
-        api.scrollNext();
-      }
-    }, 4500);
-
-    return () => {
-      clearInterval(interval);
-      api.off("select", onSelect);
-    };
-  }, [api]);
 
   return (
     <section className="relative w-full overflow-hidden bg-memoriesSection py-20 md:py-28">
@@ -124,94 +86,35 @@ function MemoriesSection() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ delay: 0.12, duration: 0.6 }}
-          className="relative mt-8"
+          className="mt-8 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 lg:gap-4"
         >
-          <Carousel setApi={setApi} className="w-full">
-            <CarouselContent className="-ml-3 md:-ml-4">
-              {memories.map(({ id, src, key, bg }, index) => (
-                <CarouselItem
-                  key={id}
-                  className="pl-3 md:basis-4/5 md:pl-4 lg:basis-3/5"
-                >
-                  <div
-                    className={cn(
-                      "group relative overflow-hidden rounded-[1.5rem] border border-color1/15 shadow-lg shadow-color1/5 transition duration-500",
-                      currentSlide === index
-                        ? "ring-2 ring-color1/25"
-                        : "opacity-90"
-                    )}
-                  >
-                    <div
-                      className={cn(
-                        "relative aspect-[4/5] overflow-hidden bg-gradient-to-b sm:aspect-[16/11]",
-                        bg
-                      )}
-                    >
-                      <img
-                        src={src}
-                        alt={t(`memories.items.${key}.title`)}
-                        loading="lazy"
-                        decoding="async"
-                        referrerPolicy="no-referrer"
-                        className="absolute inset-0 size-full object-cover transition duration-700 group-hover:scale-[1.03]"
-                      />
-
-                      <div className="absolute inset-x-0 bottom-0 z-20 bg-gradient-to-t from-heading/80 via-heading/35 to-transparent p-5 sm:p-7">
-                        <h4 className="text-xl font-semibold text-white sm:text-2xl">
-                          {t(`memories.items.${key}.title`)}
-                        </h4>
-                        <p className="mt-2 max-w-lg text-sm text-white/85">
-                          {t(`memories.items.${key}.description`)}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </CarouselItem>
-              ))}
-            </CarouselContent>
-          </Carousel>
-
-          <div className="mt-6 flex flex-wrap items-center justify-between gap-4">
-            <div className="flex items-center gap-2">
-              <Button
-                type="button"
-                size="icon"
-                variant="outline"
-                className="size-10 rounded-xl border-color1/20"
-                onClick={() => api?.scrollPrev()}
-                aria-label="Previous memory"
-              >
-                <ChevronLeft className="size-4" />
-              </Button>
-              <Button
-                type="button"
-                size="icon"
-                variant="outline"
-                className="size-10 rounded-xl border-color1/20"
-                onClick={() => api?.scrollNext()}
-                aria-label="Next memory"
-              >
-                <ChevronRight className="size-4" />
-              </Button>
-            </div>
-
-            <div className="flex flex-1 items-center justify-end gap-2 sm:max-w-xs">
-              {memories.map((_, index) => (
-                <button
-                  key={index}
-                  type="button"
-                  onClick={() => api?.scrollTo(index)}
-                  aria-label={`Go to memory ${index + 1}`}
-                  className={cn(
-                    "h-1.5 rounded-full transition-all duration-300",
-                    currentSlide === index
-                      ? "w-8 bg-gradient-to-r from-color1 to-color2"
-                      : "w-1.5 bg-color1/25 hover:bg-color1/45"
-                  )}
-                />
-              ))}
-            </div>
-          </div>
+          {memories.map(({ id, src, key }, index) => (
+            <motion.figure
+              key={id}
+              initial={reduceMotion ? false : { opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.05 * index, duration: 0.45 }}
+              className="group relative aspect-[4/5] max-w-none overflow-hidden rounded-2xl border border-color1/15 bg-color1/5 shadow-lg shadow-color1/5"
+            >
+              <img
+                src={src}
+                alt={t(`memories.items.${key}.title`)}
+                loading="lazy"
+                decoding="async"
+                referrerPolicy="no-referrer"
+                className="absolute inset-0 size-full max-w-none object-cover transition duration-700 group-hover:scale-[1.04]"
+              />
+              <figcaption className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-heading/85 via-heading/40 to-transparent p-4 sm:p-5">
+                <h4 className="text-base font-semibold text-white sm:text-lg">
+                  {t(`memories.items.${key}.title`)}
+                </h4>
+                <p className="mt-1 line-clamp-2 text-xs text-white/85 sm:text-sm">
+                  {t(`memories.items.${key}.description`)}
+                </p>
+              </figcaption>
+            </motion.figure>
+          ))}
         </motion.div>
       </div>
     </section>
