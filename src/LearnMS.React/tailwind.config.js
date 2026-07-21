@@ -18,10 +18,10 @@ module.exports = {
     },
     extend: {
       fontFamily: {
-        sans: ["Outfit", "system-ui", "sans-serif"],
-        heading: ["Space Grotesk", "Outfit", "system-ui", "sans-serif"],
-        signika: ["Space Grotesk", "Outfit", "sans-serif"],
-        mono: ["JetBrains Mono", "ui-monospace", "monospace"],
+        sans: ["Cairo", "Tajawal", "Outfit", "system-ui", "sans-serif"],
+        heading: ["Cairo", "Tajawal", "Space Grotesk", "Outfit", "system-ui", "sans-serif"],
+        signika: ["Cairo", "Space Grotesk", "Outfit", "sans-serif"],
+        mono: ["ui-monospace", "monospace"],
       },
       typography: {
         DEFAULT: {

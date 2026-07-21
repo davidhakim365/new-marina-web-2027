@@ -117,10 +117,10 @@ const StudentsPage = () => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Levels</SelectItem>
-                <SelectItem value={StudentLevel.Level0}>3rd Prep</SelectItem>
-                <SelectItem value={StudentLevel.Level1}>1st Secondary</SelectItem>
-                <SelectItem value={StudentLevel.Level2}>2nd Secondary</SelectItem>
-                <SelectItem value={StudentLevel.Level3}>3rd Secondary</SelectItem>
+                <SelectItem value={StudentLevel.Level0}>2nd Prep</SelectItem>
+                <SelectItem value={StudentLevel.Level1}>3rd Prep</SelectItem>
+                <SelectItem value={StudentLevel.Level2}>1st Secondary</SelectItem>
+                <SelectItem value={StudentLevel.Level3}>2nd Secondary</SelectItem>
               </SelectContent>
             </Select>
           </div>

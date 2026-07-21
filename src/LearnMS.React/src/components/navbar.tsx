@@ -31,7 +31,7 @@ interface NavBarProps {
 }
 
 const NavBar: React.FC<NavBarProps> = ({
-  brand = { name: "Newton's Academy" },
+  brand,
   links: propLinks,
 }) => {
   const [menuState, setMenuState] = useState(false);
@@ -40,9 +40,15 @@ const NavBar: React.FC<NavBarProps> = ({
   const logoutMutation = useLogoutMutation();
   const { data: profile } = useGetProfile();
   const { openModal } = useModalStore();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [selectedTab, setSelectedTab] = useState<number | null>(null);
   const { pathname } = useLocation();
+
+  const resolvedBrandName =
+    brand?.name ??
+    ((i18n.language === "ar" || i18n.language.startsWith("ar"))
+      ? "أ/ مارينا عاطف"
+      : "Mrs Marina Atef");
 
   const isStudent =
     !!profile?.data && profile.data.$type === "GetStudentProfileResult";
@@ -102,11 +108,16 @@ const NavBar: React.FC<NavBarProps> = ({
     };
   }, [menuState]);
 
+  const isHomeHero = pathname === "/" && !scrolled;
+
   return (
     <header>
       <nav
         data-state={menuState ? "active" : undefined}
-        className="fixed z-50 w-full pt-2 text-navbar-foreground"
+        className={cn(
+          "fixed z-50 w-full pt-2",
+          isHomeHero ? "text-white" : "text-navbar-foreground"
+        )}
       >
         <div
           className={cn(
@@ -129,11 +140,11 @@ const NavBar: React.FC<NavBarProps> = ({
             >
               <img
                 src="/logo.png"
-                alt="logo"
-                className="h-8 w-8 flex-shrink-0 rounded-lg bg-background sm:h-10 sm:w-10"
+                alt="أ/ مارينا عاطف"
+                className="h-10 w-10 flex-shrink-0 rounded-full bg-neutral-950 object-contain object-bottom sm:h-12 sm:w-12"
               />
               <Heading className="text-lg font-bold truncate sm:text-xl md:text-2xl lg:text-3xl">
-                {brand.name}
+                {resolvedBrandName}
               </Heading>
             </Link>
 

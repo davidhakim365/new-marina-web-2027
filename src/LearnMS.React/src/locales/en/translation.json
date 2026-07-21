@@ -1,29 +1,29 @@
 {
   "hero": {
-    "badge": "Mathematics Academy",
-    "title": "Mr Rafik Isaac",
-    "subtitle": "Newton's Academy",
-    "description": "Welcome to Newton's Academy, where we transform learning into an exciting journey of discovery and growth. Join us to explore the fascinating world of physics and mathematics.",
-    "getStarted": "Get Started",
+    "badge": "Social Studies",
+    "title": "Mrs Marina Atef",
+    "subtitle": "ميس مارينا التوب و الباقي فتوشوب",
+    "description": "Your first platform to learn history and geography in a simple, engaging way. From prep to secondary — everything you need to excel.",
+    "getStarted": "Subscribe Now",
     "browseCourses": "Browse Courses",
     "stats": {
       "courses": "Expert Courses",
-      "students": "1000+ Students",
-      "subjects": " Math"
+      "students": "10+ Years Experience",
+      "subjects": "History & Geography"
     }
   },
   "features": {
-    "badge": "Why Choose Us",
-    "title": "Master Mathematics",
-    "description": "Everything you need to excel in your academic journey, from interactive lectures to comprehensive exams.",
+    "badge": "Why Join Us",
+    "title": "Master Social Studies",
+    "description": "Everything you need to excel in history and geography — from interactive lectures to comprehensive exams.",
     "items": {
       "1": {
-        "title": "Physics Mastery",
-        "description": "Deep-dive into mechanics, electricity, waves, and modern physics with clear, engaging explanations."
+        "title": "History Mastery",
+        "description": "Understand events, figures, and civilizations with clear, structured explanations."
       },
       "2": {
-        "title": "Mathematics Excellence",
-        "description": "Build strong foundations in algebra, calculus, geometry, and statistics step by step."
+        "title": "Geography Excellence",
+        "description": "Maps and geographic concepts simplified so the world makes sense."
       },
       "3": {
         "title": "HD Video Lectures",
@@ -31,11 +31,11 @@
       },
       "4": {
         "title": "Quizzes & Exams",
-        "description": "Test your knowledge with interactive quizzes and comprehensive exams to track your progress."
+        "description": "Test your knowledge with interactive quizzes and comprehensive exams."
       },
       "5": {
         "title": "Progress Tracking",
-        "description": "Monitor your learning journey with detailed performance analytics and feedback."
+        "description": "Monitor your learning journey with detailed performance analytics."
       },
       "6": {
         "title": "Structured Curriculum",
@@ -45,24 +45,24 @@
   },
   "grades": {
     "badge": "Academic Levels",
-    "title": "Grade Levels Overview",
-    "description": "Explore the academic journey from middle school to graduation.",
+    "title": "Choose Your Grade",
+    "description": "Social studies content from 2nd prep through 2nd secondary",
     "items": {
+      "secondMiddle": {
+        "title": "2nd Prep",
+        "description": "Foundations of history and geography in middle school"
+      },
       "thirdMiddle": {
-        "title": "Third Year of Middle School",
-        "description": "Final year before entering secondary education."
+        "title": "3rd Prep",
+        "description": "Final year before entering secondary education"
       },
       "firstSecondary": {
-        "title": "First Secondary Grade",
-        "description": "The beginning of high school studies."
+        "title": "1st Secondary",
+        "description": "The beginning of high school studies"
       },
       "secondSecondary": {
-        "title": "Second Secondary Grade",
-        "description": "Further specialization and preparation for final year."
-      },
-      "thirdSecondary": {
-        "title": "Third Secondary Grade",
-        "description": "The last year before graduation and college entry."
+        "title": "2nd Secondary",
+        "description": "Deeper focus on history and geography"
       }
     }
   },
@@ -81,10 +81,10 @@
     "selectCourse": "Select a course",
     "levels": {
       "all": "All",
-      "level0": "3rd Prep",
-      "level1": "1st Secondary",
-      "level2": "2nd Secondary",
-      "level3": "3rd Secondary"
+      "level0": "2nd Prep",
+      "level1": "3rd Prep",
+      "level2": "1st Secondary",
+      "level3": "2nd Secondary"
     },
     "pagination": {
       "showing": "Showing page",
@@ -95,19 +95,19 @@
   "seniors": {
     "badge": "Our Seniors",
     "title": "Meet Our Seniors",
-    "description": "Discover the inspiring journeys of our senior classes, showcasing their achievements and unforgettable moments",
+    "description": "Moments from the learning journey with Mrs Marina Atef",
     "classes": {
       "1": {
-        "title": "Old Seniors",
-        "description": "Our pioneering class that set the foundation for excellence and achievement"
+        "title": "Class Moments",
+        "description": "Special moments from learning with Mrs Marina"
       },
       "2": {
-        "title": "Seniors'22",
-        "description": "A remarkable class that demonstrated exceptional dedication and success"
+        "title": "Path to Excellence",
+        "description": "Students growing confidently in history and geography"
       },
       "3": {
-        "title": "Seniors'23",
-        "description": "Our latest graduating class, leaving behind a legacy of innovation and accomplishment"
+        "title": "Inside the Class",
+        "description": "An energetic classroom full of clarity and engagement"
       }
     }
   },
@@ -125,8 +125,8 @@
         "description": "Collaborative learning sessions that foster growth and friendship"
       },
       "3": {
-        "title": "Lab Sessions",
-        "description": "Hands-on experiments that bring physics to life"
+        "title": "Map Sessions",
+        "description": "Hands-on activities that bring geography to life"
       },
       "4": {
         "title": "Team Projects",
@@ -143,22 +143,22 @@
     }
   },
   "about": {
-    "badge": "Meet your Instructor",
-    "title": "Who's Mr Rafik?",
-    "description": "Learn about the journey and expertise of our dedicated instructor",
-    "imageAlt": "Mr. Rafik Isaac - Physics Instructor",
+    "badge": "Meet Your Instructor",
+    "title": "About Mrs Marina Atef",
+    "description": "Mrs Marina Atef is a senior expert teacher in history and geography with over 10 years of teaching experience.",
+    "imageAlt": "Mrs Marina Atef - Social Studies Teacher",
     "items": {
       "1": {
-        "title": "Early Career",
-        "description": "Started teaching in the 2000s at the Good Shepherd School, where he honed his expertise in innovative teaching methods"
+        "title": "Over 10 Years Experience",
+        "description": "A long career teaching history and geography with clear, motivating methods"
       },
       "2": {
-        "title": "Current Position",
-        "description": "Teaching at Saint Mary's School, delivering engaging lessons designed to inspire and empower students to excel"
+        "title": "Senior Expert Teacher",
+        "description": "Deep specialization in history and geography for prep and secondary grades"
       },
       "3": {
-        "title": "Online Teaching",
-        "description": "Over 5 years of experience in online education, leveraging cutting-edge tools to create dynamic learning experiences"
+        "title": "Online & Center Learning",
+        "description": "A modern platform combining simple explanations with continuous exam practice"
       }
     }
   },
@@ -261,9 +261,9 @@
     }
   },
   "footer": {
-    "brand": "Newton's Academy",
-    "tagline": "Empowering students to master physics and mathematics through innovative online education.",
-    "copyright": "© {{year}} Newton's Academy. All rights reserved.",
+    "brand": "Mrs Marina Atef",
+    "tagline": "ميس مارينا التوب و الباقي فتوشوب — your platform to master history and geography.",
+    "copyright": "© {{year}} Mrs Marina Atef. All rights reserved.",
     "social": {
       "facebook": "Facebook",
       "youtube": "YouTube",
@@ -354,9 +354,6 @@
       "pending": "Pending",
       "failed": "Failed"
     }
-    
-
-    
   },
   "common": {
     "currency": "LE",
@@ -385,7 +382,6 @@
     "button": "Request Credit Top-up",
     "note": "This will open a Google Form with your information pre-filled. Submit the form to request credits."
   },
-  
   "profile": {
     "account": "Account",
     "contact": "Contact",
@@ -410,10 +406,10 @@
     "level": "Level",
     "levelDescription": "Your current grade or education level.",
     "selectLevel": "Select your education level",
-    "level3rdPrep": "3rd Preparatory",
-    "level1stSecondary": "1st Secondary",
-    "level2ndSecondary": "2nd Secondary",
-    "level3rdSecondary": "3rd Secondary",
+    "level3rdPrep": "2nd Prep",
+    "level1stSecondary": "3rd Prep",
+    "level2ndSecondary": "1st Secondary",
+    "level3rdSecondary": "2nd Secondary",
     "studentId": "Student ID",
     "studentIdDescription": "Your unique student identification code.",
     "balance": "Balance",
@@ -422,10 +418,11 @@
     "levelKindergarten": "Kindergarten",
     "levelElementary": "Elementary",
     "levelMiddleSchool": "Middle School",
-    "levelHighSchool": "High School"
+    "levelHighSchool": "High School",
+    "level2ndPrep": "2nd Prep"
   },
   "platformInstructions": {
-    "title": "Newton's Academy Instructions",
+    "title": "Mrs Marina Atef Platform Instructions",
     "subtitle": "Please read carefully before proceeding",
     "instructions": [
       "The platform is a website available on Google Chrome or Firefox browsers only.",
@@ -447,7 +444,7 @@
   },
   "auth": {
     "back": "back",
-    "brand": "Newton's Academy",
+    "brand": "Mrs Marina Atef",
     "welcomeBack": "Welcome Back!",
     "joinCommunity": "Join Our Learning Community",
     "loginDescription": "Access your personalized learning dashboard and continue your educational journey with us",
@@ -492,12 +489,12 @@
         "placeholder": "Your student ID"
       },
       "mode": {
-           "label": "Type of Student" ,
-           "options": {
+        "label": "Type of Student",
+        "options": {
           "online": "Online Student ",
           "offline": "Center Student "
-           }
-           },
+        }
+      },
       "school": {
         "label": "School",
         "placeholder": "Enter your school name"
@@ -506,10 +503,10 @@
         "label": "School Level",
         "placeholder": "Select your level",
         "options": {
-          "level0": "3rd Prep School",
-          "level1": "1st Secondary",
-          "level2": "2nd Secondary",
-          "level3": "3rd Secondary"
+          "level0": "2nd Prep",
+          "level1": "3rd Prep",
+          "level2": "1st Secondary",
+          "level3": "2nd Secondary"
         }
       },
       "forgotPassword": "Forgot Password?",

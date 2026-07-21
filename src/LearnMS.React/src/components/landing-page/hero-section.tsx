@@ -1,57 +1,23 @@
 import { useGetProfile } from "@/generated/api";
 import { Link } from "react-router-dom";
-import { HeroVideoDialog } from "@/components/ui/hero-video-dialog";
 import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
-import { FlowButton } from "../ui/flow-button";
-import { Heading } from "../ui/heading";
-import { Paragraph } from "../ui/paragraph";
-import { Highlight } from "@/components/ui/hero-highlight";
-import {
-  FloatingFormulas,
-  AtomOrbit,
-  PhysicsGrid,
-  GlowOrb,
-  WavePattern,
-} from "@/components/ui/physics-graphics";
-import { Atom, BookOpen, Users } from "lucide-react";
+import { GlowOrb } from "@/components/ui/physics-graphics";
+import { BookOpen, Globe, Landmark } from "lucide-react";
 import type { GetStudentProfileResult } from "@/generated/model";
-
-const getLeftToRightVariants = (isRTL: boolean) => ({
-  hidden: { opacity: 0, filter: "blur(20px)", x: isRTL ? 300 : -300 },
-  visible: {
-    opacity: 1,
-    filter: "blur(0px)",
-    x: 0,
-    transition: { duration: 1.0, ease: "easeInOut" },
-  },
-});
-
-const getRightToLeftVideoVariants = (isRTL: boolean) => ({
-  hidden: { opacity: 0, scale: 0.95, filter: "blur(20px)", x: isRTL ? -300 : 300 },
-  visible: {
-    opacity: 1,
-    scale: 1,
-    filter: "blur(0px)",
-    x: 0,
-    transition: { duration: 0.8, ease: "easeOut" },
-  },
-});
+import marinaHero from "@/assets/images/marina-hero.png";
+import marinaLogo from "@/assets/images/marina-logo.png";
 
 const HeroSection = () => {
   const { data: profile } = useGetProfile();
   const { t, i18n } = useTranslation();
-  const isRTL = i18n.language === "ar";
-
-  const videoDelay = (5 - 1) * 0.15 + 1.0 + 0.2;
-  const leftToRightVariants = getLeftToRightVariants(isRTL);
-  const rightToLeftVideoVariants = getRightToLeftVideoVariants(isRTL);
+  const isRTL = i18n.language === "ar" || i18n.language.startsWith("ar");
 
   const stats = [
     { icon: BookOpen, label: t("hero.stats.courses") },
-    { icon: Users, label: t("hero.stats.students") },
-    { icon: Atom, label: t("hero.stats.subjects") },
+    { icon: Landmark, label: t("hero.stats.students") },
+    { icon: Globe, label: t("hero.stats.subjects") },
   ];
 
   const browseCoursesHref = (() => {
@@ -70,119 +36,107 @@ const HeroSection = () => {
   return (
     <motion.section
       dir={isRTL ? "rtl" : "ltr"}
-      initial="hidden"
-      animate="visible"
-      transition={{ duration: 0.5, ease: "easeOut" }}
-      className="relative flex items-center justify-center min-h-screen py-24 overflow-hidden bg-hero lg:py-0"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+      className="relative flex min-h-[100svh] items-center overflow-hidden bg-hero text-white"
     >
-      <PhysicsGrid />
-      <FloatingFormulas />
-      <GlowOrb className="top-20 -left-40 size-[30rem] from-color2/25 to-color1/15" />
-      <GlowOrb className="bottom-10 -right-40 size-[28rem] from-color1/20 to-color2/15" />
+      <GlowOrb className="top-10 -start-32 size-[28rem] from-white/20 to-amber-300/20" />
+      <GlowOrb className="bottom-0 -end-24 size-[24rem] from-teal-400/20 to-white/10" />
 
-      <div className="absolute top-1/4 right-8 hidden lg:block opacity-40 dark:opacity-25">
-        <AtomOrbit />
-      </div>
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 opacity-[0.07]"
+        style={{
+          backgroundImage:
+            "radial-gradient(circle at 20% 30%, white 1px, transparent 1px), radial-gradient(circle at 80% 70%, white 1px, transparent 1px)",
+          backgroundSize: "48px 48px",
+        }}
+      />
 
-      <div className="relative flex flex-col items-center justify-center mx-auto w-full px-4 lg:flex-row lg:px-24 max-w-7xl">
+      <div className="relative z-10 mx-auto grid w-full max-w-7xl items-center gap-10 px-4 py-28 lg:grid-cols-2 lg:gap-8 lg:px-12 lg:py-20">
         <motion.div
-          initial="hidden"
-          animate="visible"
-          variants={{
-            visible: { transition: { staggerChildren: 0.15, delayChildren: 0.2 } },
-          }}
-          className="relative flex flex-col items-center w-full gap-6 text-center lg:w-1/2 lg:items-start z-10"
+          initial={{ opacity: 0, y: 28 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, ease: "easeOut" }}
+          className={cn(
+            "flex flex-col gap-5 text-center",
+            isRTL ? "lg:text-right" : "lg:text-left",
+            "lg:items-start items-center"
+          )}
         >
-          <motion.div variants={leftToRightVariants}>
-            <span className="inline-flex items-center gap-2 px-4 py-1.5 mb-2 text-xs font-semibold tracking-widest uppercase rounded-full bg-color2/10 text-color2 border border-color2/20">
-              <Atom className="size-3.5" />
-              {t("hero.badge")}
-            </span>
-          </motion.div>
+          <span className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-4 py-1.5 text-xs font-semibold tracking-widest uppercase backdrop-blur-sm">
+            <Globe className="size-3.5" />
+            {t("hero.badge")}
+          </span>
 
-          <motion.div variants={leftToRightVariants}>
-            <Heading className="bg-gradient-to-br from-heading via-heading to-color2 bg-clip-text">
-              {t("hero.title")}
-            </Heading>
-          </motion.div>
+          <h1 className="font-heading text-4xl font-extrabold leading-tight tracking-tight md:text-5xl lg:text-6xl">
+            {t("hero.title")}
+          </h1>
 
-          <motion.div variants={leftToRightVariants}>
-            <Highlight className="text-2xl text-color2 md:text-3xl font-bold">
-              {t("hero.subtitle")}
-            </Highlight>
-          </motion.div>
+          <p className="max-w-xl text-xl font-bold text-amber-200 md:text-2xl">
+            {t("hero.subtitle")}
+          </p>
 
-          <motion.div variants={leftToRightVariants}>
-            <Paragraph
-              className={cn(
-                "relative z-10 text-balance max-w-lg",
-                isRTL ? "md:text-right" : "md:text-left"
-              )}
-            >
-              {t("hero.description")}
-            </Paragraph>
-          </motion.div>
+          <p className="max-w-xl text-base leading-relaxed text-white/90 md:text-lg">
+            {t("hero.description")}
+          </p>
 
-          <motion.div
-            variants={leftToRightVariants}
-            className="flex flex-col items-center justify-center w-full gap-4 pt-2 sm:flex-row lg:justify-start lg:items-start"
+          <div
+            className={cn(
+              "flex w-full flex-col items-center gap-3 pt-2 sm:flex-row",
+              isRTL ? "lg:justify-start" : "lg:justify-start"
+            )}
           >
             {!profile?.data && (
               <Link to="/sign-in-sign-up" className="relative z-10">
-                <FlowButton text={t("hero.getStarted")} />
+                <button className="rounded-xl bg-white px-8 py-3.5 text-sm font-bold text-primary shadow-lg transition hover:bg-white/95 hover:scale-[1.02]">
+                  {t("hero.getStarted")}
+                </button>
               </Link>
             )}
             <Link to={browseCoursesHref} className="relative z-10">
-              <button className="px-8 py-3 text-sm font-semibold rounded-full border-2 border-color2/30 text-color2 hover:bg-color2/5 transition-all duration-300 hover:border-color2/60">
+              <button className="rounded-xl border-2 border-white/80 bg-transparent px-8 py-3.5 text-sm font-bold text-white transition hover:bg-white/10">
                 {t("hero.browseCourses")}
               </button>
             </Link>
-          </motion.div>
+          </div>
 
-          <motion.div
-            variants={leftToRightVariants}
-            className="flex flex-wrap items-center gap-4 pt-4"
-          >
+          <div className="flex flex-wrap items-center justify-center gap-3 pt-4 lg:justify-start">
             {stats.map(({ icon: Icon, label }) => (
               <div
                 key={label}
-                className="flex items-center gap-2 px-4 py-2 rounded-full bg-background/80 backdrop-blur-sm border border-color2/10 text-sm text-paragraph"
+                className="flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm backdrop-blur-sm"
               >
-                <Icon className="size-4 text-color2" />
+                <Icon className="size-4 text-amber-200" />
                 <span>{label}</span>
               </div>
             ))}
-          </motion.div>
+          </div>
         </motion.div>
 
         <motion.div
-          initial="hidden"
-          animate="visible"
-          variants={rightToLeftVideoVariants}
-          transition={{ delay: videoDelay, duration: 0.8, ease: "easeOut" }}
-          className="relative flex items-center justify-center w-full mt-12 lg:w-1/2 lg:max-w-3xl lg:pl-16 lg:mt-0 z-10"
+          initial={{ opacity: 0, x: isRTL ? -40 : 40 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.8, delay: 0.15, ease: "easeOut" }}
+          className="relative flex items-end justify-center lg:justify-center"
         >
-          <div className="absolute -inset-4 rounded-3xl bg-gradient-to-br from-color2/20 to-color1/10 blur-2xl" />
-          <div className="relative w-full rounded-2xl overflow-hidden ring-2 ring-color2/20 shadow-2xl shadow-color2/10">
-            <HeroVideoDialog
-              className="block w-full dark:hidden"
-              animationStyle="from-center"
-              videoSrc="https://www.youtube.com/embed/pSUqW9NZiqM"
-              thumbnailSrc="https://img.youtube.com/vi/pSUqW9NZiqM/maxresdefault.jpg"
-              thumbnailAlt="Promo Video Thumbnail"
-            />
-            <HeroVideoDialog
-              className="hidden w-full dark:block"
-              animationStyle="from-center"
-              videoSrc="https://www.youtube.com/embed/pSUqW9NZiqM"
-              thumbnailSrc="https://img.youtube.com/vi/pSUqW9NZiqM/maxresdefault.jpg"
-              thumbnailAlt="Promo Video Thumbnail"
-            />
-          </div>
+          <div className="absolute bottom-8 size-[18rem] rounded-full bg-white/15 blur-2xl md:size-[22rem]" />
+          <div className="absolute bottom-16 size-[14rem] rounded-full border-2 border-dashed border-white/25 md:size-[18rem]" />
+
+          <motion.img
+            animate={{ y: [0, -10, 0] }}
+            transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+            src={marinaLogo}
+            alt={t("hero.title")}
+            className="relative z-10 max-h-[70vh] w-auto max-w-full object-contain drop-shadow-2xl select-none"
+            draggable={false}
+            onError={(e) => {
+              (e.target as HTMLImageElement).src = marinaHero;
+            }}
+          />
         </motion.div>
       </div>
-
-      <WavePattern />
     </motion.section>
   );
 };

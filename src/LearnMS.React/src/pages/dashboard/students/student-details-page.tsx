@@ -94,10 +94,10 @@ function StudentProfile({ studentId }: { studentId: string }) {
   const { openModal } = useModalStore();
 
   const levelMap: { [key: string]: string } = {
-    Level0: "3rd Prep",
-    Level1: "1st Secondary",
-    Level2: "2nd Secondary",
-    Level3: "3rd Secondary",
+    Level0: "2nd Prep",
+    Level1: "3rd Prep",
+    Level2: "1st Secondary",
+    Level3: "2nd Secondary",
   };
 
   const form = useForm<UpdateStudentRequest>({
@@ -293,10 +293,10 @@ function StudentProfile({ studentId }: { studentId: string }) {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="Level0">3rd Prep</SelectItem>
-                      <SelectItem value="Level1">1st Secondary</SelectItem>
-                      <SelectItem value="Level2">2nd Secondary</SelectItem>
-                      <SelectItem value="Level3">3rd Secondary</SelectItem>
+                      <SelectItem value="Level0">2nd Prep</SelectItem>
+                      <SelectItem value="Level1">3rd Prep</SelectItem>
+                      <SelectItem value="Level2">1st Secondary</SelectItem>
+                      <SelectItem value="Level3">2nd Secondary</SelectItem>
                     </SelectContent>
                   </Select>
                 </FormItem>

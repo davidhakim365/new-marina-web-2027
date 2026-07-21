@@ -31,27 +31,27 @@ function GradesSection() {
 
   const grades = [
     {
-      title: t("grades.items.thirdMiddle.title"),
+      title: t("grades.items.secondMiddle.title"),
       icon: School,
-      description: t("grades.items.thirdMiddle.description"),
+      description: t("grades.items.secondMiddle.description"),
       level: 0,
     },
     {
-      title: t("grades.items.firstSecondary.title"),
+      title: t("grades.items.thirdMiddle.title"),
       icon: BookOpenCheck,
-      description: t("grades.items.firstSecondary.description"),
+      description: t("grades.items.thirdMiddle.description"),
       level: 1,
     },
     {
-      title: t("grades.items.secondSecondary.title"),
+      title: t("grades.items.firstSecondary.title"),
       icon: ScrollText,
-      description: t("grades.items.secondSecondary.description"),
+      description: t("grades.items.firstSecondary.description"),
       level: 2,
     },
     {
-      title: t("grades.items.thirdSecondary.title"),
+      title: t("grades.items.secondSecondary.title"),
       icon: GraduationCap,
-      description: t("grades.items.thirdSecondary.description"),
+      description: t("grades.items.secondSecondary.description"),
       level: 3,
     },
   ];

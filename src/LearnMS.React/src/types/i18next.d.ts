@@ -183,6 +183,10 @@ declare module "i18next" {
           title: string;
           description: string;
           items: {
+            secondMiddle: {
+              title: string;
+              description: string;
+            };
             thirdMiddle: {
               title: string;
               description: string;
@@ -192,10 +196,6 @@ declare module "i18next" {
               description: string;
             };
             secondSecondary: {
-              title: string;
-              description: string;
-            };
-            thirdSecondary: {
               title: string;
               description: string;
             };

@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Outfit:wght@300..800&family=Space+Grotesk:wght@400..700&family=JetBrains+Mono:wght@400;500;600&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&family=Tajawal:wght@400;500;700;800&family=Outfit:wght@300..800&family=Space+Grotesk:wght@400..700&display=swap");
 
 @tailwind base;
 @tailwind components;
@@ -6,102 +6,105 @@
 
 @layer base {
   :root {
-    --background: 220 30% 98%;
-    --foreground: 224 40% 12%;
+    --background: 30 25% 98%;
+    --foreground: 0 0% 12%;
     --card: 0 0% 100%;
-    --card-foreground: 224 40% 12%;
+    --card-foreground: 0 0% 12%;
     --popover: 0 0% 100%;
-    --popover-foreground: 224 40% 12%;
-    /* Brand primary (not near-black) so text-primary stays readable */
-    --primary: 224 67% 38%;
+    --popover-foreground: 0 0% 12%;
+    /* Brand primary — vibrant red from Marina logo sweater */
+    --primary: 0 78% 48%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 220 25% 94%;
-    --secondary-foreground: 224 40% 16%;
-    --muted: 220 20% 94%;
-    --muted-foreground: 224 12% 40%;
-    --accent: 220 30% 94%;
-    --accent-foreground: 224 40% 16%;
+    --secondary: 30 20% 94%;
+    --secondary-foreground: 0 0% 16%;
+    --muted: 30 15% 94%;
+    --muted-foreground: 0 0% 40%;
+    --accent: 175 35% 94%;
+    --accent-foreground: 0 0% 16%;
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
-    --border: 220 18% 88%;
-    --input: 220 18% 88%;
-    --ring: 224 82% 55%;
+    --border: 30 12% 88%;
+    --input: 30 12% 88%;
+    --ring: 0 78% 48%;
     --radius: 0.65rem;
 
-    --chart-1: 224 82% 55%;
-    --chart-2: 173 58% 39%;
-    --chart-3: 197 37% 35%;
-    --chart-4: 43 74% 55%;
-    --chart-5: 12 76% 55%;
+    --chart-1: 0 78% 48%;
+    --chart-2: 175 55% 38%;
+    --chart-3: 43 80% 48%;
+    --chart-4: 200 60% 42%;
+    --chart-5: 25 70% 50%;
 
-    --heading: 224 45% 14%;
-    --subheading: 224 14% 38%;
-    --paragraph: 224 12% 40%;
-    --hero: 220 35% 97%;
-    --gradesSection: 220 28% 97%;
+    --heading: 0 0% 12%;
+    --subheading: 0 0% 38%;
+    --paragraph: 0 0% 40%;
+    --hero: 0 72% 46%;
+    --gradesSection: 30 30% 97%;
     --featuresSection: 0 0% 100%;
-    --aboutSection: 220 30% 96%;
-    --seniorsSection: 220 28% 97%;
-    --memoriesSection: 220 32% 98%;
-    --lecturesSection: 220 28% 97%;
-    --footer: 224 40% 8%;
-    --color1: 224 67% 35%;
-    --color2: 224 82% 55%;
-    --footer-foreground: 220 20% 78%;
-    --coursePage: 220 25% 97%;
-    --lecturePage: 220 25% 97%;
-    --paymentPage: 220 25% 97%;
-    --navbar-foreground: 224 40% 12%;
-    --dashboard: 220 30% 97%;
+    --aboutSection: 30 25% 96%;
+    --seniorsSection: 30 28% 97%;
+    --memoriesSection: 175 20% 97%;
+    --lecturesSection: 30 28% 97%;
+    --footer: 0 0% 8%;
+    --color1: 0 72% 42%;
+    --color2: 0 78% 52%;
+    --footer-foreground: 30 10% 78%;
+    --coursePage: 30 20% 97%;
+    --lecturePage: 30 20% 97%;
+    --paymentPage: 30 20% 97%;
+    --navbar-foreground: 0 0% 12%;
+    --dashboard: 30 25% 97%;
+    --gold: 43 80% 48%;
+    --teal: 175 55% 38%;
   }
 
   .dark {
-    --background: 224 32% 7%;
-    --foreground: 210 30% 96%;
-    --card: 224 28% 11%;
-    --card-foreground: 210 30% 96%;
-    --popover: 224 28% 11%;
-    --popover-foreground: 210 30% 96%;
-    /* Keep brand blue in dark mode — white primary made UI vanish */
-    --primary: 224 82% 62%;
-    --primary-foreground: 224 45% 8%;
-    --secondary: 224 22% 16%;
-    --secondary-foreground: 210 30% 96%;
-    --muted: 224 20% 15%;
-    --muted-foreground: 215 16% 72%;
-    --accent: 224 24% 18%;
-    --accent-foreground: 210 30% 96%;
+    --background: 0 0% 7%;
+    --foreground: 30 20% 96%;
+    --card: 0 0% 11%;
+    --card-foreground: 30 20% 96%;
+    --popover: 0 0% 11%;
+    --popover-foreground: 30 20% 96%;
+    --primary: 0 78% 55%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 0 8% 16%;
+    --secondary-foreground: 30 20% 96%;
+    --muted: 0 8% 15%;
+    --muted-foreground: 30 10% 72%;
+    --accent: 175 20% 16%;
+    --accent-foreground: 30 20% 96%;
     --destructive: 0 72% 55%;
     --destructive-foreground: 0 0% 100%;
-    --border: 224 18% 22%;
-    --input: 224 18% 22%;
-    --ring: 224 82% 62%;
+    --border: 0 8% 22%;
+    --input: 0 8% 22%;
+    --ring: 0 78% 55%;
 
-    --chart-1: 224 82% 62%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 55% 65%;
-    --chart-5: 340 70% 60%;
+    --chart-1: 0 78% 55%;
+    --chart-2: 175 50% 45%;
+    --chart-3: 43 80% 55%;
+    --chart-4: 200 55% 55%;
+    --chart-5: 25 70% 55%;
 
-    --heading: 210 30% 97%;
-    --subheading: 215 16% 74%;
-    --paragraph: 215 14% 72%;
-    --hero: 224 34% 8%;
-    --gradesSection: 224 30% 9%;
-    --featuresSection: 224 32% 8%;
-    --seniorsSection: 224 30% 9%;
-    --memoriesSection: 224 32% 8%;
-    --lecturesSection: 224 30% 9%;
-    --aboutSection: 224 30% 9%;
-    --footer: 224 40% 5%;
-    --footer-foreground: 215 18% 74%;
-    --color1: 224 72% 58%;
-    --color2: 224 85% 68%;
-    --coursePage: 224 28% 8%;
-    --lecturePage: 224 28% 8%;
-    --paymentPage: 224 28% 8%;
-    --navbar-foreground: 210 30% 96%;
-    --dashboard: 224 32% 7%;
+    --heading: 30 20% 97%;
+    --subheading: 30 10% 74%;
+    --paragraph: 30 8% 72%;
+    --hero: 0 55% 28%;
+    --gradesSection: 0 0% 9%;
+    --featuresSection: 0 0% 8%;
+    --seniorsSection: 0 0% 9%;
+    --memoriesSection: 0 0% 8%;
+    --lecturesSection: 0 0% 9%;
+    --aboutSection: 0 0% 9%;
+    --footer: 0 0% 5%;
+    --footer-foreground: 30 10% 74%;
+    --color1: 0 72% 52%;
+    --color2: 0 78% 60%;
+    --coursePage: 0 0% 8%;
+    --lecturePage: 0 0% 8%;
+    --paymentPage: 0 0% 8%;
+    --navbar-foreground: 30 20% 96%;
+    --dashboard: 0 0% 7%;
+    --gold: 43 80% 55%;
+    --teal: 175 50% 45%;
   }
 }
 
@@ -115,6 +118,11 @@
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+  }
+
+  html[lang="ar"],
+  html[dir="rtl"] {
+    font-family: "Cairo", "Tajawal", "Outfit", system-ui, sans-serif;
   }
 
   body {
@@ -131,11 +139,19 @@
     @apply font-heading tracking-tight text-heading;
   }
 
+  html[lang="ar"] h1,
+  html[lang="ar"] h2,
+  html[lang="ar"] h3,
+  html[dir="rtl"] h1,
+  html[dir="rtl"] h2,
+  html[dir="rtl"] h3 {
+    font-family: "Cairo", "Tajawal", sans-serif;
+  }
+
   ::selection {
     @apply bg-color2/25 text-foreground;
   }
 
-  /* Native controls follow theme (date pickers, scrollbars, etc.) */
   :root {
     color-scheme: light;
   }
@@ -144,7 +160,6 @@
     color-scheme: dark;
   }
 
-  /* Inputs inherit readable foreground even when parents use brand text colors */
   input,
   textarea,
   select {
@@ -159,7 +174,6 @@
 }
 
 @layer utilities {
-  /* Surfaces that used translucent white overlays — readable in both themes */
   .surface-glass {
     @apply border border-border/80 bg-card/80 text-card-foreground backdrop-blur-md;
   }
@@ -169,7 +183,6 @@
   }
 }
 
-/* Safety net: common light-only patterns that still appear in older screens */
 @layer components {
   .dark .prose {
     @apply prose-invert;

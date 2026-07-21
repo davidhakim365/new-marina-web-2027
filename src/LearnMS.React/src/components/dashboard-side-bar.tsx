@@ -248,7 +248,7 @@ const DashboardSideBar = ({
           {!isCollapsed && (
             <div className="px-1">
               <p className="text-xs font-semibold uppercase tracking-wider text-color2">
-                Rafik
+                Marina
               </p>
               <p className="text-sm font-bold text-foreground">Dashboard</p>
             </div>

@@ -1,6 +1,6 @@
 import {
-  Atom,
-  Calculator,
+  Landmark,
+  Globe,
   MonitorPlay,
   ClipboardCheck,
   TrendingUp,
@@ -33,7 +33,7 @@ const cardVariants = {
   },
 };
 
-const featureIcons = [Atom, Calculator, MonitorPlay, ClipboardCheck, TrendingUp, BookOpen];
+const featureIcons = [Landmark, Globe, MonitorPlay, ClipboardCheck, TrendingUp, BookOpen];
 
 function FeaturesSection() {
   const { t } = useTranslation();

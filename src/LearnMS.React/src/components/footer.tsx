@@ -6,7 +6,7 @@ import { useTranslation } from "react-i18next";
 import { useGetProfile } from "@/generated/api";
 import type { GetStudentProfileResult } from "@/generated/model";
 import { Heading } from "./ui/heading";
-import { Atom } from "lucide-react";
+import { Globe } from "lucide-react";
 
 const Footer = () => {
   const { t } = useTranslation();
@@ -15,25 +15,25 @@ const Footer = () => {
   const socialLinks = [
     {
       icon: FaFacebook,
-      href: "https://www.facebook.com/people/Newtons-Academy-Mr-Rafik-Isaac/100064151013051",
+      href: "https://www.facebook.com/people/%D8%A7%D9%84%D8%A7%D8%B3%D8%AA%D8%A7%D8%B0%D8%A9-%D9%85%D8%A7%D8%B1%D9%8A%D9%86%D8%A7-%D8%B9%D8%A7%D8%B7%D9%81/100064063206686/",
       hoverColor: "hover:bg-blue-600 hover:text-white",
       label: t("footer.social.facebook"),
     },
     {
       icon: FaYoutube,
-      href: "https://www.youtube.com/@newtonacademy9097",
+      href: "https://www.youtube.com/@mrs.marinaatef",
       hoverColor: "hover:bg-red-600 hover:text-white",
       label: t("footer.social.youtube"),
     },
     {
       icon: FaWhatsapp,
-      href: "https://wa.me/1222343492",
+      href: "https://api.whatsapp.com/send/?phone=%2B201044556061&text&type=phone_number&app_absent=0",
       hoverColor: "hover:bg-green-600 hover:text-white",
       label: t("footer.social.whatsapp"),
     },
     {
       icon: FaTiktok,
-      href: "https://www.tiktok.com/@mr.rafik.isaac",
+      href: "https://www.tiktok.com/@ms.marina.atef",
       hoverColor: "hover:bg-neutral-800 hover:text-white dark:hover:bg-white dark:hover:text-black",
       label: t("footer.social.tiktok"),
     },
@@ -69,7 +69,7 @@ const Footer = () => {
           <AnimatedContainer className="flex flex-col items-center space-y-4">
             <div className="flex items-center gap-3">
               <div className="flex items-center justify-center size-10 rounded-xl bg-gradient-to-br from-color1 to-color2">
-                <Atom className="size-5 text-white" />
+                <Globe className="size-5 text-white" />
               </div>
               <Heading className="text-2xl font-bold md:text-3xl text-white">
                 {t("footer.brand")}

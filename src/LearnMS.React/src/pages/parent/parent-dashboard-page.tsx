@@ -29,10 +29,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 
 const levelLabels: Record<string, { en: string; ar: string }> = {
-  Level0: { en: "3rd Prep", ar: "ثالثة إعدادي" },
-  Level1: { en: "1st Secondary", ar: "أولى ثانوي" },
-  Level2: { en: "2nd Secondary", ar: "ثانية ثانوي" },
-  Level3: { en: "3rd Secondary", ar: "ثالثة ثانوي" },
+  Level0: { en: "2nd Prep", ar: "ثاني إعدادي" },
+  Level1: { en: "3rd Prep", ar: "ثالث إعدادي" },
+  Level2: { en: "1st Secondary", ar: "أول ثانوي" },
+  Level3: { en: "2nd Secondary", ar: "ثاني ثانوي" },
 };
 
 function formatDate(value: string | null | undefined, locale: string) {

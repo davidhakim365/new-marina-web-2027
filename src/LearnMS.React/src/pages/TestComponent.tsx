@@ -9,7 +9,7 @@ const TestComponent = () => {
       <section className={classes.homeAbout}>
         <div className={classes.content}>
           <Typography variant="h1" gutterBottom>
-            Mr Rafik Isaac
+            Mrs Marina Atef
           </Typography>
           <Typography variant="body1" gutterBottom>
             Don't waste your time, check out our productive courses. Our self-improvement courses are very effective.

@@ -13,74 +13,40 @@ import {
 } from "@/components/ui/physics-graphics";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import marinaLogo from "@/assets/images/marina-logo.png";
+import marinaHero from "@/assets/images/marina-hero.png";
+import marinaAbout from "@/assets/images/marina-about.png";
+import marinaGallery1 from "@/assets/images/marina-gallery-1.png";
+import marinaGallery2 from "@/assets/images/marina-gallery-2.png";
+import marinaGallery3 from "@/assets/images/marina-gallery-3.png";
+
+const photoPool = [
+  marinaLogo,
+  marinaHero,
+  marinaAbout,
+  marinaGallery1,
+  marinaGallery2,
+  marinaGallery3,
+  marinaLogo,
+  marinaHero,
+];
 
 const seniors = [
   {
-    year: "Old Seniors",
-    images: [
-      {
-        id: "old-1",
-        src: "https://i.ibb.co/swp6Z4P/old.jpg",
-      },
-      {
-        id: "old-2",
-        src: "https://i.ibb.co/xSVJJLC/old3.jpg",
-      },
-      {
-        id: "old-3",
-        src: "https://i.ibb.co/KW9k91Z/old2.jpg",
-      },
-      {
-        id: "old-4",
-        src: "https://i.ibb.co/Rzkxd1r/old4.jpg",
-      },
-      {
-        id: "old-5",
-        src: "https://i.ibb.co/JQ7CWMs/old6.jpg",
-      },
-      {
-        id: "old-6",
-        src: "https://i.ibb.co/swp6Z4P/old.jpg",
-      },
-      {
-        id: "old-7",
-        src: "https://i.ibb.co/xSVJJLC/old3.jpg",
-      },
-      {
-        id: "old-8",
-        src: "https://i.ibb.co/KW9k91Z/old2.jpg",
-      },
-    ],
+    year: "Moments",
+    images: photoPool.map((src, i) => ({ id: `m-${i}`, src })),
   },
   {
-    year: "Seniors'22",
-    images: [
-      { id: "s22-1", src: "https://i.ibb.co/wzZMpvY/221.jpg" },
-      { id: "s22-2", src: "https://i.ibb.co/VwfY0J9/222.jpg" },
-      { id: "s22-3", src: "https://i.ibb.co/djsGqP2/223.jpg" },
-      { id: "s22-4", src: "https://i.ibb.co/vchwxRq/224.jpg" },
-      { id: "s22-5", src: "https://i.ibb.co/v3HxWtY/225.jpg" },
-      { id: "s22-6", src: "https://i.ibb.co/R4CMtSf/226.jpg" },
-      { id: "s22-7", src: "https://i.ibb.co/YtGhTWS/227.jpg" },
-      { id: "s22-8", src: "https://i.ibb.co/VwfY0J9/222.jpg" },
-    ],
+    year: "Journey",
+    images: [...photoPool].reverse().map((src, i) => ({ id: `j-${i}`, src })),
   },
   {
-    year: "Seniors'23",
-    images: [
-      { id: "s23-1", src: "https://i.ibb.co/kJCF7YH/231.jpg" },
-      { id: "s23-2", src: "https://i.ibb.co/FKXzZps/232.jpg" },
-      { id: "s23-3", src: "https://i.ibb.co/pWdYTLK/233.jpg" },
-      { id: "s23-4", src: "https://i.ibb.co/vJV0LC2/234.jpg" },
-      { id: "s23-5", src: "https://i.ibb.co/R798fxL/235.jpg" },
-      { id: "s23-6", src: "https://i.ibb.co/RYZc9mg/236.jpg" },
-      { id: "s23-7", src: "https://i.ibb.co/RQR7KRf/237.jpg" },
-      { id: "s23-8", src: "https://i.ibb.co/vJV0LC2/234.jpg" },
-    ],
+    year: "Classroom",
+    images: photoPool.map((src, i) => ({ id: `c-${i}`, src })),
   },
 ];
 
-const mathMarks = ["∑", "π", "∫", "Δ", "∞", "θ"];
+const studyMarks = ["🌍", "🗺", "🧭", "📜", "🏛", "⌛"];
 
 function SeniorsSection() {
   const [activeYear, setActiveYear] = useState(0);
@@ -192,26 +158,20 @@ function SeniorsSection() {
             transition={{ duration: 0.45 }}
             className="relative"
           >
-            <div className="relative overflow-hidden rounded-[1.75rem] border border-color2/15 bg-background/40 shadow-xl shadow-color2/10">
+            <div className="relative overflow-hidden rounded-[1.75rem] border border-color2/15 bg-neutral-950 shadow-xl shadow-color2/10">
               <div className="relative aspect-[16/11] overflow-hidden">
                 <img
                   src={current.src}
                   alt={classTitle}
-                  className="size-full object-cover"
+                  className="size-full object-contain object-bottom"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/10 to-transparent" />
 
                 <span
                   aria-hidden
-                  className="absolute left-4 top-4 font-mono text-3xl text-white/25 md:text-5xl"
+                  className="absolute left-4 top-4 text-3xl text-white/40 md:text-5xl"
                 >
-                  {mathMarks[activeImage % mathMarks.length]}
-                </span>
-                <span
-                  aria-hidden
-                  className="absolute bottom-20 right-5 font-mono text-sm text-white/30"
-                >
-                  f(x) → legacy
+                  {studyMarks[activeImage % studyMarks.length]}
                 </span>
 
                 <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-4 p-5 sm:p-6">
@@ -269,9 +229,6 @@ function SeniorsSection() {
                 transition={{ duration: 0.35 }}
                 className="space-y-3 text-center lg:text-start"
               >
-                <p className="font-mono text-sm text-color2">
-                  class_of = &quot;{classTitle}&quot;
-                </p>
                 <h3 className="text-2xl font-bold tracking-tight text-heading md:text-3xl">
                   {classTitle}
                 </h3>
@@ -290,7 +247,7 @@ function SeniorsSection() {
                     type="button"
                     onClick={() => setActiveImage(index)}
                     className={cn(
-                      "group relative aspect-square overflow-hidden rounded-xl border transition",
+                      "group relative aspect-square overflow-hidden rounded-xl border bg-neutral-950 transition",
                       selected
                         ? "border-color2 ring-2 ring-color2/30"
                         : "border-color2/10 opacity-80 hover:opacity-100"
@@ -299,7 +256,7 @@ function SeniorsSection() {
                     <img
                       src={img.src}
                       alt=""
-                      className="size-full object-cover transition duration-300 group-hover:scale-105"
+                      className="size-full object-contain object-bottom transition duration-300 group-hover:scale-105"
                     />
                     {selected && (
                       <span className="absolute inset-0 bg-color2/10" />
@@ -309,8 +266,8 @@ function SeniorsSection() {
               })}
             </div>
 
-            <p className="text-center font-mono text-xs text-muted-foreground lg:text-start">
-              {activeImage + 1} / {images.length} · Σ moments
+            <p className="text-center text-xs text-muted-foreground lg:text-start">
+              {activeImage + 1} / {images.length}
             </p>
           </div>
         </div>

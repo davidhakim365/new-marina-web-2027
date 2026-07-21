@@ -20,15 +20,23 @@ import { Camera, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
+import marinaGallery1 from "@/assets/images/marina-gallery-1.png";
+import marinaGallery2 from "@/assets/images/marina-gallery-2.png";
+import marinaGallery3 from "@/assets/images/marina-gallery-3.png";
+import marinaAbout from "@/assets/images/marina-about.png";
+import marinaHero from "@/assets/images/marina-hero.png";
+import marinaLogo from "@/assets/images/marina-logo.png";
+
 const memories = [
-  { id: "1", src: "https://i.ibb.co/N7qfx1B/m1.jpg", key: "1" },
-  { id: "2", src: "https://i.ibb.co/wZq5fqs/m3.jpg", key: "2" },
-  { id: "3", src: "https://i.ibb.co/dDBB8Fh/m4.jpg", key: "3" },
-  { id: "4", src: "https://i.ibb.co/QcGxWXF/m5.jpg", key: "4" },
-  { id: "5", src: "https://i.ibb.co/KW9k91Z/old2.jpg", key: "5" },
+  { id: "1", src: marinaLogo, key: "1" },
+  { id: "2", src: marinaHero, key: "2" },
+  { id: "3", src: marinaAbout, key: "3" },
+  { id: "4", src: marinaGallery1, key: "4" },
+  { id: "5", src: marinaGallery2, key: "5" },
+  { id: "6", src: marinaGallery3, key: "6" },
 ];
 
-const overlayFormulas = ["E = mc²", "∫ dx", "∇·B = 0", "F = ma", "λ = h/p"];
+const overlayFormulas = ["🌍", "🗺", "🧭", "📜", "🏛"];
 
 function MemoriesSection() {
   const [api, setApi] = useState<CarouselApi>();

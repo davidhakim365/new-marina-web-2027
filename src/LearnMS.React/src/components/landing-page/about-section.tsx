@@ -8,7 +8,8 @@ import { WobbleCard } from "../ui/wobble-card";
 import { CardContent, CardHeader } from "@/components/ui/card";
 import { PhysicsGrid, GlowOrb } from "@/components/ui/physics-graphics";
 import { cn } from "@/lib/utils";
-import mrRafikImage from "@/assets/images/mr-rafik.png";
+import marinaAbout from "@/assets/images/marina-about.png";
+import marinaHero from "@/assets/images/marina-hero.png";
 
 const leftToRightVariants = {
   hidden: { opacity: 0, filter: "blur(20px)", y: 40 },
@@ -42,8 +43,8 @@ const cardItemVariants = {
 
 const cardStyles = [
   "bg-gradient-to-br from-color1 to-color2",
-  "bg-gradient-to-br from-[#1a3a8a] to-[#2563eb]",
-  "bg-gradient-to-br from-[#0f2d6e] to-color2",
+  "bg-gradient-to-br from-[#b45309] to-[#d97706]",
+  "bg-gradient-to-br from-[#0f766e] to-[#14b8a6]",
 ];
 
 function AboutSection() {
@@ -98,12 +99,15 @@ function AboutSection() {
                 <div className="absolute top-1/2 -right-8 size-3 rounded-full bg-color2/60" />
                 <div className="absolute bottom-12 -left-6 size-2 rounded-full bg-color1/50" />
 
-                <div className="relative overflow-hidden rounded-3xl ring-2 ring-color2/20 shadow-2xl shadow-color2/15">
+                <div className="relative overflow-hidden rounded-3xl bg-neutral-950 ring-2 ring-color2/20 shadow-2xl shadow-color2/15">
                   <img
-                    src={mrRafikImage}
+                    src={marinaAbout}
                     alt={t("about.imageAlt")}
-                    className="w-full h-auto object-cover select-none"
+                    className="w-full h-auto object-cover object-top select-none"
                     draggable={false}
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = marinaHero;
+                    }}
                   />
                 </div>
               </motion.div>

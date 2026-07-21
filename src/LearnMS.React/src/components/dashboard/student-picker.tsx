@@ -16,10 +16,10 @@ import { Search, User, X } from "lucide-react";
 import { useState } from "react";
 
 export const levelMap: Record<StudentLevel, string> = {
-  Level0: "3rd Prep",
-  Level1: "1st Secondary",
-  Level2: "2nd Secondary",
-  Level3: "3rd Secondary",
+  Level0: "2nd Prep",
+  Level1: "3rd Prep",
+  Level2: "1st Secondary",
+  Level3: "2nd Secondary",
 };
 
 type StudentPickerProps = {

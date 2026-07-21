@@ -52,7 +52,7 @@ const AddCoursePage = () => {
                 <FormItem>
                   <FormLabel>Title</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g. Mathematics" {...field} />
+                    <Input placeholder="e.g. Social Studies" {...field} />
                   </FormControl>
                   <FormDescription>The title of the course.</FormDescription>
                   <FormMessage />
