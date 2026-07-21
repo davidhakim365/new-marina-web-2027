@@ -20,7 +20,7 @@ const memories = [
   },
   {
     id: "2",
-    src: "https://i.ibb.co/SXqy325z/image.png",
+    src: "https://i.ibb.co/Dg6gvF6Y/image.png",
     key: "2",
   },
   {
