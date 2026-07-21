@@ -15,50 +15,41 @@ export function ThemeToggle({ className }: ThemeToggleProps) {
 
   return (
     <div
+      dir="ltr"
       className={cn(
-        "flex w-16 h-8 p-1 rounded-full cursor-pointer transition-all duration-300",
-        isDark
-          ? "bg-secondary border border-border"
-          : "bg-background border border-border",
+        "relative flex h-8 w-16 shrink-0 cursor-pointer rounded-full border border-border p-1 transition-all duration-300",
+        isDark ? "bg-secondary" : "bg-background",
         className
       )}
       onClick={() => setTheme(isDark ? "light" : "dark")}
       role="button"
       tabIndex={0}
+      aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          setTheme(isDark ? "light" : "dark");
+        }
+      }}
     >
-      <div className="flex items-center justify-between w-full">
-        <div
-          className={cn(
-            "flex justify-center items-center w-6 h-6 rounded-full transition-transform duration-300",
-            isDark
-              ? "transform translate-x-0 bg-primary"
-              : "transform translate-x-8 bg-secondary"
-          )}
-        >
-          {isDark ? (
-            <Moon
-              className="w-4 h-4 text-primary-foreground"
-              strokeWidth={1.5}
-            />
-          ) : (
-            <Sun
-              className="w-4 h-4 text-secondary-foreground"
-              strokeWidth={1.5}
-            />
-          )}
-        </div>
-        <div
-          className={cn(
-            "flex justify-center items-center w-6 h-6 rounded-full transition-transform duration-300",
-            isDark ? "bg-transparent" : "transform -translate-x-8"
-          )}
-        >
-          {isDark ? (
-            <Sun className="w-4 h-4 text-muted-foreground" strokeWidth={1.5} />
-          ) : (
-            <Moon className="w-4 h-4 text-muted-foreground" strokeWidth={1.5} />
-          )}
-        </div>
+      {/* Track icons */}
+      <div className="pointer-events-none absolute inset-1 flex items-center justify-between px-0.5">
+        <Sun className="size-4 text-muted-foreground" strokeWidth={1.5} />
+        <Moon className="size-4 text-muted-foreground" strokeWidth={1.5} />
+      </div>
+
+      {/* Thumb — absolute + dir=ltr so Arabic RTL cannot shift it */}
+      <div
+        className={cn(
+          "absolute top-1 flex size-6 items-center justify-center rounded-full transition-all duration-300",
+          isDark ? "left-auto right-1 bg-primary" : "left-1 right-auto bg-secondary"
+        )}
+      >
+        {isDark ? (
+          <Moon className="size-4 text-primary-foreground" strokeWidth={1.5} />
+        ) : (
+          <Sun className="size-4 text-secondary-foreground" strokeWidth={1.5} />
+        )}
       </div>
     </div>
   );

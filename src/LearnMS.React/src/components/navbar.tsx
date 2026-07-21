@@ -133,7 +133,7 @@ const NavBar: React.FC<NavBarProps> = ({
             <Link
               to="/"
               aria-label="home"
-              className="relative z-30 flex items-center space-x-2"
+              className="relative z-30 flex items-center gap-2"
             >
               <img
                 src="/logo.png"
