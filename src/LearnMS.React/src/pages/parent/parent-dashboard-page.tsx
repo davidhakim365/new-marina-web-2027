@@ -13,6 +13,7 @@ import {
   Users,
 } from "lucide-react";
 import {
+  clearParentSession,
   getParentToken,
   getStoredParentStudent,
   useParentLogout,
@@ -75,28 +76,18 @@ const ParentDashboardPage = () => {
     }
   }, [token, navigate]);
 
+  useEffect(() => {
+    if (!isError) return;
+    clearParentSession();
+    navigate("/parent", { replace: true });
+  }, [isError, navigate]);
+
   if (!token) return null;
 
-  if (isLoading) {
+  if (isLoading || isError || !data?.data) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <Loading />
-      </div>
-    );
-  }
-
-  if (isError || !data?.data) {
-    return (
-      <div
-        dir={isRTL ? "rtl" : "ltr"}
-        className="flex min-h-screen flex-col items-center justify-center gap-4 px-4"
-      >
-        <p className="text-center text-muted-foreground">
-          {t("parent.dashboard.loadError")}
-        </p>
-        <Button onClick={() => navigate("/parent")}>
-          {t("parent.login.submit")}
-        </Button>
       </div>
     );
   }

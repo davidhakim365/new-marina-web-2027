@@ -35,9 +35,10 @@ const ParentLoginPage = () => {
   });
 
   useEffect(() => {
-    if (getParentToken()) {
-      navigate("/parent/dashboard", { replace: true });
-    }
+    // Drop stale sessions here so "Parent Follow-up" opens the login form
+    // instead of bouncing to a broken dashboard.
+    if (!getParentToken()) return;
+    navigate("/parent/dashboard", { replace: true });
   }, [navigate]);
 
   const onSubmit = (data: ParentLoginRequest) => {

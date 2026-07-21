@@ -92,8 +92,16 @@ parentApi.interceptors.response.use(
   (error) => {
     if (error.response && error.response?.status >= 400) {
       const data = error.response.data as { code?: string; message?: string };
+      const code = data.code ?? "";
 
-      if (error.response.status === 401) {
+      // Stale/invalid parent sessions must be cleared or /parent keeps
+      // auto-redirecting to the dashboard and re-showing "Student not found".
+      if (
+        error.response.status === 401 ||
+        error.response.status === 404 ||
+        code.startsWith("parent/invalid") ||
+        code === "parent/student-not-found"
+      ) {
         clearParentSession();
       }
 
@@ -103,7 +111,7 @@ parentApi.interceptors.response.use(
         variant: "destructive",
       });
 
-      throw new ApiError(data.code ?? "error", data.message ?? error.message);
+      throw new ApiError(code || "error", data.message ?? error.message);
     }
 
     toast({
@@ -143,9 +151,11 @@ export function useParentLoginMutation() {
     mutationFn: (data) =>
       parentApi.post("/api/parent/login", data).then((res) => res.data),
     onSuccess: (res) => {
-      if (!res.status) return;
-      localStorage.setItem(PARENT_TOKEN_KEY, res.data.token);
-      localStorage.setItem(PARENT_STUDENT_KEY, JSON.stringify(res.data.student));
+      const token = res?.data?.token;
+      const student = res?.data?.student;
+      if (!token || !student) return;
+      localStorage.setItem(PARENT_TOKEN_KEY, token);
+      localStorage.setItem(PARENT_STUDENT_KEY, JSON.stringify(student));
       qrc.invalidateQueries({ queryKey: ["parent-progress"] });
     },
   });

@@ -27,8 +27,17 @@ public sealed class ParentService(AppDbContext db, IOptions<JwtBearerConfig> jwt
 
         var students = await db.Students
             .AsNoTracking()
-            .Where(s => s.StudentCode.Trim().ToLower() == studentCode.ToLower())
+            .Where(s => s.StudentCode.ToLower() == studentCode.ToLower())
             .ToListAsync();
+
+        // Also accept codes that differ only by surrounding whitespace in the DB.
+        if (students.Count == 0)
+        {
+            students = await db.Students
+                .AsNoTracking()
+                .Where(s => s.StudentCode.Trim().ToLower() == studentCode.ToLower())
+                .ToListAsync();
+        }
 
         var student = students.FirstOrDefault(s =>
             NormalizePhone(s.PhoneNumber) == phone &&
@@ -48,10 +57,12 @@ public sealed class ParentService(AppDbContext db, IOptions<JwtBearerConfig> jwt
     {
         var studentId = ValidateParentToken(token);
 
+        // Missing student (deleted / DB reset) = expired parent session, not a hard 404,
+        // so the client can clear localStorage and show the login form again.
         var student = await db.Students
             .AsNoTracking()
             .FirstOrDefaultAsync(s => s.Id == studentId)
-            ?? throw new ApiException(ParentErrors.StudentNotFound);
+            ?? throw new ApiException(ParentErrors.InvalidToken);
 
         var lectures = await db.Set<Lecture>()
             .AsNoTracking()
@@ -227,6 +238,7 @@ public sealed class ParentService(AppDbContext db, IOptions<JwtBearerConfig> jwt
     {
         var claims = new List<Claim>
         {
+            new(JwtRegisteredClaimNames.Sub, studentId.ToString()),
             new(ClaimTypes.NameIdentifier, studentId.ToString()),
             new(ClaimTypes.Role, "Parent"),
             new(TokenTypeClaim, ParentTokenType)
@@ -241,14 +253,21 @@ public sealed class ParentService(AppDbContext db, IOptions<JwtBearerConfig> jwt
             signingCredentials: new SigningCredentials(key, SecurityAlgorithms.HmacSha256)
         );
 
-        return new JwtSecurityTokenHandler().WriteToken(token);
+        var handler = new JwtSecurityTokenHandler { MapInboundClaims = false };
+        return handler.WriteToken(token);
     }
 
     private Guid ValidateParentToken(string token)
     {
         try
         {
-            var result = new JwtSecurityTokenHandler().ValidateToken(token, new TokenValidationParameters
+            var handler = new JwtSecurityTokenHandler
+            {
+                // Keep claim types stable across IdentityModel versions (NameIdentifier vs "sub").
+                MapInboundClaims = false
+            };
+
+            var result = handler.ValidateToken(token, new TokenValidationParameters
             {
                 ValidateIssuer = true,
                 ValidateAudience = true,
@@ -258,14 +277,20 @@ public sealed class ParentService(AppDbContext db, IOptions<JwtBearerConfig> jwt
                 ValidAudience = _jwtConfig.Audience,
                 RequireExpirationTime = true,
                 IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtConfig.Secret)),
-                ClockSkew = TimeSpan.FromMinutes(1)
+                ClockSkew = TimeSpan.FromMinutes(1),
+                NameClaimType = ClaimTypes.NameIdentifier,
+                RoleClaimType = ClaimTypes.Role
             }, out _);
 
             var tokenType = result.FindFirst(TokenTypeClaim)?.Value;
             if (tokenType != ParentTokenType)
                 throw new ApiException(ParentErrors.InvalidToken);
 
-            var idValue = result.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var idValue =
+                result.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                ?? result.FindFirst(JwtRegisteredClaimNames.Sub)?.Value
+                ?? result.FindFirst("sub")?.Value;
+
             if (!Guid.TryParse(idValue, out var studentId))
                 throw new ApiException(ParentErrors.InvalidToken);
 

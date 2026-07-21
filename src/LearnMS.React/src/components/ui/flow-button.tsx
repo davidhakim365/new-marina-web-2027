@@ -10,6 +10,7 @@ export function FlowButton({
 }) {
   return (
     <button
+      type="button"
       className={cn(
         "group relative flex items-center gap-1 overflow-hidden rounded-[100px] border-[1.5px] border-color2/40 bg-gradient-to-r from-color1 to-color2 px-8 py-3 text-sm font-semibold text-white cursor-pointer transition-all duration-[600ms] ease-[cubic-bezier(0.23,1,0.32,1)] hover:border-color2 hover:text-color2 hover:rounded-[12px] hover:bg-transparent active:scale-[0.95] shadow-lg shadow-color2/20",
         className
