@@ -38,6 +38,7 @@ export const CreateStudentRequest = z
     studentCode: z
       .string()
       .min(1, { message: "ID must be at least 6 characters" }),
+    governorate: z.string().min(1, { message: "المحافظة مطلوبة" }),
 
     level: z.enum(["Level0", "Level1", "Level2", "Level3"]),
   })

@@ -47,7 +47,8 @@ public sealed class StudentsService(AppDbContext db, IPasswordHasher passwordHas
             command.ParentPhoneNumber,
             command.StudentCode,
             command.School,
-            command.Level
+            command.Level,
+            command.Governorate
         );
 
         await db.Students.AddAsync(student);

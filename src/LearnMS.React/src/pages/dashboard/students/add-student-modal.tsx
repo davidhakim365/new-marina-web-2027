@@ -2,6 +2,7 @@ import {
   CreateStudentRequest,
   useCreateStudentMutation,
 } from "@/api/students-api";
+import { EGYPT_GOVERNORATES } from "@/api/auth-api";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -48,6 +49,7 @@ const AddStudentModal: React.FC<AddStudentModalProps> = ({ onClose }) => {
       fullName: "",
       level: "Level0",
       school: "",
+      governorate: "",
       parentPhoneNumber: "",
       studentCode: "",
       phoneNumber: "",
@@ -59,6 +61,7 @@ const AddStudentModal: React.FC<AddStudentModalProps> = ({ onClose }) => {
       fullName: "",
       level: "Level0",
       school: "",
+      governorate: "",
       parentPhoneNumber: "",
       studentCode: "",
       phoneNumber: "",
@@ -158,6 +161,32 @@ const AddStudentModal: React.FC<AddStudentModalProps> = ({ onClose }) => {
                     <FormControl>
                       <Input {...field} />
                     </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                name="governorate"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>المحافظة</FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      value={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="اختار المحافظة" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {EGYPT_GOVERNORATES.map((gov) => (
+                          <SelectItem key={gov} value={gov}>
+                            {gov}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                     <FormMessage />
                   </FormItem>
                 )}

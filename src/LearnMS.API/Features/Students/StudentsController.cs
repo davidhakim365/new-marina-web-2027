@@ -67,7 +67,8 @@ public sealed class StudentsController(IStudentsService studentsService, ICurren
             ParentPhoneNumber = request.ParentPhoneNumber,
             StudentCode = request.StudentCode,
             PhoneNumber = request.PhoneNumber,
-            School = request.School
+            School = request.School,
+            Governorate = request.Governorate
         });
 
         return new ApiWrapper.Success<object?>

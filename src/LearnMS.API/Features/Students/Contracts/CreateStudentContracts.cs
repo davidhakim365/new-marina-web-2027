@@ -14,6 +14,7 @@ public sealed record CreateStudentCommand
     public required string StudentCode { get; init; }
 
     public required StudentLevel Level { get; init; }
+    public required string Governorate { get; init; }
 }
 
 public sealed record CreateStudentRequest
@@ -34,4 +35,6 @@ public sealed record CreateStudentRequest
     public required string StudentCode { get; init; }
     [Required]
     public required StudentLevel Level { get; init; }
+    [Required]
+    public required string Governorate { get; init; }
 }
