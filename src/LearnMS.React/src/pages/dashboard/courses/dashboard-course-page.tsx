@@ -20,11 +20,6 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import {
-  HoverCard,
-  HoverCardContent,
-  HoverCardTrigger,
-} from "@/components/ui/hover-card";
 import { Input } from "@/components/ui/input";
 import { ImageUploadField } from "@/components/image-upload-field";
 import {
@@ -47,13 +42,15 @@ import {
 import { GetDashboardCourseResult, SingleCourseItem } from "@/generated/model";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from "@tanstack/react-query";
-import { Edit2, ListCollapse, LucideMove, Menu, Settings2, BookOpen } from "lucide-react";
+import { Edit2, ListCollapse, Menu, Settings2, BookOpen } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { z } from "zod";
 
 const DashboardCoursePage = () => {
+  const { t } = useTranslation();
   const { courseId } = useParams();
   const navigate = useNavigate();
 
@@ -122,7 +119,7 @@ const DashboardCoursePage = () => {
 
   return (
     <DashboardPageShell
-      title="Course Setup"
+      title={t("admin.courses.setupTitle")}
       description={course.title}
       icon={BookOpen}
       fullWidth
@@ -130,15 +127,22 @@ const DashboardCoursePage = () => {
         <div className="flex gap-2">
           <Confirmation
             disabled={deleteCourseMutation.isPending}
-            description="Are you sure you want to delete this course?"
-            title="Delete Course"
+            description={t("admin.courses.deleteConfirm")}
+            title={t("admin.courses.deleteTitle")}
             onConfirm={onDeleting}
+            button={
+              <Button variant="destructive" disabled={deleteCourseMutation.isPending}>
+                {t("admin.common.delete")}
+              </Button>
+            }
           />
           <Button
             onClick={onPublishing}
             className="border border-color2/40 bg-gradient-to-r from-color1 to-color2 text-white shadow-md shadow-color2/20 hover:opacity-90"
           >
-            {course.isPublished ? "Unpublish" : "Publish"}
+            {course.isPublished
+              ? t("admin.courses.unpublish")
+              : t("admin.courses.publish")}
           </Button>
         </div>
       }
@@ -325,6 +329,7 @@ function CourseDetailsForm({
 }
 
 function CourseContentForm({ items, id }: GetDashboardCourseResult) {
+  const { t } = useTranslation();
   const [isAddingLecture, setIsAddingLecture] = useState(false);
   const navigate = useNavigate();
 
@@ -333,7 +338,7 @@ function CourseContentForm({ items, id }: GetDashboardCourseResult) {
       <div className='flex items-center justify-between text-xl'>
         <div className='flex items-center gap-2'>
           <ListCollapse className='text-color2 bg-color2/15 rounded-[50%] w-10 h-10 p-1' />
-          Course Content
+          {t("admin.courses.content")}
         </div>
         <div className='flex items-center justify-center gap-2'>
           {!isAddingLecture ? (
@@ -346,7 +351,7 @@ function CourseContentForm({ items, id }: GetDashboardCourseResult) {
                   <DropdownMenuItem
                     className='hover:bg-color2 hover:text-white hover:cursor-pointer'
                     onClick={() => setIsAddingLecture(true)}>
-                    Add Lecture
+                    {t("admin.courses.addLecture")}
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem
@@ -354,7 +359,7 @@ function CourseContentForm({ items, id }: GetDashboardCourseResult) {
                       navigate(`/dashboard/courses/${id}/exams/add`)
                     }
                     className='hover:bg-color2 hover:text-white hover:cursor-pointer'>
-                    Add Exam
+                    {t("admin.courses.addExam")}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -365,7 +370,7 @@ function CourseContentForm({ items, id }: GetDashboardCourseResult) {
               onClick={() => {
                 setIsAddingLecture(false);
               }}>
-              Cancel
+              {t("admin.courses.cancel")}
             </Button>
           )}
         </div>

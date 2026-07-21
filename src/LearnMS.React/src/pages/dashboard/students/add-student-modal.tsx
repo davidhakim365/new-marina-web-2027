@@ -32,12 +32,14 @@ import { toast } from "@/components/ui/use-toast";
 import { zodResolver } from "@hookform/resolvers/zod";
 import React from "react";
 import { useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 
 interface AddStudentModalProps {
   onClose: () => void;
 }
 
 const AddStudentModal: React.FC<AddStudentModalProps> = ({ onClose }) => {
+  const { t } = useTranslation();
   const createStudentMutation = useCreateStudentMutation();
 
   const form = useForm<CreateStudentRequest>({
@@ -72,8 +74,8 @@ const AddStudentModal: React.FC<AddStudentModalProps> = ({ onClose }) => {
     createStudentMutation.mutate(data, {
       onSuccess: () => {
         toast({
-          title: "Student created",
-          description: "Student created successfully",
+          title: t("admin.students.modal.createdTitle"),
+          description: t("admin.students.modal.createdDesc"),
         });
         onClose();
       },
@@ -84,8 +86,10 @@ const AddStudentModal: React.FC<AddStudentModalProps> = ({ onClose }) => {
     <Dialog open onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto text-foreground">
         <DialogHeader>
-          <DialogTitle>Create Student</DialogTitle>
-          <DialogDescription>Create a new Student</DialogDescription>
+          <DialogTitle>{t("admin.students.modal.title")}</DialogTitle>
+          <DialogDescription>
+            {t("admin.students.modal.description")}
+          </DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)}>
@@ -97,7 +101,7 @@ const AddStudentModal: React.FC<AddStudentModalProps> = ({ onClose }) => {
                 name="fullName"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Full Name</FormLabel>
+                    <FormLabel>{t("admin.students.modal.fullName")}</FormLabel>
                     <FormControl>
                       <Input {...field} />
                     </FormControl>
@@ -109,7 +113,7 @@ const AddStudentModal: React.FC<AddStudentModalProps> = ({ onClose }) => {
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Email</FormLabel>
+                    <FormLabel>{t("admin.students.modal.email")}</FormLabel>
                     <FormControl>
                       <Input {...field} />
                     </FormControl>
@@ -121,7 +125,7 @@ const AddStudentModal: React.FC<AddStudentModalProps> = ({ onClose }) => {
                 name="phoneNumber"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Phone Number</FormLabel>
+                    <FormLabel>{t("admin.students.modal.phoneNumber")}</FormLabel>
                     <FormControl>
                       <Input {...field} />
                     </FormControl>
@@ -133,7 +137,9 @@ const AddStudentModal: React.FC<AddStudentModalProps> = ({ onClose }) => {
                 name="parentPhoneNumber"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel> Parent Phone Number</FormLabel>
+                    <FormLabel>
+                      {t("admin.students.modal.parentPhoneNumber")}
+                    </FormLabel>
                     <FormControl>
                       <Input {...field} />
                     </FormControl>
@@ -145,7 +151,7 @@ const AddStudentModal: React.FC<AddStudentModalProps> = ({ onClose }) => {
                 name="studentCode"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel> Student ID </FormLabel>
+                    <FormLabel>{t("admin.students.modal.studentId")}</FormLabel>
                     <FormControl>
                       <Input {...field} />
                     </FormControl>
@@ -157,7 +163,7 @@ const AddStudentModal: React.FC<AddStudentModalProps> = ({ onClose }) => {
                 name="school"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>School Name</FormLabel>
+                    <FormLabel>{t("admin.students.modal.schoolName")}</FormLabel>
                     <FormControl>
                       <Input {...field} />
                     </FormControl>
@@ -169,14 +175,15 @@ const AddStudentModal: React.FC<AddStudentModalProps> = ({ onClose }) => {
                 name="governorate"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>المحافظة</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      value={field.value}
-                    >
+                    <FormLabel>{t("admin.students.modal.governorate")}</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="اختار المحافظة" />
+                          <SelectValue
+                            placeholder={t(
+                              "admin.students.modal.governoratePlaceholder"
+                            )}
+                          />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
@@ -195,21 +202,33 @@ const AddStudentModal: React.FC<AddStudentModalProps> = ({ onClose }) => {
                 name="level"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Level</FormLabel>
+                    <FormLabel>{t("admin.students.modal.level")}</FormLabel>
                     <Select
                       onValueChange={field.onChange}
                       defaultValue={field.value}
                     >
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select a level" />
+                          <SelectValue
+                            placeholder={t(
+                              "admin.students.modal.levelPlaceholder"
+                            )}
+                          />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="Level0">2nd Prep</SelectItem>
-                        <SelectItem value="Level1">3rd Prep</SelectItem>
-                        <SelectItem value="Level2">1st Secondary</SelectItem>
-                        <SelectItem value="Level3">2nd Secondary</SelectItem>
+                        <SelectItem value="Level0">
+                          {t("admin.levels.level0")}
+                        </SelectItem>
+                        <SelectItem value="Level1">
+                          {t("admin.levels.level1")}
+                        </SelectItem>
+                        <SelectItem value="Level2">
+                          {t("admin.levels.level2")}
+                        </SelectItem>
+                        <SelectItem value="Level3">
+                          {t("admin.levels.level3")}
+                        </SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -220,7 +239,7 @@ const AddStudentModal: React.FC<AddStudentModalProps> = ({ onClose }) => {
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Password</FormLabel>
+                    <FormLabel>{t("admin.students.modal.password")}</FormLabel>
                     <FormControl>
                       <Input {...field} />
                     </FormControl>
@@ -232,7 +251,9 @@ const AddStudentModal: React.FC<AddStudentModalProps> = ({ onClose }) => {
                 name="confirmPassword"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Confirm Password</FormLabel>
+                    <FormLabel>
+                      {t("admin.students.modal.confirmPassword")}
+                    </FormLabel>
                     <FormControl>
                       <Input {...field} />
                     </FormControl>
@@ -242,7 +263,7 @@ const AddStudentModal: React.FC<AddStudentModalProps> = ({ onClose }) => {
               />
 
               <DialogFooter>
-                <Button type="submit">Submit</Button>
+                <Button type="submit">{t("admin.students.modal.submit")}</Button>
               </DialogFooter>
             </fieldset>
           </form>

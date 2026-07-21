@@ -16,9 +16,11 @@ import { toast } from "@/components/ui/use-toast";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { BookOpen } from "lucide-react";
 import { useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 import { Link, useNavigate } from "react-router-dom";
 
 const AddCoursePage = () => {
+  const { t } = useTranslation();
   const addCourseMutation = useAddCourseMutation();
   const navigate = useNavigate();
 
@@ -30,7 +32,7 @@ const AddCoursePage = () => {
   const onSubmit = (data: AddCourseRequest) => {
     addCourseMutation.mutate(data, {
       onSuccess: (res) => {
-        toast({ title: "Course created", description: res.message });
+        toast({ title: t("admin.courses.createdTitle"), description: res.message });
         navigate(`/dashboard/courses/${res.data.id}`, { replace: true });
       },
     });
@@ -38,8 +40,8 @@ const AddCoursePage = () => {
 
   return (
     <DashboardPageShell
-      title="Add Course"
-      description="Create a new course to organize your lectures and exams."
+      title={t("admin.courses.addTitle")}
+      description={t("admin.courses.addDescription")}
       icon={BookOpen}
     >
       <DashboardCard className="mx-auto max-w-lg">
@@ -50,11 +52,16 @@ const AddCoursePage = () => {
               name="title"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Title</FormLabel>
+                  <FormLabel>{t("admin.courses.courseTitle")}</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g. Social Studies" {...field} />
+                    <Input
+                      placeholder={t("admin.courses.courseTitlePlaceholder")}
+                      {...field}
+                    />
                   </FormControl>
-                  <FormDescription>The title of the course.</FormDescription>
+                  <FormDescription>
+                    {t("admin.courses.courseTitleHelp")}
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -62,7 +69,7 @@ const AddCoursePage = () => {
             <div className="flex gap-2">
               <Link to="/dashboard/courses">
                 <Button type="button" variant="outline" className="border-color2/20">
-                  Cancel
+                  {t("admin.courses.cancel")}
                 </Button>
               </Link>
               <Button
@@ -70,7 +77,7 @@ const AddCoursePage = () => {
                 disabled={addCourseMutation.isPending}
                 className="bg-gradient-to-r from-color1 to-color2 hover:opacity-90"
               >
-                Create Course
+                {t("admin.courses.create")}
               </Button>
             </div>
           </form>

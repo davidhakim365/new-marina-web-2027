@@ -31,6 +31,7 @@ import {
 import { Download, FileWarningIcon, Loader2, QrCode, Search } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 import { useSearchParams } from "react-router-dom";
 import { z } from "zod";
 
@@ -50,6 +51,7 @@ export type GenerateCreditCodeRequest = z.infer<
 >;
 
 const CreditCodesPage = () => {
+  const { t } = useTranslation();
   const { download, isDownloading } = useDownloadFile();
   const form = useForm({
     resolver: zodResolver(GenerateCreditCodeRequest),
@@ -60,7 +62,7 @@ const CreditCodesPage = () => {
   const generateCreditCodesMutation = useGenerateCreditCodes({
     mutation: {
       onSuccess: (data) => {
-        toast({ title: data.message ?? "Credit codes generated" });
+        toast({ title: data.message ?? t("admin.creditCodes.generated") });
         form.reset();
         qc.invalidateQueries({ queryKey: getGetCreditCodesQueryKey() });
       },
@@ -70,7 +72,10 @@ const CreditCodesPage = () => {
   const sellCreditCodesMutation = useSellCreditCodes({
     mutation: {
       onSuccess: (data) => {
-        toast({ title: "Credit codes sold", description: data.message });
+        toast({
+          title: t("admin.creditCodes.sold"),
+          description: data.message,
+        });
         qc.invalidateQueries({ queryKey: getGetCreditCodesQueryKey() });
       },
     },
@@ -109,10 +114,10 @@ const CreditCodesPage = () => {
 
   if (query.isError) {
     return (
-      <DashboardPageShell title="Credit Codes" icon={QrCode}>
+      <DashboardPageShell title={t("admin.creditCodes.title")} icon={QrCode}>
         <DashboardCard className="flex flex-col items-center gap-2 text-center">
           <FileWarningIcon className="h-8 w-8 text-destructive" />
-          <p>Error loading credit codes</p>
+          <p>{t("admin.creditCodes.loadError")}</p>
           <p className="text-sm text-muted-foreground">{query.error.message}</p>
         </DashboardCard>
       </DashboardPageShell>
@@ -130,8 +135,8 @@ const CreditCodesPage = () => {
 
   return (
     <DashboardPageShell
-      title="Credit Codes"
-      description="Generate, sell, and export credit codes for students."
+      title={t("admin.creditCodes.title")}
+      description={t("admin.creditCodes.description")}
       icon={QrCode}
       fullWidth
     >
@@ -152,7 +157,7 @@ const CreditCodesPage = () => {
                 name="count"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Count</FormLabel>
+                    <FormLabel>{t("admin.creditCodes.count")}</FormLabel>
                     <FormControl>
                       <Input type="number" {...field} />
                     </FormControl>
@@ -165,7 +170,7 @@ const CreditCodesPage = () => {
                 name="value"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Value (LE)</FormLabel>
+                    <FormLabel>{t("admin.creditCodes.value")}</FormLabel>
                     <FormControl>
                       <Input type="number" {...field} />
                     </FormControl>
@@ -181,11 +186,11 @@ const CreditCodesPage = () => {
             >
               {generateCreditCodesMutation.isPending ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Generating...
+                  <Loader2 className="me-2 h-4 w-4 animate-spin" />
+                  {t("admin.creditCodes.generating")}
                 </>
               ) : (
-                "Generate Codes"
+                t("admin.creditCodes.generate")
               )}
             </Button>
           </form>
@@ -195,10 +200,10 @@ const CreditCodesPage = () => {
       <DashboardCard>
         <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="relative w-full sm:max-w-sm">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Search className="absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
-              className="pl-9"
-              placeholder="Filter codes..."
+              className="ps-9"
+              placeholder={t("admin.creditCodes.filter")}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
@@ -212,7 +217,9 @@ const CreditCodesPage = () => {
                 disabled={sellCreditCodesMutation.isPending}
                 className="bg-gradient-to-r from-color1 to-color2 hover:opacity-90"
               >
-                Sell Selected ({selectedCodes.length})
+                {t("admin.creditCodes.sellSelected", {
+                  count: selectedCodes.length,
+                })}
               </Button>
             )}
             <Button
@@ -226,7 +233,7 @@ const CreditCodesPage = () => {
               ) : (
                 <Download className="h-4 w-4" />
               )}
-              <span className="ml-2">Export</span>
+              <span className="ms-2">{t("admin.creditCodes.export")}</span>
             </Button>
           </div>
         </div>

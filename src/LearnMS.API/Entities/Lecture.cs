@@ -45,8 +45,8 @@ Homework Video :
     /// <summary>Full mark for offline quiz scores. Must be set before scoring.</summary>
     public decimal? QuizFullMark { get; set; }
 
-    public decimal? Price { get; set; } = 90;
-    public decimal? RenewalPrice { get; set; } = 90;
+    public decimal? Price { get; set; } = 65;
+    public decimal? RenewalPrice { get; set; } = 65;
     public int? ExpirationDays { get; set; } = 7;
     public bool IsPublished = false;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

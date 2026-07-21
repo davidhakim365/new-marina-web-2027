@@ -17,9 +17,11 @@ import { useGetCourse, useToggleLectureImportant } from "@/generated/api";
 import { StudentLevel } from "@/generated/model";
 import { ArrowRight, Heart, Star } from "lucide-react";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 
 const ImportantLecturesPage = () => {
+  const { t } = useTranslation();
   const [level, setLevel] = useState<StudentLevel | undefined>();
   const [courseId, setCourseId] = useState<string | undefined>();
 
@@ -34,8 +36,8 @@ const ImportantLecturesPage = () => {
 
   return (
     <DashboardPageShell
-      title="Important Lectures"
-      description="Highlight and manage your most important lectures."
+      title={t("admin.importantLectures.title")}
+      description={t("admin.importantLectures.description")}
       icon={Star}
     >
       <DashboardCard>
@@ -45,26 +47,28 @@ const ImportantLecturesPage = () => {
             onValueChange={(value) => setLevel(value as StudentLevel)}
           >
             <SelectTrigger className="w-full sm:w-[180px]">
-              <SelectValue placeholder="Select level" />
+              <SelectValue placeholder={t("admin.importantLectures.selectLevel")} />
             </SelectTrigger>
             <SelectContent>
               <SelectGroup>
-                <SelectLabel>Levels</SelectLabel>
-                <SelectItem value="Level0">2nd Prep</SelectItem>
-                <SelectItem value="Level1">3rd Prep</SelectItem>
-                <SelectItem value="Level2">1st Secondary</SelectItem>
-                <SelectItem value="Level3">2nd Secondary</SelectItem>
+                <SelectLabel>{t("admin.importantLectures.levels")}</SelectLabel>
+                <SelectItem value="Level0">{t("admin.levels.level0")}</SelectItem>
+                <SelectItem value="Level1">{t("admin.levels.level1")}</SelectItem>
+                <SelectItem value="Level2">{t("admin.levels.level2")}</SelectItem>
+                <SelectItem value="Level3">{t("admin.levels.level3")}</SelectItem>
               </SelectGroup>
             </SelectContent>
           </Select>
           {level && (
             <Select value={courseId} onValueChange={setCourseId}>
               <SelectTrigger className="w-full sm:w-[220px]">
-                <SelectValue placeholder="Select course" />
+                <SelectValue
+                  placeholder={t("admin.importantLectures.selectCourse")}
+                />
               </SelectTrigger>
               <SelectContent>
                 <SelectGroup>
-                  <SelectLabel>Courses</SelectLabel>
+                  <SelectLabel>{t("admin.importantLectures.courses")}</SelectLabel>
                   {courses.map((c) => (
                     <SelectItem key={c.id} value={c.id}>
                       {c.title}
@@ -83,6 +87,7 @@ const ImportantLecturesPage = () => {
 };
 
 function CourseLectures({ courseId }: { courseId: string }) {
+  const { t } = useTranslation();
   const { data: courseData, isLoading, refetch } = useGetCourse(courseId);
   const { mutate: toggleLectureImportant } = useToggleLectureImportant({
     mutation: { onSuccess: () => refetch() },
@@ -113,7 +118,7 @@ function CourseLectures({ courseId }: { courseId: string }) {
               onClick={() =>
                 toggleLectureImportant({ lectureId: lecture.id, courseId })
               }
-              className="absolute right-2 top-2 border-white/30 bg-black/20 backdrop-blur-sm hover:bg-black/40"
+              className="absolute end-2 top-2 border-white/30 bg-black/20 backdrop-blur-sm hover:bg-black/40"
             >
               <Heart
                 className={
@@ -134,8 +139,8 @@ function CourseLectures({ courseId }: { courseId: string }) {
               to={`/dashboard/courses/${courseId}/lectures/${lecture.id}`}
               className="flex w-full items-center justify-center gap-2 rounded-xl border border-color2/30 bg-color2/5 px-4 py-2.5 text-sm font-semibold text-color2 transition-all hover:bg-gradient-to-r hover:from-color1 hover:to-color2 hover:text-white"
             >
-              View Lecture
-              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+              {t("admin.importantLectures.viewLecture")}
+              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1 rtl:rotate-180" />
             </Link>
           </CardFooter>
         </DashboardCard>

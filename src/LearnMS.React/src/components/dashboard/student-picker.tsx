@@ -14,12 +14,26 @@ import { useGetAllStudents } from "@/generated/api";
 import { SingleStudent, StudentLevel } from "@/generated/model";
 import { Search, User, X } from "lucide-react";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 export const levelMap: Record<StudentLevel, string> = {
   Level0: "2nd Prep",
   Level1: "3rd Prep",
   Level2: "1st Secondary",
   Level3: "2nd Secondary",
+};
+
+const levelKeys: Record<
+  StudentLevel,
+  | "admin.levels.level0"
+  | "admin.levels.level1"
+  | "admin.levels.level2"
+  | "admin.levels.level3"
+> = {
+  Level0: "admin.levels.level0",
+  Level1: "admin.levels.level1",
+  Level2: "admin.levels.level2",
+  Level3: "admin.levels.level3",
 };
 
 type StudentPickerProps = {
@@ -33,6 +47,7 @@ export function StudentPicker({
   onSelectStudent,
   onClearStudent,
 }: StudentPickerProps) {
+  const { t } = useTranslation();
   const [studentSearch, setStudentSearch] = useState("");
 
   const { data: studentsData, isLoading: studentsLoading } = useGetAllStudents(
@@ -52,7 +67,7 @@ export function StudentPicker({
     <DashboardCard>
       <div className="mb-3 flex items-center gap-2 text-lg font-semibold">
         <User className="h-5 w-5 text-color2" />
-        Select Student
+        {t("admin.studentPicker.title")}
       </div>
 
       {selectedStudent ? (
@@ -60,9 +75,11 @@ export function StudentPicker({
           <div className="space-y-1">
             <p className="font-medium">{selectedStudent.fullName}</p>
             <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-              <span>ID: {selectedStudent.studentCode}</span>
+              <span>
+                {t("admin.studentPicker.id")}: {selectedStudent.studentCode}
+              </span>
               <Badge variant="outline" className="border-color2/20">
-                {levelMap[selectedStudent.level]}
+                {t(levelKeys[selectedStudent.level])}
               </Badge>
             </div>
           </div>
@@ -73,16 +90,16 @@ export function StudentPicker({
             className="gap-2 border-color2/20"
           >
             <X className="h-4 w-4" />
-            Change Student
+            {t("admin.studentPicker.change")}
           </Button>
         </div>
       ) : (
         <div className="space-y-3">
           <div className="relative w-full max-w-md">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Search className="absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
-              className="pl-9"
-              placeholder="Search by name, email, or student ID..."
+              className="ps-9"
+              placeholder={t("admin.studentPicker.searchPlaceholder")}
               value={studentSearch}
               onChange={(e) => setStudentSearch(e.target.value)}
             />
@@ -90,23 +107,25 @@ export function StudentPicker({
           {studentsLoading ? (
             <Loading />
           ) : (
-              <Select onValueChange={handleSelectStudent}>
-                <SelectTrigger className="w-full max-w-md">
-                <SelectValue placeholder="Choose a student from results" />
+            <Select onValueChange={handleSelectStudent}>
+              <SelectTrigger className="w-full max-w-md">
+                <SelectValue
+                  placeholder={t("admin.studentPicker.choosePlaceholder")}
+                />
               </SelectTrigger>
               <SelectContent>
                 {studentsData?.data?.items?.length ? (
                   studentsData.data.items.map((student) => (
                     <SelectItem key={student.id} value={student.id}>
                       {student.fullName} — {student.studentCode} (
-                      {levelMap[student.level]})
+                      {t(levelKeys[student.level])})
                     </SelectItem>
                   ))
                 ) : (
                   <SelectItem value="none" disabled>
                     {studentSearch
-                      ? "No students found"
-                      : "Type to search for students"}
+                      ? t("admin.studentPicker.noStudents")
+                      : t("admin.studentPicker.typeToSearch")}
                   </SelectItem>
                 )}
               </SelectContent>

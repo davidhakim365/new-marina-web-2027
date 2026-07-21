@@ -1,20 +1,32 @@
 import { DataTable } from "@/components/data-table";
 import { DashboardCard } from "@/components/dashboard/dashboard-card";
 import { DashboardPageShell } from "@/components/dashboard/dashboard-page-shell";
-import {
-  levelMap,
-  StudentPicker,
-} from "@/components/dashboard/student-picker";
+import { StudentPicker } from "@/components/dashboard/student-picker";
 import Loading from "@/components/loading/loading";
 import { Input } from "@/components/ui/input";
 import { useGetStudentLectures } from "@/generated/api";
-import { SingleStudent } from "@/generated/model";
+import { SingleStudent, StudentLevel } from "@/generated/model";
 import { createExpirationTimeColumns } from "@/pages/dashboard/expiration-time/columns";
 import { PaginationState } from "@tanstack/react-table";
 import { Clock } from "lucide-react";
 import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
+
+const levelKeys: Record<
+  StudentLevel,
+  | "admin.levels.level0"
+  | "admin.levels.level1"
+  | "admin.levels.level2"
+  | "admin.levels.level3"
+> = {
+  Level0: "admin.levels.level0",
+  Level1: "admin.levels.level1",
+  Level2: "admin.levels.level2",
+  Level3: "admin.levels.level3",
+};
 
 const ExpirationTimePage = () => {
+  const { t } = useTranslation();
   const [selectedStudent, setSelectedStudent] = useState<SingleStudent | null>(
     null
   );
@@ -58,8 +70,8 @@ const ExpirationTimePage = () => {
 
   return (
     <DashboardPageShell
-      title="Expiration Time"
-      description="Select a student and set custom expiration dates for their grade-level lectures."
+      title={t("admin.expirationTime.title")}
+      description={t("admin.expirationTime.description")}
       icon={Clock}
       fullWidth
     >
@@ -73,11 +85,13 @@ const ExpirationTimePage = () => {
         <DashboardCard>
           <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <h3 className="text-lg font-semibold">
-              Lectures for {levelMap[selectedStudent.level]}
+              {t("admin.expirationTime.lecturesFor", {
+                level: t(levelKeys[selectedStudent.level]),
+              })}
             </h3>
             <Input
               className="w-full max-w-xs"
-              placeholder="Search lectures..."
+              placeholder={t("admin.expirationTime.searchLectures")}
               value={lectureSearch}
               onChange={(e) => {
                 setLectureSearch(e.target.value);

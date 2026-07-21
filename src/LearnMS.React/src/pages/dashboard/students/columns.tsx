@@ -101,7 +101,7 @@ export const useStudentsColumns = (): ColumnDef<SingleStudent>[] => {
           const onQuickAddCredit = () => {
             addStudentCredit.mutate({
               studentId: student.id,
-              data: { amount: 90 },
+              data: { amount: 65 },
             });
           };
 
@@ -123,7 +123,7 @@ export const useStudentsColumns = (): ColumnDef<SingleStudent>[] => {
                   size="sm"
                 >
                   <CreditCard className="w-3 h-3" />
-                  +90
+                  +65
                 </Button>
               </div>
 
@@ -145,7 +145,7 @@ export const useStudentsColumns = (): ColumnDef<SingleStudent>[] => {
                   size="sm"
                 >
                   <CreditCard className="w-4 h-4" />
-                  +90
+                  +65
                 </Button>
               </div>
 

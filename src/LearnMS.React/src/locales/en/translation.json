@@ -592,7 +592,14 @@
     "openMenu": "Open navigation menu",
     "navTitle": "Dashboard navigation",
     "common": {
-      "error": "Error"
+      "error": "Error",
+      "save": "Save",
+      "cancel": "Cancel",
+      "delete": "Delete",
+      "search": "Search",
+      "export": "Export",
+      "loading": "Loading...",
+      "actions": "Actions"
     },
     "navGroups": {
       "materials": "Materials",
@@ -655,8 +662,27 @@
       },
       "toasts": {
         "creditAdded": "Credit Added",
-        "creditAddedDesc": "Added 90 credits to {{name}}.",
+        "creditAddedDesc": "Added 65 credits to {{name}}.",
         "creditFailed": "Failed to add credit."
+      },
+      "modal": {
+        "title": "Create Student",
+        "description": "Create a new student",
+        "fullName": "Full Name",
+        "email": "Email",
+        "phoneNumber": "Phone Number",
+        "parentPhoneNumber": "Parent Phone Number",
+        "studentId": "Student ID",
+        "schoolName": "School Name",
+        "governorate": "Governorate",
+        "governoratePlaceholder": "Select governorate",
+        "level": "Level",
+        "levelPlaceholder": "Select a level",
+        "password": "Password",
+        "confirmPassword": "Confirm Password",
+        "submit": "Submit",
+        "createdTitle": "Student created",
+        "createdDesc": "Student created successfully"
       }
     },
     "assistants": {
@@ -671,6 +697,115 @@
       "assistant": "Assistant",
       "more": "more",
       "askTeacher": "Ask your teacher if you need your name or profile photo updated."
+    },
+    "statistics": {
+      "title": "Statistics",
+      "description": "Track attendance and income. Offline center attendance deducts {{rate}}% from the price.",
+      "lecturePrice": "Lecture Price (LE)",
+      "enterPrice": "Enter price",
+      "pickDateRange": "Pick a date range",
+      "income": {
+        "title": "Income overview",
+        "offlineStudents": "Offline students",
+        "onlineStudents": "Online students",
+        "offlineIncome": "Offline income",
+        "onlineIncome": "Online income",
+        "totalIncome": "Total income",
+        "offlineSubtitle": "Attended at center · {{amount}} each",
+        "onlineSubtitle": "Enrolled online · {{amount}} each"
+      },
+      "lectures": {
+        "title": "Lecture statistics",
+        "selectLevel": "Select level",
+        "selectCourse": "Select course",
+        "selectLecture": "Select lecture",
+        "allLevels": "All levels"
+      },
+      "courses": {
+        "title": "Course statistics"
+      }
+    },
+    "courses": {
+      "title": "Courses",
+      "description": "Manage your courses, lectures, and exams from one place.",
+      "add": "Add Course",
+      "addTitle": "Add Course",
+      "addDescription": "Create a new course to organize your lectures and exams.",
+      "courseTitle": "Title",
+      "courseTitlePlaceholder": "e.g. Social Studies",
+      "courseTitleHelp": "The title of the course.",
+      "cancel": "Cancel",
+      "create": "Create Course",
+      "createdTitle": "Course created",
+      "setupTitle": "Course Setup",
+      "publish": "Publish",
+      "unpublish": "Unpublish",
+      "deleteTitle": "Delete Course",
+      "deleteConfirm": "Are you sure you want to delete this course?",
+      "content": "Course Content",
+      "addLecture": "Add Lecture",
+      "addExam": "Add Exam",
+      "descriptionLabel": "Description",
+      "level": "Level",
+      "levelPlaceholder": "Select a level",
+      "expirationDays": "Expiration Days",
+      "image": "Image"
+    },
+    "importantLectures": {
+      "title": "Important Lectures",
+      "description": "Highlight and manage your most important lectures.",
+      "selectLevel": "Select level",
+      "selectCourse": "Select course",
+      "levels": "Levels",
+      "courses": "Courses",
+      "viewLecture": "View Lecture"
+    },
+    "creditCodes": {
+      "title": "Credit Codes",
+      "description": "Generate, sell, and export credit codes for students.",
+      "count": "Count",
+      "value": "Value (LE)",
+      "generate": "Generate Codes",
+      "generating": "Generating...",
+      "filter": "Filter codes...",
+      "sellSelected": "Sell Selected ({{count}})",
+      "export": "Export",
+      "loadError": "Error loading credit codes",
+      "generated": "Credit codes generated",
+      "sold": "Credit codes sold"
+    },
+    "files": {
+      "title": "Files",
+      "description": "Reuse Google Drive PDF links across lectures. Add new links from a lecture page."
+    },
+    "questions": {
+      "title": "Questions",
+      "description": "Build and manage your question bank for quizzes and exams.",
+      "multipleChoice": "Multiple Choice",
+      "number": "Number",
+      "essay": "Essay"
+    },
+    "grantedAccess": {
+      "title": "Granted Access",
+      "description": "Select a student and grant free lecture access matching their grade level.",
+      "lecturesFor": "Lectures for {{level}}",
+      "searchLectures": "Search lectures..."
+    },
+    "expirationTime": {
+      "title": "Expiration Time",
+      "description": "Select a student and set custom expiration dates for their grade-level lectures.",
+      "lecturesFor": "Lectures for {{level}}",
+      "searchLectures": "Search lectures..."
+    },
+    "studentPicker": {
+      "title": "Select Student",
+      "change": "Change Student",
+      "search": "Search students...",
+      "id": "ID",
+      "searchPlaceholder": "Search by name, email, or student ID...",
+      "choosePlaceholder": "Choose a student from results",
+      "noStudents": "No students found",
+      "typeToSearch": "Type to search for students"
     }
   }
 }

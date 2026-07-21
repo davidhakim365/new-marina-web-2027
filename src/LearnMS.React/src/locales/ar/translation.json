@@ -594,7 +594,14 @@
     "openMenu": "فتح قائمة التنقل",
     "navTitle": "تنقل لوحة التحكم",
     "common": {
-      "error": "خطأ"
+      "error": "خطأ",
+      "save": "حفظ",
+      "cancel": "إلغاء",
+      "delete": "حذف",
+      "search": "بحث",
+      "export": "تصدير",
+      "loading": "جاري التحميل...",
+      "actions": "إجراءات"
     },
     "navGroups": {
       "materials": "المحتوى",
@@ -657,8 +664,27 @@
       },
       "toasts": {
         "creditAdded": "تمت إضافة الرصيد",
-        "creditAddedDesc": "تمت إضافة 90 رصيد إلى {{name}}.",
+        "creditAddedDesc": "تمت إضافة 65 رصيد إلى {{name}}.",
         "creditFailed": "فشل إضافة الرصيد."
+      },
+      "modal": {
+        "title": "إضافة طالب",
+        "description": "إنشاء طالب جديد",
+        "fullName": "الاسم بالكامل",
+        "email": "البريد الإلكتروني",
+        "phoneNumber": "رقم الهاتف",
+        "parentPhoneNumber": "رقم ولي الأمر",
+        "studentId": "رقم الطالب",
+        "schoolName": "اسم المدرسة",
+        "governorate": "المحافظة",
+        "governoratePlaceholder": "اختار المحافظة",
+        "level": "المستوى",
+        "levelPlaceholder": "اختر المستوى",
+        "password": "كلمة المرور",
+        "confirmPassword": "تأكيد كلمة المرور",
+        "submit": "حفظ",
+        "createdTitle": "تم إنشاء الطالب",
+        "createdDesc": "تم إنشاء الطالب بنجاح"
       }
     },
     "assistants": {
@@ -673,6 +699,115 @@
       "assistant": "مساعد",
       "more": "المزيد",
       "askTeacher": "اطلب من المعلم تحديث اسمك أو صورتك الشخصية عند الحاجة."
+    },
+    "statistics": {
+      "title": "الإحصائيات",
+      "description": "تابع الحضور والدخل. حضور السنتر يخصم {{rate}}% من السعر.",
+      "lecturePrice": "سعر المحاضرة (ج.م)",
+      "enterPrice": "أدخل السعر",
+      "pickDateRange": "اختر فترة زمنية",
+      "income": {
+        "title": "نظرة عامة على الدخل",
+        "offlineStudents": "طلاب السنتر",
+        "onlineStudents": "طلاب الأونلاين",
+        "offlineIncome": "دخل السنتر",
+        "onlineIncome": "دخل الأونلاين",
+        "totalIncome": "إجمالي الدخل",
+        "offlineSubtitle": "حضور سنتر · {{amount}} لكل طالب",
+        "onlineSubtitle": "اشتراك أونلاين · {{amount}} لكل طالب"
+      },
+      "lectures": {
+        "title": "إحصائيات المحاضرات",
+        "selectLevel": "اختر المستوى",
+        "selectCourse": "اختر الدورة",
+        "selectLecture": "اختر المحاضرة",
+        "allLevels": "كل المستويات"
+      },
+      "courses": {
+        "title": "إحصائيات الدورات"
+      }
+    },
+    "courses": {
+      "title": "الدورات",
+      "description": "إدارة الدورات والمحاضرات والامتحانات من مكان واحد.",
+      "add": "إضافة دورة",
+      "addTitle": "إضافة دورة",
+      "addDescription": "أنشئ دورة جديدة لتنظيم المحاضرات والامتحانات.",
+      "courseTitle": "العنوان",
+      "courseTitlePlaceholder": "مثال: الدراسات الاجتماعية",
+      "courseTitleHelp": "عنوان الدورة.",
+      "cancel": "إلغاء",
+      "create": "إنشاء الدورة",
+      "createdTitle": "تم إنشاء الدورة",
+      "setupTitle": "إعداد الدورة",
+      "publish": "نشر",
+      "unpublish": "إلغاء النشر",
+      "deleteTitle": "حذف الدورة",
+      "deleteConfirm": "هل أنت متأكد من حذف هذه الدورة؟",
+      "content": "محتوى الدورة",
+      "addLecture": "إضافة محاضرة",
+      "addExam": "إضافة امتحان",
+      "descriptionLabel": "الوصف",
+      "level": "المستوى",
+      "levelPlaceholder": "اختر المستوى",
+      "expirationDays": "أيام الصلاحية",
+      "image": "الصورة"
+    },
+    "importantLectures": {
+      "title": "المحاضرات المهمة",
+      "description": "تمييز وإدارة أهم المحاضرات.",
+      "selectLevel": "اختر المستوى",
+      "selectCourse": "اختر الدورة",
+      "levels": "المستويات",
+      "courses": "الدورات",
+      "viewLecture": "عرض المحاضرة"
+    },
+    "creditCodes": {
+      "title": "أكواد الرصيد",
+      "description": "إنشاء وبيع وتصدير أكواد الرصيد للطلاب.",
+      "count": "العدد",
+      "value": "القيمة (ج.م)",
+      "generate": "إنشاء الأكواد",
+      "generating": "جاري الإنشاء...",
+      "filter": "تصفية الأكواد...",
+      "sellSelected": "بيع المحدد ({{count}})",
+      "export": "تصدير",
+      "loadError": "خطأ في تحميل أكواد الرصيد",
+      "generated": "تم إنشاء أكواد الرصيد",
+      "sold": "تم بيع أكواد الرصيد"
+    },
+    "files": {
+      "title": "الملفات",
+      "description": "أعد استخدام روابط PDF من Google Drive عبر المحاضرات. أضف روابط جديدة من صفحة المحاضرة."
+    },
+    "questions": {
+      "title": "الأسئلة",
+      "description": "أنشئ وأدر بنك الأسئلة للاختبارات والامتحانات.",
+      "multipleChoice": "اختيار من متعدد",
+      "number": "رقمي",
+      "essay": "مقالي"
+    },
+    "grantedAccess": {
+      "title": "صلاحيات الوصول",
+      "description": "اختر طالباً وامنحه وصولاً مجانياً لمحاضرات مستواه.",
+      "lecturesFor": "محاضرات {{level}}",
+      "searchLectures": "ابحث عن المحاضرات..."
+    },
+    "expirationTime": {
+      "title": "وقت الانتهاء",
+      "description": "اختر طالباً وحدد تواريخ انتهاء مخصصة لمحاضرات مستواه.",
+      "lecturesFor": "محاضرات {{level}}",
+      "searchLectures": "ابحث عن المحاضرات..."
+    },
+    "studentPicker": {
+      "title": "اختر الطالب",
+      "change": "تغيير الطالب",
+      "search": "ابحث عن الطلاب...",
+      "id": "الرقم",
+      "searchPlaceholder": "ابحث بالاسم أو البريد أو رقم الطالب...",
+      "choosePlaceholder": "اختر طالباً من النتائج",
+      "noStudents": "لا يوجد طلاب",
+      "typeToSearch": "اكتب للبحث عن الطلاب"
     }
   }
 }

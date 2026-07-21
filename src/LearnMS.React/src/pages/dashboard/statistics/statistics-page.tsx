@@ -42,6 +42,7 @@ import {
   Wallet,
 } from "lucide-react";
 import React, { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { DateRange } from "react-day-picker";
 import {
   Bar,
@@ -89,6 +90,7 @@ function DateRangePicker({
   onSelect: (range: DateRange | undefined) => void;
   className?: string;
 }) {
+  const { t } = useTranslation();
   const isMobile = useIsMobile();
 
   return (
@@ -103,7 +105,7 @@ function DateRangePicker({
             className
           )}
         >
-          <CalendarIcon className="mr-2 h-4 w-4" />
+          <CalendarIcon className="me-2 h-4 w-4" />
           {date?.from ? (
             date.to ? (
               <>
@@ -113,7 +115,7 @@ function DateRangePicker({
               format(date.from, "LLL dd, y")
             )
           ) : (
-            <span>Pick a date range</span>
+            <span>{t("admin.statistics.pickDateRange")}</span>
           )}
         </Button>
       </PopoverTrigger>
@@ -170,15 +172,18 @@ function StatCard({
 function PriceInput({
   price,
   onChange,
-  label = "Lecture Price (LE)",
+  label,
 }: {
   price: number;
   onChange: (price: number) => void;
   label?: string;
 }) {
+  const { t } = useTranslation();
   return (
     <div className="space-y-2">
-      <Label htmlFor="lecture-price">{label}</Label>
+      <Label htmlFor="lecture-price">
+        {label ?? t("admin.statistics.lecturePrice")}
+      </Label>
       <Input
         id="lecture-price"
         type="number"
@@ -187,14 +192,15 @@ function PriceInput({
         value={price || ""}
         onChange={(e) => onChange(Number(e.target.value) || 0)}
         className="w-full sm:w-[180px]"
-        placeholder="Enter price"
+        placeholder={t("admin.statistics.enterPrice")}
       />
     </div>
   );
 }
 
 const StatisticsPageInner = () => {
-  const [lecturePrice, setLecturePrice] = useState(0);
+  const { t } = useTranslation();
+  const [lecturePrice, setLecturePrice] = useState(65);
   const [dateRange, setDateRange] = useState<DateRange | undefined>({
     from: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
     to: new Date(),
@@ -202,8 +208,10 @@ const StatisticsPageInner = () => {
 
   return (
     <DashboardPageShell
-      title="Statistics"
-      description={`Track attendance and income. Offline center attendance deducts ${OFFLINE_CENTER_FEE_RATE * 100}% from the price.`}
+      title={t("admin.statistics.title")}
+      description={t("admin.statistics.description", {
+        rate: OFFLINE_CENTER_FEE_RATE * 100,
+      })}
       icon={LayoutDashboard}
       decorative
     >
