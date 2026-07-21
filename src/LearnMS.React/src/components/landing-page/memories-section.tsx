@@ -11,9 +11,10 @@ import { SubHeading } from "@/components/ui/sub-heading";
 import {
   GlowOrb,
   PhysicsGrid,
-  FloatingFormulas,
+  FloatingMotifs,
   PhysicsDivider,
-  WavePattern,
+  ContourMap,
+  CompassRose,
 } from "@/components/ui/physics-graphics";
 import { useTranslation } from "react-i18next";
 import { Camera, ChevronLeft, ChevronRight } from "lucide-react";
@@ -28,15 +29,13 @@ import marinaHero from "@/assets/images/marina-hero.png";
 import marinaLogo from "@/assets/images/marina-logo.png";
 
 const memories = [
-  { id: "1", src: marinaLogo, key: "1" },
-  { id: "2", src: marinaHero, key: "2" },
-  { id: "3", src: marinaAbout, key: "3" },
-  { id: "4", src: marinaGallery1, key: "4" },
-  { id: "5", src: marinaGallery2, key: "5" },
-  { id: "6", src: marinaGallery3, key: "6" },
+  { id: "1", src: marinaLogo, key: "1", bg: "from-teal/20 to-gold/15" },
+  { id: "2", src: marinaHero, key: "2", bg: "from-gold/20 to-color2/10" },
+  { id: "3", src: marinaAbout, key: "3", bg: "from-color1/15 to-teal/20" },
+  { id: "4", src: marinaGallery1, key: "4", bg: "from-color2/15 to-gold/15" },
+  { id: "5", src: marinaGallery2, key: "5", bg: "from-teal/25 to-color1/10" },
+  { id: "6", src: marinaGallery3, key: "6", bg: "from-gold/20 to-teal/15" },
 ];
-
-const overlayFormulas = ["🌍", "🗺", "🧭", "📜", "🏛"];
 
 function MemoriesSection() {
   const [api, setApi] = useState<CarouselApi>();
@@ -67,10 +66,13 @@ function MemoriesSection() {
 
   return (
     <section className="relative w-full overflow-hidden bg-memoriesSection py-20 md:py-28">
-      <PhysicsGrid className="opacity-35" />
-      <FloatingFormulas className="opacity-40" />
-      <GlowOrb className="left-1/2 top-0 size-[28rem] -translate-x-1/2 from-color2/15 to-color1/10" />
-      <GlowOrb className="-bottom-16 -left-16 size-72 from-color1/10 to-color2/10" />
+      <PhysicsGrid className="opacity-40" />
+      <ContourMap className="opacity-[0.08]" />
+      <FloatingMotifs className="opacity-50" />
+      <GlowOrb className="left-1/2 top-0 size-[28rem] -translate-x-1/2 from-teal/15 to-gold/10" />
+      <div className="pointer-events-none absolute end-8 top-24 hidden opacity-40 lg:block">
+        <CompassRose />
+      </div>
 
       <div className="relative z-10 mx-auto w-full max-w-6xl px-4">
         <motion.div
@@ -78,39 +80,18 @@ function MemoriesSection() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.25 }}
           transition={{ duration: 0.7, ease: "easeOut" }}
-          className="grid items-end gap-6 md:grid-cols-[1.1fr_0.9fr]"
+          className="mx-auto max-w-3xl text-center"
         >
-          <div>
-            <span className="mb-4 inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-color2">
-              <Camera className="size-3.5" />
-              {t("memories.badge")}
-            </span>
-            <Heading className="text-3xl font-bold tracking-tight md:text-4xl lg:text-5xl">
-              {t("memories.title")}
-            </Heading>
-            <SubHeading className="mt-4 max-w-xl text-lg md:text-xl">
-              {t("memories.description")}
-            </SubHeading>
-          </div>
-
-          <div className="hidden justify-end gap-6 md:flex">
-            <div className="rounded-2xl border border-color2/15 bg-background/50 px-4 py-3 backdrop-blur-sm">
-              <p className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
-                frames
-              </p>
-              <p className="mt-1 text-2xl font-bold tabular-nums text-heading">
-                {memories.length}
-              </p>
-            </div>
-            <div className="rounded-2xl border border-color2/15 bg-background/50 px-4 py-3 backdrop-blur-sm">
-              <p className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
-                now
-              </p>
-              <p className="mt-1 text-2xl font-bold tabular-nums text-heading">
-                {String(currentSlide + 1).padStart(2, "0")}
-              </p>
-            </div>
-          </div>
+          <span className="mb-4 inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-color1">
+            <Camera className="size-3.5" />
+            {t("memories.badge")}
+          </span>
+          <Heading className="text-3xl font-bold tracking-tight md:text-4xl lg:text-5xl">
+            {t("memories.title")}
+          </Heading>
+          <SubHeading className="mt-4 text-lg md:text-xl">
+            {t("memories.description")}
+          </SubHeading>
         </motion.div>
 
         <PhysicsDivider />
@@ -122,53 +103,38 @@ function MemoriesSection() {
           transition={{ delay: 0.12, duration: 0.6 }}
           className="relative mt-8"
         >
-          <div
-            aria-hidden
-            className="pointer-events-none absolute -left-2 -top-2 z-20 size-10 border-l-2 border-t-2 border-color2/50 sm:size-14"
-          />
-          <div
-            aria-hidden
-            className="pointer-events-none absolute -bottom-2 -right-2 z-20 size-10 border-b-2 border-r-2 border-color1/50 sm:size-14"
-          />
-
           <Carousel setApi={setApi} className="w-full">
             <CarouselContent className="-ml-3 md:-ml-4">
-              {memories.map(({ id, src, key }, index) => (
+              {memories.map(({ id, src, key, bg }, index) => (
                 <CarouselItem
                   key={id}
                   className="pl-3 md:basis-4/5 md:pl-4 lg:basis-3/5"
                 >
                   <div
                     className={cn(
-                      "group relative overflow-hidden rounded-[1.5rem] border border-color2/15 bg-background/30 shadow-lg shadow-color2/5 transition duration-500",
+                      "group relative overflow-hidden rounded-[1.5rem] border border-color1/15 shadow-lg shadow-color1/5 transition duration-500",
                       currentSlide === index
-                        ? "ring-2 ring-color2/25"
+                        ? "ring-2 ring-color1/25"
                         : "opacity-90"
                     )}
                   >
-                    <div className="relative aspect-[16/10] overflow-hidden">
+                    <div
+                      className={cn(
+                        "relative flex aspect-[4/5] items-end justify-center overflow-hidden bg-gradient-to-b sm:aspect-[16/11]",
+                        bg
+                      )}
+                    >
                       <img
                         src={src}
                         alt={t(`memories.items.${key}.title`)}
-                        className="size-full object-cover transition duration-700 group-hover:scale-[1.04]"
+                        className="relative z-10 h-[92%] w-auto max-w-full object-contain object-bottom transition duration-700 group-hover:scale-[1.03]"
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/25 to-transparent" />
 
-                      <span
-                        aria-hidden
-                        className="absolute right-4 top-4 font-mono text-xs text-white/40 md:text-sm"
-                      >
-                        {overlayFormulas[index % overlayFormulas.length]}
-                      </span>
-
-                      <div className="absolute inset-x-0 bottom-0 p-5 sm:p-7">
-                        <p className="mb-1 font-mono text-[10px] uppercase tracking-[0.18em] text-white/55">
-                          memory_{String(index + 1).padStart(2, "0")}
-                        </p>
+                      <div className="absolute inset-x-0 bottom-0 z-20 bg-gradient-to-t from-heading/80 via-heading/35 to-transparent p-5 sm:p-7">
                         <h4 className="text-xl font-semibold text-white sm:text-2xl">
                           {t(`memories.items.${key}.title`)}
                         </h4>
-                        <p className="mt-2 max-w-lg text-sm text-white/80">
+                        <p className="mt-2 max-w-lg text-sm text-white/85">
                           {t(`memories.items.${key}.description`)}
                         </p>
                       </div>
@@ -185,7 +151,7 @@ function MemoriesSection() {
                 type="button"
                 size="icon"
                 variant="outline"
-                className="size-10 rounded-xl border-color2/20"
+                className="size-10 rounded-xl border-color1/20"
                 onClick={() => api?.scrollPrev()}
                 aria-label="Previous memory"
               >
@@ -195,7 +161,7 @@ function MemoriesSection() {
                 type="button"
                 size="icon"
                 variant="outline"
-                className="size-10 rounded-xl border-color2/20"
+                className="size-10 rounded-xl border-color1/20"
                 onClick={() => api?.scrollNext()}
                 aria-label="Next memory"
               >
@@ -214,7 +180,7 @@ function MemoriesSection() {
                     "h-1.5 rounded-full transition-all duration-300",
                     currentSlide === index
                       ? "w-8 bg-gradient-to-r from-color1 to-color2"
-                      : "w-1.5 bg-color2/25 hover:bg-color2/45"
+                      : "w-1.5 bg-color1/25 hover:bg-color1/45"
                   )}
                 />
               ))}
@@ -222,8 +188,6 @@ function MemoriesSection() {
           </div>
         </motion.div>
       </div>
-
-      <WavePattern className="opacity-60" />
     </section>
   );
 }

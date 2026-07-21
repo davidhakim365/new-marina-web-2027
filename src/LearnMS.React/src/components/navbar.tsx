@@ -114,17 +114,14 @@ const NavBar: React.FC<NavBarProps> = ({
     <header>
       <nav
         data-state={menuState ? "active" : undefined}
-        className={cn(
-          "fixed z-50 w-full pt-2",
-          isHomeHero ? "text-white" : "text-navbar-foreground"
-        )}
+        className="fixed z-50 w-full pt-2 text-navbar-foreground"
       >
         <div
           className={cn(
             "mx-auto max-w-7xl rounded-3xl px-3 sm:px-6 transition-all duration-300 lg:px-12",
-            scrolled
-              ? "bg-background/70 backdrop-blur-2xl border border-color2/10 shadow-lg shadow-color2/5"
-              : "bg-transparent"
+            scrolled || !isHomeHero
+              ? "bg-background/80 backdrop-blur-2xl border border-color1/10 shadow-lg shadow-color1/5"
+              : "bg-white/55 backdrop-blur-md border border-white/40 shadow-sm"
           )}
         >
           <motion.div
@@ -141,7 +138,7 @@ const NavBar: React.FC<NavBarProps> = ({
               <img
                 src="/logo.png"
                 alt="أ/ مارينا عاطف"
-                className="h-10 w-10 flex-shrink-0 rounded-full bg-neutral-950 object-contain object-bottom sm:h-12 sm:w-12"
+                className="h-10 w-10 flex-shrink-0 rounded-full bg-gradient-to-b from-teal/20 to-gold/15 object-contain object-bottom sm:h-12 sm:w-12"
               />
               <Heading className="text-lg font-bold truncate sm:text-xl md:text-2xl lg:text-3xl">
                 {resolvedBrandName}

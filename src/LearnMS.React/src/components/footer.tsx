@@ -62,13 +62,13 @@ const Footer = () => {
     <div className="bg-footer">
       <footer className="relative w-full max-w-7xl mx-auto flex flex-col items-center justify-center border-t border-white/10 px-6 py-16 lg:py-20">
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute -top-24 left-1/2 -translate-x-1/2 size-96 rounded-full bg-color2/10 blur-3xl" />
+          <div className="absolute -top-24 left-1/2 -translate-x-1/2 size-96 rounded-full bg-teal/15 blur-3xl" />
         </div>
 
         <div className="relative z-10 grid w-full gap-10 xl:grid-cols-3 xl:gap-8">
           <AnimatedContainer className="flex flex-col items-center space-y-4">
             <div className="flex items-center gap-3">
-              <div className="flex items-center justify-center size-10 rounded-xl bg-gradient-to-br from-color1 to-color2">
+              <div className="flex items-center justify-center size-10 rounded-xl bg-gradient-to-br from-color1 to-teal">
                 <Globe className="size-5 text-white" />
               </div>
               <Heading className="text-2xl font-bold md:text-3xl text-white">

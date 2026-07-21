@@ -12,7 +12,7 @@ import {
 import { Heading } from "@/components/ui/heading";
 import { SubHeading } from "@/components/ui/sub-heading";
 import { FlowButton } from "@/components/ui/flow-button";
-import { PhysicsGrid, GlowOrb, PhysicsDivider } from "@/components/ui/physics-graphics";
+import { PhysicsGrid, GlowOrb, PhysicsDivider, ContourMap } from "@/components/ui/physics-graphics";
 import { cn } from "@/lib/utils";
 
 const features = [
@@ -30,12 +30,13 @@ function ParentFollowUpSection() {
   const content = (
     <section className="relative overflow-hidden bg-gradesSection py-20 md:py-28">
       <PhysicsGrid className="opacity-50" />
-      <GlowOrb className="top-10 -right-24 size-80 from-color2/20 to-color1/10" />
+      <ContourMap className="opacity-[0.07]" />
+      <GlowOrb className="top-10 -right-24 size-80 from-teal/20 to-gold/10" />
       <GlowOrb className="bottom-0 -left-24 size-72 from-color1/15 to-color2/10" />
 
       <div className="relative z-10 mx-auto w-full max-w-6xl px-4">
         <div className="mx-auto mb-12 max-w-3xl text-center">
-          <span className="mb-4 inline-flex items-center gap-2 rounded-full border border-color2/20 bg-color2/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-widest text-color2">
+          <span className="mb-4 inline-flex items-center gap-2 rounded-full border border-color1/20 bg-color1/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-widest text-color1">
             <Users className="size-3.5" />
             {t("parent.section.badge")}
           </span>

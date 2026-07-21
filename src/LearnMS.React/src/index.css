@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&family=Tajawal:wght@400;500;700;800&family=Outfit:wght@300..800&family=Space+Grotesk:wght@400..700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&family=Tajawal:wght@400;500;700;800&family=Outfit:wght@300..800&display=swap");
 
 @tailwind base;
 @tailwind components;
@@ -6,105 +6,105 @@
 
 @layer base {
   :root {
-    --background: 30 25% 98%;
-    --foreground: 0 0% 12%;
+    /* Soft parchment / map atmosphere — coral used only as accent */
+    --background: 40 33% 97%;
+    --foreground: 200 25% 14%;
     --card: 0 0% 100%;
-    --card-foreground: 0 0% 12%;
+    --card-foreground: 200 25% 14%;
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 12%;
-    /* Brand primary — vibrant red from Marina logo sweater */
-    --primary: 0 78% 48%;
+    --popover-foreground: 200 25% 14%;
+    --primary: 8 72% 48%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 30 20% 94%;
-    --secondary-foreground: 0 0% 16%;
-    --muted: 30 15% 94%;
-    --muted-foreground: 0 0% 40%;
-    --accent: 175 35% 94%;
-    --accent-foreground: 0 0% 16%;
+    --secondary: 175 28% 92%;
+    --secondary-foreground: 200 25% 16%;
+    --muted: 40 20% 93%;
+    --muted-foreground: 200 10% 42%;
+    --accent: 175 40% 92%;
+    --accent-foreground: 200 25% 16%;
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
-    --border: 30 12% 88%;
-    --input: 30 12% 88%;
-    --ring: 0 78% 48%;
-    --radius: 0.65rem;
+    --border: 35 18% 86%;
+    --input: 35 18% 86%;
+    --ring: 175 45% 36%;
+    --radius: 0.75rem;
 
-    --chart-1: 0 78% 48%;
-    --chart-2: 175 55% 38%;
-    --chart-3: 43 80% 48%;
-    --chart-4: 200 60% 42%;
-    --chart-5: 25 70% 50%;
+    --chart-1: 175 45% 36%;
+    --chart-2: 8 72% 48%;
+    --chart-3: 38 70% 48%;
+    --chart-4: 200 50% 40%;
+    --chart-5: 25 55% 45%;
 
-    --heading: 0 0% 12%;
-    --subheading: 0 0% 38%;
-    --paragraph: 0 0% 40%;
-    --hero: 0 72% 46%;
-    --gradesSection: 30 30% 97%;
+    --heading: 200 30% 16%;
+    --subheading: 200 12% 38%;
+    --paragraph: 200 10% 40%;
+    --hero: 40 40% 96%;
+    --gradesSection: 175 25% 96%;
     --featuresSection: 0 0% 100%;
-    --aboutSection: 30 25% 96%;
-    --seniorsSection: 30 28% 97%;
-    --memoriesSection: 175 20% 97%;
-    --lecturesSection: 30 28% 97%;
-    --footer: 0 0% 8%;
-    --color1: 0 72% 42%;
-    --color2: 0 78% 52%;
-    --footer-foreground: 30 10% 78%;
-    --coursePage: 30 20% 97%;
-    --lecturePage: 30 20% 97%;
-    --paymentPage: 30 20% 97%;
-    --navbar-foreground: 0 0% 12%;
-    --dashboard: 30 25% 97%;
-    --gold: 43 80% 48%;
-    --teal: 175 55% 38%;
+    --aboutSection: 40 30% 95%;
+    --seniorsSection: 40 28% 96%;
+    --memoriesSection: 200 20% 96%;
+    --lecturesSection: 40 28% 96%;
+    --footer: 200 28% 12%;
+    --color1: 175 45% 32%;
+    --color2: 8 72% 48%;
+    --footer-foreground: 40 15% 78%;
+    --coursePage: 40 25% 97%;
+    --lecturePage: 40 25% 97%;
+    --paymentPage: 40 25% 97%;
+    --navbar-foreground: 200 25% 14%;
+    --dashboard: 40 25% 97%;
+    --gold: 38 70% 48%;
+    --teal: 175 45% 36%;
   }
 
   .dark {
-    --background: 0 0% 7%;
-    --foreground: 30 20% 96%;
-    --card: 0 0% 11%;
-    --card-foreground: 30 20% 96%;
-    --popover: 0 0% 11%;
-    --popover-foreground: 30 20% 96%;
-    --primary: 0 78% 55%;
+    --background: 200 22% 8%;
+    --foreground: 40 20% 96%;
+    --card: 200 20% 11%;
+    --card-foreground: 40 20% 96%;
+    --popover: 200 20% 11%;
+    --popover-foreground: 40 20% 96%;
+    --primary: 8 72% 55%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 0 8% 16%;
-    --secondary-foreground: 30 20% 96%;
-    --muted: 0 8% 15%;
-    --muted-foreground: 30 10% 72%;
-    --accent: 175 20% 16%;
-    --accent-foreground: 30 20% 96%;
+    --secondary: 175 18% 16%;
+    --secondary-foreground: 40 20% 96%;
+    --muted: 200 14% 15%;
+    --muted-foreground: 40 10% 72%;
+    --accent: 175 18% 16%;
+    --accent-foreground: 40 20% 96%;
     --destructive: 0 72% 55%;
     --destructive-foreground: 0 0% 100%;
-    --border: 0 8% 22%;
-    --input: 0 8% 22%;
-    --ring: 0 78% 55%;
+    --border: 200 14% 20%;
+    --input: 200 14% 20%;
+    --ring: 175 45% 45%;
 
-    --chart-1: 0 78% 55%;
-    --chart-2: 175 50% 45%;
-    --chart-3: 43 80% 55%;
-    --chart-4: 200 55% 55%;
-    --chart-5: 25 70% 55%;
+    --chart-1: 175 45% 45%;
+    --chart-2: 8 72% 55%;
+    --chart-3: 38 70% 55%;
+    --chart-4: 200 50% 55%;
+    --chart-5: 25 55% 55%;
 
-    --heading: 30 20% 97%;
-    --subheading: 30 10% 74%;
-    --paragraph: 30 8% 72%;
-    --hero: 0 55% 28%;
-    --gradesSection: 0 0% 9%;
-    --featuresSection: 0 0% 8%;
-    --seniorsSection: 0 0% 9%;
-    --memoriesSection: 0 0% 8%;
-    --lecturesSection: 0 0% 9%;
-    --aboutSection: 0 0% 9%;
-    --footer: 0 0% 5%;
-    --footer-foreground: 30 10% 74%;
-    --color1: 0 72% 52%;
-    --color2: 0 78% 60%;
-    --coursePage: 0 0% 8%;
-    --lecturePage: 0 0% 8%;
-    --paymentPage: 0 0% 8%;
-    --navbar-foreground: 30 20% 96%;
-    --dashboard: 0 0% 7%;
-    --gold: 43 80% 55%;
-    --teal: 175 50% 45%;
+    --heading: 40 20% 97%;
+    --subheading: 40 10% 74%;
+    --paragraph: 40 8% 72%;
+    --hero: 200 22% 9%;
+    --gradesSection: 200 18% 9%;
+    --featuresSection: 200 20% 8%;
+    --seniorsSection: 200 18% 9%;
+    --memoriesSection: 200 18% 8%;
+    --lecturesSection: 200 18% 9%;
+    --aboutSection: 200 18% 9%;
+    --footer: 200 28% 6%;
+    --footer-foreground: 40 10% 74%;
+    --color1: 175 45% 42%;
+    --color2: 8 72% 55%;
+    --coursePage: 200 18% 8%;
+    --lecturePage: 200 18% 8%;
+    --paymentPage: 200 18% 8%;
+    --navbar-foreground: 40 20% 96%;
+    --dashboard: 200 22% 8%;
+    --gold: 38 70% 55%;
+    --teal: 175 45% 42%;
   }
 }
 
@@ -127,7 +127,6 @@
 
   body {
     @apply m-0 overflow-x-hidden bg-background p-0 font-sans text-foreground;
-    font-feature-settings: "ss01" on, "cv11" on;
   }
 
   h1,
@@ -149,7 +148,7 @@
   }
 
   ::selection {
-    @apply bg-color2/25 text-foreground;
+    @apply bg-teal/25 text-foreground;
   }
 
   :root {
@@ -165,12 +164,6 @@
   select {
     @apply text-foreground;
   }
-
-  .dark input,
-  .dark textarea,
-  .dark select {
-    @apply caret-color2;
-  }
 }
 
 @layer utilities {
@@ -180,6 +173,13 @@
 
   .surface-glass-soft {
     @apply border border-border/60 bg-background/70 text-foreground backdrop-blur-sm;
+  }
+
+  .map-texture {
+    background-image:
+      radial-gradient(ellipse at 20% 20%, hsl(var(--teal) / 0.08), transparent 50%),
+      radial-gradient(ellipse at 80% 80%, hsl(var(--gold) / 0.1), transparent 45%),
+      linear-gradient(135deg, hsl(var(--hero)) 0%, hsl(40 35% 94%) 50%, hsl(175 20% 95%) 100%);
   }
 }
 

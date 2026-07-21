@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { FeatureCard } from "@/components/ui/grid-feature-cards";
 import { Heading } from "../ui/heading";
 import { SubHeading } from "../ui/sub-heading";
-import { PhysicsGrid, GlowOrb } from "@/components/ui/physics-graphics";
+import { PhysicsGrid, GlowOrb, ContourMap, PyramidMotif } from "@/components/ui/physics-graphics";
 
 const leftToRightVariants = {
   hidden: { opacity: 0, filter: "blur(20px)", y: 40 },
@@ -84,7 +84,11 @@ function GradesSection() {
     return (
       <section className="relative py-16 md:py-28 bg-gradesSection overflow-hidden">
         <PhysicsGrid className="opacity-40" />
-        <GlowOrb className="top-1/2 -right-32 size-80 from-color2/15 to-color1/10" />
+        <ContourMap className="opacity-[0.08]" />
+        <GlowOrb className="top-1/2 -right-32 size-80 from-teal/15 to-gold/10" />
+        <div className="pointer-events-none absolute start-6 bottom-10 hidden opacity-30 md:block">
+          <PyramidMotif />
+        </div>
         <div className="relative z-10 w-full max-w-6xl px-4 mx-auto">
           {header}
           {grid}
@@ -96,7 +100,11 @@ function GradesSection() {
   return (
     <section className="relative py-16 md:py-28 bg-gradesSection overflow-hidden">
       <PhysicsGrid className="opacity-40" />
-      <GlowOrb className="top-1/2 -right-32 size-80 from-color2/15 to-color1/10" />
+      <ContourMap className="opacity-[0.08]" />
+      <GlowOrb className="top-1/2 -right-32 size-80 from-teal/15 to-gold/10" />
+      <div className="pointer-events-none absolute start-6 bottom-10 hidden opacity-30 md:block">
+        <PyramidMotif />
+      </div>
 
       <div className="relative z-10 w-full max-w-6xl px-4 mx-auto">
         <motion.div

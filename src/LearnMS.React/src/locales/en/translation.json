@@ -113,32 +113,32 @@
   },
   "memories": {
     "badge": "Memories",
-    "title": "Make Memories with us",
-    "description": "Every moment spent learning becomes a cherished memory",
+    "title": "Make Memories with Us",
+    "description": "Moments from learning history and geography with Mrs Marina Atef",
     "items": {
       "1": {
-        "title": "Class Celebration",
-        "description": "Joyful moments of achievement and celebration with our students"
+        "title": "Miss Marina",
+        "description": "The face that makes social studies clear and fun"
       },
       "2": {
-        "title": "Study Groups",
-        "description": "Collaborative learning sessions that foster growth and friendship"
+        "title": "Class Energy",
+        "description": "Live explanations that bring history and geography closer"
       },
       "3": {
-        "title": "Map Sessions",
-        "description": "Hands-on activities that bring geography to life"
+        "title": "A Different Style",
+        "description": "Ideas, maps, and details that stick"
       },
       "4": {
-        "title": "Team Projects",
-        "description": "Innovative projects that showcase student creativity and teamwork"
+        "title": "Curriculum Focus",
+        "description": "Understanding first — then memorizing"
       },
       "5": {
-        "title": "Graduation Day",
-        "description": "Proud moments celebrating our students' achievements and future"
+        "title": "Path to Excellence",
+        "description": "Step by step toward higher scores and confidence"
       },
       "6": {
-        "title": "Special Events",
-        "description": "Unique experiences that make learning memorable and fun"
+        "title": "With You Every Grade",
+        "description": "From prep to secondary with the same passion"
       }
     }
   },

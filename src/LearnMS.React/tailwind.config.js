@@ -168,6 +168,8 @@ module.exports = {
           foreground: "hsl(var(--navbar-foreground))",
         },
         dashboard: "hsl(var(--dashboard))",
+        teal: "hsl(var(--teal))",
+        gold: "hsl(var(--gold))",
       },
       borderRadius: {
         lg: "var(--radius)",
