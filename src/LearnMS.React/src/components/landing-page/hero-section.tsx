@@ -12,21 +12,37 @@ import {
   ScrollBanner,
   WavePattern,
 } from "@/components/ui/physics-graphics";
-import { BookOpen, Globe, Landmark } from "lucide-react";
+import { Globe } from "lucide-react";
+import { FaTiktok, FaYoutube } from "react-icons/fa";
 import type { GetStudentProfileResult } from "@/generated/model";
 import marinaHero from "@/assets/images/marina-hero.png";
 import marinaLogo from "@/assets/images/marina-logo.png";
+
+const socialStats = [
+  {
+    key: "youtube" as const,
+    count: "555K",
+    href: "https://www.youtube.com/@mrs.marinaatef",
+    Icon: FaYoutube,
+    iconClass: "text-[#FF0033]",
+    glowClass: "from-[#FF0033]/20 to-transparent",
+    ringClass: "group-hover:ring-[#FF0033]/35",
+  },
+  {
+    key: "tiktok" as const,
+    count: "466K",
+    href: "https://www.tiktok.com/@ms.marina.atef",
+    Icon: FaTiktok,
+    iconClass: "text-foreground",
+    glowClass: "from-foreground/15 to-transparent",
+    ringClass: "group-hover:ring-foreground/25",
+  },
+];
 
 const HeroSection = () => {
   const { data: profile } = useGetProfile();
   const { t, i18n } = useTranslation();
   const isRTL = i18n.language === "ar" || i18n.language.startsWith("ar");
-
-  const stats = [
-    { icon: BookOpen, label: t("hero.stats.courses") },
-    { icon: Landmark, label: t("hero.stats.students") },
-    { icon: Globe, label: t("hero.stats.subjects") },
-  ];
 
   const browseCoursesHref = (() => {
     const isStudent =
@@ -107,16 +123,46 @@ const HeroSection = () => {
             </Link>
           </div>
 
-          <div className="flex flex-wrap items-center justify-center gap-3 pt-3 lg:justify-start">
-            {stats.map(({ icon: Icon, label }) => (
-              <div
-                key={label}
-                className="flex items-center gap-2 rounded-full border border-color1/20 bg-card/75 px-4 py-2 text-sm text-paragraph shadow-sm backdrop-blur"
-              >
-                <Icon className="size-4 text-color1" />
-                <span>{label}</span>
-              </div>
-            ))}
+          <div className="flex w-full max-w-md flex-col gap-3 pt-2 sm:flex-row sm:max-w-none lg:justify-start">
+            {socialStats.map(
+              ({ key, count, href, Icon, iconClass, glowClass, ringClass }, i) => (
+                <motion.a
+                  key={key}
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  initial={{ opacity: 0, y: 14 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.35 + i * 0.08, duration: 0.5 }}
+                  className={cn(
+                    "group relative flex flex-1 items-center gap-3 overflow-hidden rounded-2xl",
+                    "border border-color1/15 bg-card/80 px-4 py-3 backdrop-blur-md",
+                    "shadow-sm transition duration-300 hover:-translate-y-0.5 hover:shadow-lg",
+                    "ring-0 ring-inset",
+                    ringClass
+                  )}
+                >
+                  <div
+                    aria-hidden
+                    className={cn(
+                      "pointer-events-none absolute -end-6 -top-6 size-24 rounded-full bg-gradient-to-br blur-2xl transition group-hover:opacity-100",
+                      glowClass
+                    )}
+                  />
+                  <span className="relative flex size-11 shrink-0 items-center justify-center rounded-xl bg-background/80 shadow-inner">
+                    <Icon className={cn("size-5", iconClass)} aria-hidden />
+                  </span>
+                  <span className="relative min-w-0 text-start">
+                    <span className="block font-heading text-2xl font-extrabold tracking-tight text-heading">
+                      {count}
+                    </span>
+                    <span className="block text-xs font-medium text-muted-foreground">
+                      {t(`hero.social.${key}`)}
+                    </span>
+                  </span>
+                </motion.a>
+              )
+            )}
           </div>
         </motion.div>
 

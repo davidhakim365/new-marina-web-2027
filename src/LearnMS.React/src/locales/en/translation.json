@@ -6,6 +6,10 @@
     "description": "Your first platform to learn history and geography in a simple, engaging way. From prep to secondary — everything you need to excel.",
     "getStarted": "Subscribe Now",
     "browseCourses": "Browse Courses",
+    "social": {
+      "youtube": "YouTube subscribers",
+      "tiktok": "TikTok followers"
+    },
     "stats": {
       "courses": "Expert Courses",
       "students": "10+ Years Experience",
