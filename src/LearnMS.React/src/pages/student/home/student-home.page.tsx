@@ -4,6 +4,7 @@ import FeaturesSection from "@/components/landing-page/features-section";
 import IntroVideoSection from "@/components/landing-page/intro-video-section";
 import MemoriesSection from "@/components/landing-page/memories-section";
 import ParentFollowUpSection from "@/components/landing-page/parent-follow-up-section";
+import OffersSection from "@/components/landing-page/offers-section";
 import Footer from "@/components/footer";
 import GradesSection from "@/components/landing-page/grades-section";
 import {
@@ -24,6 +25,7 @@ const StudentHomePage = () => {
         <IntroVideoSection />
         <MemoriesSection />
         {!isSignedIn && <ParentFollowUpSection />}
+        <OffersSection />
         {!isSignedIn && <GradesSection />}
         {isSignedIn && <ImportantLecturesSection />}
         {isSignedIn && <LatestLecturesSection />}

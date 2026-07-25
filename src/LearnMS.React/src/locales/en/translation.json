@@ -282,6 +282,28 @@
       }
     }
   },
+  "offers": {
+    "badge": "Limited offers",
+    "title": "Join smarter. Pay less.",
+    "description": "Clear prices, real savings — pick the plan that fits you and subscribe on WhatsApp in one tap.",
+    "subscribe": "Subscribe Now",
+    "save": "Save {{percent}}%",
+    "youSave": "You save {{amount}} {{currency}}",
+    "items": {
+      "lecture": {
+        "title": "Lecture Offer",
+        "description": "One lecture at a special price — perfect to try the platform and feel the difference."
+      },
+      "month": {
+        "title": "Month Offer",
+        "description": "A full month of learning with better value than buying lectures one by one."
+      },
+      "year": {
+        "title": "Year Offer",
+        "description": "The biggest deal — lock in a whole year and save the most for long-term excellence."
+      }
+    }
+  },
   "footer": {
     "brand": "Mrs Marina Atef",
     "tagline": "ميس مارينا التوب و الباقي فتوشوب — your platform to master history and geography.",
