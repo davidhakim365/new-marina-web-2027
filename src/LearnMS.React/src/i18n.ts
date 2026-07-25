@@ -8,8 +8,14 @@ import arTranslation from "./locales/ar/translation.json";
 
 const applyDocumentLanguage = (lng: string) => {
   const isArabic = lng === "ar" || lng.startsWith("ar");
-  document.documentElement.lang = isArabic ? "ar" : "en";
-  document.documentElement.dir = isArabic ? "rtl" : "ltr";
+  const root = document.documentElement;
+  root.lang = isArabic ? "ar" : "en";
+  root.dir = isArabic ? "rtl" : "ltr";
+  // Keep browser/extension auto-translate off; only the in-app switcher applies.
+  root.setAttribute("translate", "no");
+  root.classList.add("notranslate");
+  document.body?.setAttribute("translate", "no");
+  document.body?.classList.add("notranslate");
   document.title = isArabic ? "أ/ مارينا عاطف" : "Mrs Marina Atef";
 };
 

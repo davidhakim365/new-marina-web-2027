@@ -44,7 +44,9 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
         <Sonner />
       </BrowserRouter>
     </ThemeProvider>
-    <ReactQueryDevtools initialIsOpen={false} />
+    {import.meta.env.DEV ? (
+      <ReactQueryDevtools initialIsOpen={false} />
+    ) : null}
   </QueryClientProvider>
   // </React.StrictMode>
 );

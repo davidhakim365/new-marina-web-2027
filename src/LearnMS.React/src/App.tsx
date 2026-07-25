@@ -38,9 +38,11 @@ import { QueryErrorResetBoundary } from "@tanstack/react-query";
 import { ErrorBoundary } from "react-error-boundary";
 import { Route, Routes, useLocation } from "react-router-dom";
 import StudentLayout from "./components/student-layout";
+import { useStudentPageGuard } from "@/hooks/use-student-page-guard";
 
 function App() {
   const location = useLocation();
+  useStudentPageGuard();
 
   return (
     <QueryErrorResetBoundary>
