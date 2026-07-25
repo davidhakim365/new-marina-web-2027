@@ -21,25 +21,24 @@ public sealed class ParentService(AppDbContext db, IOptions<JwtBearerConfig> jwt
 
     public async Task<ParentLoginResult> LoginAsync(ParentLoginCommand command)
     {
-        var studentCode = command.StudentCode.Trim();
         var phone = NormalizePhone(command.PhoneNumber);
         var parentPhone = NormalizePhone(command.ParentPhoneNumber);
 
-        var students = await db.Students
+        if (string.IsNullOrEmpty(phone) || string.IsNullOrEmpty(parentPhone))
+            throw new ApiException(ParentErrors.InvalidCredentials);
+
+        // Narrow candidates in SQL, then normalize exactly in memory.
+        var phoneTail = phone.Length >= 10 ? phone[^10..] : phone;
+        var parentTail = parentPhone.Length >= 10 ? parentPhone[^10..] : parentPhone;
+
+        var candidates = await db.Students
             .AsNoTracking()
-            .Where(s => s.StudentCode.ToLower() == studentCode.ToLower())
+            .Where(s =>
+                s.PhoneNumber.Contains(phoneTail) &&
+                s.ParentPhoneNumber.Contains(parentTail))
             .ToListAsync();
 
-        // Also accept codes that differ only by surrounding whitespace in the DB.
-        if (students.Count == 0)
-        {
-            students = await db.Students
-                .AsNoTracking()
-                .Where(s => s.StudentCode.Trim().ToLower() == studentCode.ToLower())
-                .ToListAsync();
-        }
-
-        var student = students.FirstOrDefault(s =>
+        var student = candidates.FirstOrDefault(s =>
             NormalizePhone(s.PhoneNumber) == phone &&
             NormalizePhone(s.ParentPhoneNumber) == parentPhone);
 
