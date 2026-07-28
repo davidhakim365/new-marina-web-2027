@@ -86,7 +86,7 @@ const StudentsPage = () => {
     return map;
   }, [stats?.byLevel]);
 
-  const topGovernorates = (stats?.byGovernorate ?? []).slice(0, 6);
+  const governorates = stats?.byGovernorate ?? [];
 
   return (
     <DashboardPageShell
@@ -160,21 +160,23 @@ const StudentsPage = () => {
         </div>
         {statsLoading ? (
           <Loading />
-        ) : topGovernorates.length === 0 ? (
+        ) : governorates.length === 0 ? (
           <p className="text-sm text-muted-foreground">
             {t("admin.students.stats.noGovernorateData")}
           </p>
         ) : (
-          <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-            {topGovernorates.map((bucket) => (
-              <div
-                key={bucket.governorate}
-                className="flex items-center justify-between rounded-lg border border-color2/10 px-3 py-2"
-              >
-                <span className="truncate text-sm">{bucket.governorate}</span>
-                <span className="ms-2 shrink-0 font-semibold">{bucket.count}</span>
-              </div>
-            ))}
+          <div className="max-h-[28rem] overflow-y-auto pe-1">
+            <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+              {governorates.map((bucket) => (
+                <div
+                  key={bucket.governorate}
+                  className="flex items-center justify-between rounded-lg border border-color2/10 px-3 py-2"
+                >
+                  <span className="truncate text-sm">{bucket.governorate}</span>
+                  <span className="ms-2 shrink-0 font-semibold">{bucket.count}</span>
+                </div>
+              ))}
+            </div>
           </div>
         )}
       </DashboardCard>
