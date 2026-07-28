@@ -16,7 +16,7 @@ import { cn } from "@/lib/utils";
 const WHATSAPP_PHONE = "201044556061";
 
 type OfferDef = {
-  key: "lecture" | "month" | "year";
+  key: "lecture" | "month" | "semester";
   original: number;
   price: number;
   icon: typeof BookOpen;
@@ -26,7 +26,7 @@ type OfferDef = {
 const offers: OfferDef[] = [
   { key: "lecture", original: 80, price: 65, icon: BookOpen },
   { key: "month", original: 260, price: 200, icon: CalendarDays },
-  { key: "year", original: 1400, price: 450, icon: Crown, featured: true },
+  { key: "semester", original: 1400, price: 450, icon: Crown, featured: true },
 ];
 
 function discountPercent(original: number, price: number) {

@@ -298,9 +298,9 @@
         "title": "Month Offer",
         "description": "A full month of learning with better value than buying lectures one by one."
       },
-      "year": {
-        "title": "Year Offer",
-        "description": "The biggest deal — lock in a whole year and save the most for long-term excellence."
+      "semester": {
+        "title": "Semester Offer",
+        "description": "The biggest deal — lock in a full semester and save the most for lasting excellence."
       }
     }
   },
