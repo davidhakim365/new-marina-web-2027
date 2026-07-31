@@ -19,4 +19,8 @@ FROM mcr.microsoft.com/dotnet/aspnet:8.0-alpine AS final
 WORKDIR /app
 COPY --from=backend /app .
 
+# Avoid FileSystemWatcher/inotify exhaustion on shared hosts (e.g. Render).
+ENV DOTNET_HOSTBUILDER__RELOADCONFIGONCHANGE=false
+ENV DOTNET_USE_POLLING_FILE_WATCHER=1
+
 ENTRYPOINT ["dotnet", "LearnMS.API.dll"]

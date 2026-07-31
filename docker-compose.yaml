@@ -10,6 +10,9 @@ services:
       dockerfile: ./Dockerfile
     ports:
       - 3000:8080
+    environment:
+      DOTNET_HOSTBUILDER__RELOADCONFIGONCHANGE: "false"
+      DOTNET_USE_POLLING_FILE_WATCHER: "1"
     env_file:
       - .env
     depends_on:

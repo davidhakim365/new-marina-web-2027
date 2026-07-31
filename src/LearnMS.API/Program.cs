@@ -3,6 +3,9 @@ using LearnMS.API.Features;
 using Microsoft.AspNetCore.Http.Features;
 using Serilog;
 
+// Prevent startup crash when the host hits the inotify/user-watches limit.
+Environment.SetEnvironmentVariable("DOTNET_HOSTBUILDER__RELOADCONFIGONCHANGE", "false");
+
 // Add services to the container.
 var builder = WebApplication.CreateBuilder(args);
 builder.WebHost.ConfigureKestrel(options =>
