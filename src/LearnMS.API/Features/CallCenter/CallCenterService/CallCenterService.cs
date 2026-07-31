@@ -30,60 +30,13 @@ public sealed class CallCenterService(AppDbContext context) : ICallCenterService
 
     public async Task<PageList<CallCenterStudentDto>> QueryStudentsAsync(GetCallCenterStudentsQuery query)
     {
-        var lecture = await context.Set<Lecture>()
-            .AsNoTracking()
-            .Include(x => x.Course)
-            .FirstOrDefaultAsync(x => x.Id == query.LectureId && x.CourseId == query.CourseId)
-            ?? throw new ApiException(CallCenterErrors.LectureNotFound);
-
-        var search = query.Search?.Trim().ToLower();
-
-        var studentsQuery = context.Set<Student>()
-            .AsNoTracking()
-            .Where(x => x.Level == lecture.Course.Level)
-            .Include(x => x.LectureHomeworks.Where(h => h.LectureId == query.LectureId).Take(1))
-            .Include(x => x.LectureQuizzes.Where(q => q.LectureId == query.LectureId).Take(1))
-            .Include(x => x.LectureAttendances.Where(a => a.LectureId == query.LectureId).Take(1))
-            .Include(x => x.QuizSubmissions.Where(s => s.Quiz.LectureId == query.LectureId))
-                .ThenInclude(s => s.Quiz)
-            .OrderBy(x => x.StudentCode)
-            .AsQueryable();
-
-        if (!string.IsNullOrEmpty(search))
-        {
-            studentsQuery = studentsQuery.Where(x =>
-                x.FullName.ToLower().Contains(search)
-                || x.StudentCode.ToLower().Contains(search)
-                || x.ParentPhoneNumber.Contains(search)
-                || x.PhoneNumber.Contains(search));
-        }
-
-        if (query.Absent == true)
-        {
-            studentsQuery = studentsQuery.Where(x =>
-                !x.LectureAttendances.Any(a => a.LectureId == query.LectureId && a.AttendedAt != null));
-        }
-        else if (query.Absent == false)
-        {
-            studentsQuery = studentsQuery.Where(x =>
-                x.LectureAttendances.Any(a => a.LectureId == query.LectureId && a.AttendedAt != null));
-        }
+        var lecture = await LoadLectureAsync(query.CourseId, query.LectureId);
+        var studentsQuery = BuildStudentsQuery(lecture, query.LectureId, query.Search, query.Called, query.Absent);
 
         var contacts = await context.Set<CallCenterContact>()
             .AsNoTracking()
             .Where(c => c.LectureId == query.LectureId)
             .ToDictionaryAsync(c => c.StudentId);
-
-        if (query.Called == true)
-        {
-            var calledIds = contacts.Where(c => c.Value.Called).Select(c => c.Key).ToHashSet();
-            studentsQuery = studentsQuery.Where(x => calledIds.Contains(x.Id));
-        }
-        else if (query.Called == false)
-        {
-            var calledIds = contacts.Where(c => c.Value.Called).Select(c => c.Key).ToHashSet();
-            studentsQuery = studentsQuery.Where(x => !calledIds.Contains(x.Id));
-        }
 
         var page = await PageList<Student>.CreateAsync(studentsQuery, query.Page, query.PageSize);
 
@@ -98,11 +51,7 @@ public sealed class CallCenterService(AppDbContext context) : ICallCenterService
 
     public async Task<CallCenterStudentDto> UpdateContactAsync(UpdateCallCenterContactCommand command)
     {
-        var lecture = await context.Set<Lecture>()
-            .AsNoTracking()
-            .Include(x => x.Course)
-            .FirstOrDefaultAsync(x => x.Id == command.LectureId && x.CourseId == command.CourseId)
-            ?? throw new ApiException(CallCenterErrors.LectureNotFound);
+        var lecture = await LoadLectureAsync(command.CourseId, command.LectureId);
 
         var student = await context.Set<Student>()
             .Include(x => x.LectureHomeworks.Where(h => h.LectureId == command.LectureId).Take(1))
@@ -141,6 +90,132 @@ public sealed class CallCenterService(AppDbContext context) : ICallCenterService
         await context.SaveChangesAsync();
 
         return MapStudent(student, lecture, contact);
+    }
+
+    public async IAsyncEnumerable<IEnumerable<ExportCallCenterStudentRow>> ExportStudentsAsync(
+        ExportCallCenterStudentsQuery query)
+    {
+        var lecture = await LoadLectureAsync(query.CourseId, query.LectureId);
+        var studentsQuery = BuildStudentsQuery(lecture, query.LectureId, query.Search, query.Called, query.Absent);
+
+        var contacts = await context.Set<CallCenterContact>()
+            .AsNoTracking()
+            .Where(c => c.LectureId == query.LectureId)
+            .ToDictionaryAsync(c => c.StudentId);
+
+        const int chunkSize = 100;
+        var totalRecords = await studentsQuery.CountAsync();
+        var chunks = (int)Math.Ceiling(totalRecords / (double)chunkSize);
+
+        for (var i = 0; i < chunks; i++)
+        {
+            var students = await studentsQuery
+                .Skip(i * chunkSize)
+                .Take(chunkSize)
+                .ToListAsync();
+
+            yield return students.Select(student =>
+            {
+                contacts.TryGetValue(student.Id, out var contact);
+                var dto = MapStudent(student, lecture, contact);
+                return ToExportRow(dto);
+            }).ToList();
+        }
+    }
+
+    private async Task<Lecture> LoadLectureAsync(Guid courseId, Guid lectureId)
+    {
+        return await context.Set<Lecture>()
+            .AsNoTracking()
+            .Include(x => x.Course)
+            .FirstOrDefaultAsync(x => x.Id == lectureId && x.CourseId == courseId)
+            ?? throw new ApiException(CallCenterErrors.LectureNotFound);
+    }
+
+    private IQueryable<Student> BuildStudentsQuery(
+        Lecture lecture,
+        Guid lectureId,
+        string? search,
+        bool? called,
+        bool? absent)
+    {
+        var studentsQuery = context.Set<Student>()
+            .AsNoTracking()
+            .Where(x => x.Level == lecture.Course.Level)
+            .Include(x => x.LectureHomeworks.Where(h => h.LectureId == lectureId).Take(1))
+            .Include(x => x.LectureQuizzes.Where(q => q.LectureId == lectureId).Take(1))
+            .Include(x => x.LectureAttendances.Where(a => a.LectureId == lectureId).Take(1))
+            .Include(x => x.QuizSubmissions.Where(s => s.Quiz.LectureId == lectureId))
+                .ThenInclude(s => s.Quiz)
+            .OrderBy(x => x.StudentCode)
+            .AsQueryable();
+
+        var trimmedSearch = search?.Trim().ToLower();
+        if (!string.IsNullOrEmpty(trimmedSearch))
+        {
+            studentsQuery = studentsQuery.Where(x =>
+                x.FullName.ToLower().Contains(trimmedSearch)
+                || x.StudentCode.ToLower().Contains(trimmedSearch)
+                || x.ParentPhoneNumber.Contains(trimmedSearch)
+                || x.PhoneNumber.Contains(trimmedSearch));
+        }
+
+        if (absent == true)
+        {
+            studentsQuery = studentsQuery.Where(x =>
+                !x.LectureAttendances.Any(a => a.LectureId == lectureId && a.AttendedAt != null));
+        }
+        else if (absent == false)
+        {
+            studentsQuery = studentsQuery.Where(x =>
+                x.LectureAttendances.Any(a => a.LectureId == lectureId && a.AttendedAt != null));
+        }
+
+        if (called == true)
+        {
+            studentsQuery = studentsQuery.Where(x =>
+                context.Set<CallCenterContact>().Any(c =>
+                    c.LectureId == lectureId && c.StudentId == x.Id && c.Called));
+        }
+        else if (called == false)
+        {
+            studentsQuery = studentsQuery.Where(x =>
+                !context.Set<CallCenterContact>().Any(c =>
+                    c.LectureId == lectureId && c.StudentId == x.Id && c.Called));
+        }
+
+        return studentsQuery;
+    }
+
+    private static ExportCallCenterStudentRow ToExportRow(CallCenterStudentDto student)
+    {
+        static string Ratio(int? correct, int? total, int? pending = null)
+        {
+            if (total is null) return "";
+            var value = $"{correct ?? 0}/{total}";
+            return pending is > 0 ? $"{value} (pending {pending})" : value;
+        }
+
+        static string Score(decimal? score, decimal? fullMark)
+        {
+            if (score is null) return "";
+            return fullMark is null ? $"{score}" : $"{score}/{fullMark}";
+        }
+
+        return new ExportCallCenterStudentRow
+        {
+            StudentCode = student.StudentCode,
+            FullName = student.FullName,
+            ParentPhoneNumber = student.ParentPhoneNumber,
+            Attendance = student.Attended ? "Present" : "Absent",
+            QuizScore = Score(student.QuizScore, student.QuizFullMark),
+            HomeworkChoose = Ratio(student.ChooseCorrect, student.ChooseTotal),
+            HomeworkEssay = Ratio(student.EssayCorrect, student.EssayTotal, student.EssayPending),
+            OfflineHomework = Score(student.HomeworkScore, student.HomeworkFullMark),
+            Comment = student.Comment ?? "",
+            Called = student.Called ? "Yes" : "No",
+            CalledAt = student.CalledAt?.ToString("u") ?? "",
+        };
     }
 
     private static CallCenterStudentDto MapStudent(

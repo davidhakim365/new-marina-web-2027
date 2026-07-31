@@ -7,4 +7,7 @@ public interface ICallCenterService
     Task<CallCenterLectureMeta> GetLectureMetaAsync(Guid courseId, Guid lectureId);
     Task<PageList<CallCenterStudentDto>> QueryStudentsAsync(GetCallCenterStudentsQuery query);
     Task<CallCenterStudentDto> UpdateContactAsync(UpdateCallCenterContactCommand command);
+    IAsyncEnumerable<IEnumerable<ExportCallCenterStudentRow>> ExportStudentsAsync(
+        ExportCallCenterStudentsQuery query
+    );
 }

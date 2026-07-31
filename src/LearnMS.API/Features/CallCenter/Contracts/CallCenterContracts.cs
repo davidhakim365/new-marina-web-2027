@@ -61,3 +61,27 @@ public sealed record CallCenterLectureMeta
     public decimal? QuizFullMark { get; init; }
     public decimal? HomeworkFullMark { get; init; }
 }
+
+public sealed record ExportCallCenterStudentsQuery
+{
+    public required Guid CourseId { get; init; }
+    public required Guid LectureId { get; init; }
+    public string? Search { get; init; }
+    public bool? Called { get; init; }
+    public bool? Absent { get; init; }
+}
+
+public sealed record ExportCallCenterStudentRow
+{
+    public required string StudentCode { get; init; }
+    public required string FullName { get; init; }
+    public required string ParentPhoneNumber { get; init; }
+    public required string Attendance { get; init; }
+    public string? QuizScore { get; init; }
+    public string? HomeworkChoose { get; init; }
+    public string? HomeworkEssay { get; init; }
+    public string? OfflineHomework { get; init; }
+    public string? Comment { get; init; }
+    public required string Called { get; init; }
+    public string? CalledAt { get; init; }
+}

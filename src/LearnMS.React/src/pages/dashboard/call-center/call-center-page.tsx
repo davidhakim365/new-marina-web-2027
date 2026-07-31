@@ -30,8 +30,11 @@ import {
 } from "@/lib/student-levels";
 import { cn, toast } from "@/lib/utils";
 import { PaginationState } from "@tanstack/react-table";
+import useDownloadFile from "@/hooks/useDownloadFile";
 import {
   CheckCircle2,
+  Download,
+  Loader2,
   MessageCircle,
   Phone,
   Search,
@@ -302,6 +305,7 @@ function StudentCallCard({
 
 const CallCenterPage = () => {
   const { t } = useTranslation();
+  const { download, isDownloading } = useDownloadFile();
   const [level, setLevel] = useState<StudentLevel | undefined>();
   const [courseId, setCourseId] = useState<string | undefined>();
   const [lectureId, setLectureId] = useState<string | undefined>();
@@ -317,6 +321,19 @@ const CallCenterPage = () => {
     pageIndex: 0,
     pageSize: 20,
   });
+
+  const calledQueryParam =
+    calledFilter === "called"
+      ? true
+      : calledFilter === "notCalled"
+        ? false
+        : undefined;
+  const absentQueryParam =
+    attendanceFilter === "absent"
+      ? true
+      : attendanceFilter === "present"
+        ? false
+        : undefined;
 
   useEffect(() => {
     const timer = window.setTimeout(() => setDebouncedSearch(search.trim()), 300);
@@ -350,22 +367,32 @@ const CallCenterPage = () => {
     page: pageIndex + 1,
     pageSize,
     search: debouncedSearch || undefined,
-    absent:
-      attendanceFilter === "absent"
-        ? true
-        : attendanceFilter === "present"
-          ? false
-          : undefined,
-    called:
-      calledFilter === "called"
-        ? true
-        : calledFilter === "notCalled"
-          ? false
-          : undefined,
+    absent: absentQueryParam,
+    called: calledQueryParam,
   });
 
   const totalCount = studentsQuery.data?.data?.totalCount ?? 0;
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
+
+  const onExport = async () => {
+    if (!courseId || !lectureId) return;
+    const params = new URLSearchParams();
+    if (debouncedSearch) params.set("search", debouncedSearch);
+    if (calledQueryParam !== undefined)
+      params.set("called", String(calledQueryParam));
+    if (absentQueryParam !== undefined)
+      params.set("absent", String(absentQueryParam));
+    const qs = params.toString();
+    const safeTitle = (selectedLecture?.title || "lecture")
+      .replace(/[^\w\-]+/g, "_")
+      .slice(0, 40);
+    await download(
+      `/api/call-center/courses/${courseId}/lectures/${lectureId}/students/export${
+        qs ? `?${qs}` : ""
+      }`,
+      `call-center-${safeTitle}.csv`
+    );
+  };
 
   if (coursesLoading) return <Loading />;
 
@@ -375,6 +402,23 @@ const CallCenterPage = () => {
       description={t("admin.callCenter.description")}
       icon={Phone}
       fullWidth
+      actions={
+        lectureId && courseId ? (
+          <Button
+            variant="outline"
+            disabled={isDownloading}
+            onClick={onExport}
+            className="gap-2"
+          >
+            {isDownloading ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Download className="h-4 w-4" />
+            )}
+            {t("admin.callCenter.export")}
+          </Button>
+        ) : undefined
+      }
     >
       <DashboardCard>
         <div className="grid grid-cols-1 gap-3 sm:flex sm:flex-wrap sm:items-center">
@@ -458,64 +502,90 @@ const CallCenterPage = () => {
 
       {lectureId && courseId && (
         <DashboardCard>
-          <div className="mb-4 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-            <div className="relative w-full max-w-md">
-              <Search className="pointer-events-none absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                value={search}
-                onChange={(e) => {
-                  setSearch(e.target.value);
-                  setPagination((p) => ({ ...p, pageIndex: 0 }));
-                }}
-                placeholder={t("admin.callCenter.searchPlaceholder")}
-                className="ps-9"
-              />
+          <div className="mb-4 space-y-3">
+            <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+              <div className="relative w-full max-w-md">
+                <Search className="pointer-events-none absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  value={search}
+                  onChange={(e) => {
+                    setSearch(e.target.value);
+                    setPagination((p) => ({ ...p, pageIndex: 0 }));
+                  }}
+                  placeholder={t("admin.callCenter.searchPlaceholder")}
+                  className="ps-9"
+                />
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <Select
+                  value={attendanceFilter}
+                  onValueChange={(v) => {
+                    setAttendanceFilter(v as typeof attendanceFilter);
+                    setPagination((p) => ({ ...p, pageIndex: 0 }));
+                  }}
+                >
+                  <SelectTrigger className="w-[150px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">
+                      {t("admin.callCenter.filterAllAttendance")}
+                    </SelectItem>
+                    <SelectItem value="absent">
+                      {t("admin.callCenter.filterAbsent")}
+                    </SelectItem>
+                    <SelectItem value="present">
+                      {t("admin.callCenter.filterPresent")}
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={isDownloading}
+                  onClick={onExport}
+                  className="gap-2"
+                >
+                  {isDownloading ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Download className="h-4 w-4" />
+                  )}
+                  {t("admin.callCenter.export")}
+                </Button>
+              </div>
             </div>
-            <div className="flex flex-wrap gap-2">
-              <Select
-                value={attendanceFilter}
-                onValueChange={(v) => {
-                  setAttendanceFilter(v as typeof attendanceFilter);
-                  setPagination((p) => ({ ...p, pageIndex: 0 }));
-                }}
-              >
-                <SelectTrigger className="w-[150px]">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">
-                    {t("admin.callCenter.filterAllAttendance")}
-                  </SelectItem>
-                  <SelectItem value="absent">
-                    {t("admin.callCenter.filterAbsent")}
-                  </SelectItem>
-                  <SelectItem value="present">
-                    {t("admin.callCenter.filterPresent")}
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-              <Select
-                value={calledFilter}
-                onValueChange={(v) => {
-                  setCalledFilter(v as typeof calledFilter);
-                  setPagination((p) => ({ ...p, pageIndex: 0 }));
-                }}
-              >
-                <SelectTrigger className="w-[150px]">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">
-                    {t("admin.callCenter.filterAllCalls")}
-                  </SelectItem>
-                  <SelectItem value="called">
-                    {t("admin.callCenter.filterCalled")}
-                  </SelectItem>
-                  <SelectItem value="notCalled">
-                    {t("admin.callCenter.filterNotCalled")}
-                  </SelectItem>
-                </SelectContent>
-              </Select>
+
+            <div className="space-y-2">
+              <p className="text-sm font-medium text-muted-foreground">
+                {t("admin.callCenter.calledFilterLabel")}
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {(
+                  [
+                    ["all", t("admin.callCenter.filterAllCalls")],
+                    ["called", t("admin.callCenter.filterCalled")],
+                    ["notCalled", t("admin.callCenter.filterNotCalled")],
+                  ] as const
+                ).map(([value, label]) => (
+                  <Button
+                    key={value}
+                    type="button"
+                    size="sm"
+                    variant={calledFilter === value ? "default" : "outline"}
+                    className={cn(
+                      calledFilter === value &&
+                        "bg-gradient-to-r from-color1 to-color2 text-white"
+                    )}
+                    onClick={() => {
+                      setCalledFilter(value);
+                      setPagination((p) => ({ ...p, pageIndex: 0 }));
+                    }}
+                  >
+                    {label}
+                  </Button>
+                ))}
+              </div>
             </div>
           </div>
 

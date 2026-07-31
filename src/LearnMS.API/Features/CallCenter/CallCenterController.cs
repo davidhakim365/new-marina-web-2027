@@ -1,3 +1,6 @@
+using System.Globalization;
+using System.Text;
+using CsvHelper;
 using LearnMS.API.Common;
 using LearnMS.API.Entities;
 using LearnMS.API.Features.Auth;
@@ -86,5 +89,52 @@ public sealed class CallCenterController(ICallCenterService callCenterService) :
             Data = data,
             Message = "Call center contact updated"
         };
+    }
+
+    [HttpGet("courses/{courseId:guid}/lectures/{lectureId:guid}/students/export")]
+    [ApiAuthorize(Role = UserRole.Assistant, Permissions = [Permission.ManageCallCenter])]
+    [SwaggerOperation(OperationId = "ExportCallCenterStudents")]
+    public async Task<IActionResult> ExportStudents(
+        Guid courseId,
+        Guid lectureId,
+        [FromQuery] string? search = null,
+        [FromQuery] bool? called = null,
+        [FromQuery] bool? absent = null)
+    {
+        var data = callCenterService.ExportStudentsAsync(
+            new ExportCallCenterStudentsQuery
+            {
+                CourseId = courseId,
+                LectureId = lectureId,
+                Search = search,
+                Called = called,
+                Absent = absent,
+            });
+
+        Response.Headers.Append("Content-Type", "text/csv; charset=utf-8");
+        Response.Headers.Append(
+            "Content-Disposition",
+            $"attachment; filename=call-center-{lectureId:N}.csv"
+        );
+
+        await using var sw = new StreamWriter(Response.Body, new UTF8Encoding(encoderShouldEmitUTF8Identifier: true));
+        await using var csv = new CsvWriter(sw, CultureInfo.InvariantCulture);
+
+        await csv.WriteHeaderAsync<ExportCallCenterStudentRow>();
+        await csv.NextRecordAsync();
+
+        await foreach (var records in data)
+        {
+            foreach (var record in records)
+            {
+                csv.WriteRecord(record);
+                await csv.NextRecordAsync();
+            }
+
+            await csv.FlushAsync();
+            await sw.FlushAsync();
+        }
+
+        return new EmptyResult();
     }
 }
