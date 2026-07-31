@@ -15,6 +15,7 @@ export function getAssistantHomePath(permissions: readonly string[]): string {
   if (has(Permission.ManageAssistants)) return "/dashboard/assistants";
   if (has(Permission.ManageGrantedAccess)) return "/dashboard/granted-access";
   if (has(Permission.ManageExpirationTime)) return "/dashboard/expiration-time";
+  if (has(Permission.ManageCallCenter)) return "/dashboard/call-center";
 
   return "/dashboard/my-profile";
 }

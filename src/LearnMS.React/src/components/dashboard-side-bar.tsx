@@ -12,6 +12,7 @@ import {
   Clock,
   FileText,
   Gift,
+  Headset,
   HelpCircle,
   LayoutDashboard,
   LogOut,
@@ -38,6 +39,7 @@ type NavItem = {
     | "admin.nav.students"
     | "admin.nav.grantedAccess"
     | "admin.nav.expirationTime"
+    | "admin.nav.callCenter"
     | "admin.nav.assistants"
     | "admin.nav.myProfile";
   icon: React.ElementType;
@@ -114,6 +116,13 @@ const userItems: NavItem[] = [
     icon: Clock,
     match: (pathname) => pathname.startsWith("/dashboard/expiration-time"),
     permission: Permission.ManageExpirationTime,
+  },
+  {
+    to: "/dashboard/call-center",
+    labelKey: "admin.nav.callCenter",
+    icon: Headset,
+    match: (pathname) => pathname.startsWith("/dashboard/call-center"),
+    permission: Permission.ManageCallCenter,
   },
   {
     to: "/dashboard/assistants",
