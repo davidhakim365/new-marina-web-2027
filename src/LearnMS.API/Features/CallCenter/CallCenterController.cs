@@ -120,17 +120,9 @@ public sealed class CallCenterController(ICallCenterService callCenterService) :
         await using var sw = new StreamWriter(Response.Body, new UTF8Encoding(encoderShouldEmitUTF8Identifier: true));
         await using var csv = new CsvWriter(sw, CultureInfo.InvariantCulture);
 
-        await csv.WriteHeaderAsync<ExportCallCenterStudentRow>();
-        await csv.NextRecordAsync();
-
         await foreach (var records in data)
         {
-            foreach (var record in records)
-            {
-                csv.WriteRecord(record);
-                await csv.NextRecordAsync();
-            }
-
+            await csv.WriteRecordsAsync(records);
             await csv.FlushAsync();
             await sw.FlushAsync();
         }
