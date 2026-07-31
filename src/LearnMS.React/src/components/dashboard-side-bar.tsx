@@ -12,8 +12,8 @@ import {
   Clock,
   FileText,
   Gift,
-  Headset,
   HelpCircle,
+  Phone,
   LayoutDashboard,
   LogOut,
   QrCode,
@@ -120,7 +120,7 @@ const userItems: NavItem[] = [
   {
     to: "/dashboard/call-center",
     labelKey: "admin.nav.callCenter",
-    icon: Headset,
+    icon: Phone,
     match: (pathname) => pathname.startsWith("/dashboard/call-center"),
     permission: Permission.ManageCallCenter,
   },

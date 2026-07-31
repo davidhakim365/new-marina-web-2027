@@ -32,7 +32,6 @@ import { cn, toast } from "@/lib/utils";
 import { PaginationState } from "@tanstack/react-table";
 import {
   CheckCircle2,
-  Headset,
   MessageCircle,
   Phone,
   Search,
@@ -374,7 +373,7 @@ const CallCenterPage = () => {
     <DashboardPageShell
       title={t("admin.callCenter.title")}
       description={t("admin.callCenter.description")}
-      icon={Headset}
+      icon={Phone}
       fullWidth
     >
       <DashboardCard>
