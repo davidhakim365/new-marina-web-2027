@@ -20,8 +20,39 @@ public sealed record UpdateCallCenterContactCommand
     public required Guid LectureId { get; init; }
     public required Guid StudentId { get; init; }
     public required Guid ActorId { get; init; }
+    public required UserRole ActorRole { get; init; }
     public string? Comment { get; init; }
     public bool? Called { get; init; }
+}
+
+public sealed record LogCallCenterNotifyCommand
+{
+    public required Guid CourseId { get; init; }
+    public required Guid LectureId { get; init; }
+    public required Guid StudentId { get; init; }
+    public required Guid ActorId { get; init; }
+    public required UserRole ActorRole { get; init; }
+    public string? Comment { get; init; }
+    public bool MarkCalled { get; init; } = true;
+}
+
+public sealed record GetCallCenterHistoryQuery
+{
+    public required Guid CourseId { get; init; }
+    public required Guid LectureId { get; init; }
+    public required Guid StudentId { get; init; }
+    public int Page { get; init; } = 1;
+    public int PageSize { get; init; } = 20;
+}
+
+public sealed record CallCenterHistoryItemDto
+{
+    [Required] public required Guid Id { get; init; }
+    [Required] public required CallCenterHistoryAction Action { get; init; }
+    [Required] public required string ActorName { get; init; }
+    [Required] public required Guid ActorId { get; init; }
+    public string? Comment { get; init; }
+    [Required] public required DateTime CreatedAt { get; init; }
 }
 
 public sealed record CallCenterStudentDto
@@ -49,6 +80,12 @@ public sealed record UpdateCallCenterContactRequest
 {
     public string? Comment { get; init; }
     public bool? Called { get; init; }
+}
+
+public sealed record LogCallCenterNotifyRequest
+{
+    public string? Comment { get; init; }
+    public bool? MarkCalled { get; init; }
 }
 
 public sealed record CallCenterLectureMeta

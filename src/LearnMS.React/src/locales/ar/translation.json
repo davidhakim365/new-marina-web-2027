@@ -872,6 +872,15 @@
       "absent": "غائب",
       "called": "تم الاتصال",
       "notify": "إشعار واتساب",
+      "notifyLogged": "تم تسجيل إشعار واتساب في السجل",
+      "historyTitle": "سجل الاتصال والإشعارات",
+      "historyEmpty": "لا يوجد سجل لهذا الطالب بعد.",
+      "historyAction": {
+        "called": "تم الاتصال",
+        "uncalled": "إلغاء الاتصال",
+        "comment": "ملاحظة",
+        "notify": "إشعار واتساب"
+      },
       "quiz": "الكويز",
       "homeworkChoose": "الواجب · اختيار",
       "homeworkEssay": "الواجب · مقالي",

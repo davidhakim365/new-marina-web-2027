@@ -870,6 +870,15 @@
       "absent": "Absent",
       "called": "Called",
       "notify": "Notify WhatsApp",
+      "notifyLogged": "WhatsApp notify logged in history",
+      "historyTitle": "Call & notify history",
+      "historyEmpty": "No history yet for this student.",
+      "historyAction": {
+        "called": "Called",
+        "uncalled": "Uncalled",
+        "comment": "Comment",
+        "notify": "WhatsApp notify"
+      },
       "quiz": "Quiz",
       "homeworkChoose": "Homework · Choose",
       "homeworkEssay": "Homework · Essay",

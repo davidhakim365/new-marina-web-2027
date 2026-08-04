@@ -1,7 +1,10 @@
 import {
+  CallCenterHistoryAction,
   CallCenterStudent,
   openCallCenterWhatsApp,
+  useCallCenterHistoryQuery,
   useCallCenterStudentsQuery,
+  useLogCallCenterNotify,
   useUpdateCallCenterContact,
 } from "@/api/call-center-api";
 import { useCoursesQuery } from "@/api/courses-api";
@@ -23,7 +26,8 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useGetCourse } from "@/generated/api";
-import { StudentLevel } from "@/generated/model";
+import { Permission, StudentLevel } from "@/generated/model";
+import { useDashboardPermissions } from "@/hooks/use-dashboard-permissions";
 import {
   ADMIN_LEVEL_I18N_KEYS,
   STUDENT_LEVEL_ORDER,
@@ -33,7 +37,10 @@ import { PaginationState } from "@tanstack/react-table";
 import useDownloadFile from "@/hooks/useDownloadFile";
 import {
   CheckCircle2,
+  ChevronDown,
+  ChevronUp,
   Download,
+  History,
   Loader2,
   MessageCircle,
   Phone,
@@ -81,21 +88,120 @@ function RatioText({
   );
 }
 
+function historyActionLabel(
+  action: CallCenterHistoryAction,
+  t: (key: string) => string
+) {
+  switch (action) {
+    case "Called":
+      return t("admin.callCenter.historyAction.called");
+    case "Uncalled":
+      return t("admin.callCenter.historyAction.uncalled");
+    case "Comment":
+      return t("admin.callCenter.historyAction.comment");
+    case "Notify":
+      return t("admin.callCenter.historyAction.notify");
+    default:
+      return action;
+  }
+}
+
+function StudentHistory({
+  courseId,
+  lectureId,
+  studentId,
+}: {
+  courseId: string;
+  lectureId: string;
+  studentId: string;
+}) {
+  const { t, i18n } = useTranslation();
+  const [open, setOpen] = useState(false);
+  const historyQuery = useCallCenterHistoryQuery(
+    courseId,
+    lectureId,
+    studentId,
+    open,
+    { page: 1, pageSize: 30 }
+  );
+
+  const locale = i18n.language.startsWith("ar") ? "ar" : "en";
+
+  return (
+    <div className="mt-3 rounded-lg border border-color2/10 bg-muted/20">
+      <button
+        type="button"
+        className="flex w-full items-center justify-between gap-2 px-3 py-2 text-sm font-medium"
+        onClick={() => setOpen((v) => !v)}
+      >
+        <span className="flex items-center gap-2">
+          <History className="h-4 w-4 text-color2" />
+          {t("admin.callCenter.historyTitle")}
+        </span>
+        {open ? (
+          <ChevronUp className="h-4 w-4 text-muted-foreground" />
+        ) : (
+          <ChevronDown className="h-4 w-4 text-muted-foreground" />
+        )}
+      </button>
+
+      {open && (
+        <div className="border-t border-color2/10 px-3 py-3">
+          {historyQuery.isLoading ? (
+            <Loading />
+          ) : (historyQuery.data?.data?.items.length ?? 0) === 0 ? (
+            <p className="text-sm text-muted-foreground">
+              {t("admin.callCenter.historyEmpty")}
+            </p>
+          ) : (
+            <ul className="space-y-2">
+              {historyQuery.data!.data!.items.map((item) => (
+                <li
+                  key={item.id}
+                  className="rounded-md bg-background/70 px-3 py-2 text-sm"
+                >
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Badge variant="secondary">
+                      {historyActionLabel(item.action, t)}
+                    </Badge>
+                    <span className="font-medium">{item.actorName}</span>
+                    <span className="text-xs text-muted-foreground" dir="ltr">
+                      {new Date(item.createdAt).toLocaleString(
+                        locale === "ar" ? "ar-EG" : "en-GB"
+                      )}
+                    </span>
+                  </div>
+                  {item.comment ? (
+                    <p className="mt-1 text-muted-foreground">{item.comment}</p>
+                  ) : null}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function StudentCallCard({
   student,
   courseId,
   lectureId,
   courseTitle,
   lectureTitle,
+  canViewHistory,
 }: {
   student: CallCenterStudent;
   courseId: string;
   lectureId: string;
   courseTitle?: string;
   lectureTitle?: string;
+  canViewHistory: boolean;
 }) {
   const { t, i18n } = useTranslation();
   const updateMutation = useUpdateCallCenterContact();
+  const notifyMutation = useLogCallCenterNotify();
   const [comment, setComment] = useState(student.comment ?? "");
 
   useEffect(() => {
@@ -103,6 +209,7 @@ function StudentCallCard({
   }, [student.comment, student.id]);
 
   const locale = i18n.language.startsWith("ar") ? "ar" : "en";
+  const busy = updateMutation.isPending || notifyMutation.isPending;
 
   const saveComment = () => {
     const next = comment.trim();
@@ -166,19 +273,24 @@ function StudentCallCard({
       });
       return;
     }
-    const nextComment = comment.trim();
-    const prevComment = (student.comment ?? "").trim();
-    if (nextComment !== prevComment) {
-      updateMutation.mutate({
+
+    notifyMutation.mutate(
+      {
         courseId,
         lectureId,
         studentId: student.id,
-        comment: nextComment,
-        called: student.called ? undefined : true,
-      });
-    } else if (!student.called) {
-      toggleCalled(true);
-    }
+        comment: comment.trim(),
+        markCalled: !student.called,
+      },
+      {
+        onSuccess: () => {
+          toast({
+            title: t("admin.callCenter.saved"),
+            description: t("admin.callCenter.notifyLogged"),
+          });
+        },
+      }
+    );
   };
 
   return (
@@ -221,7 +333,7 @@ function StudentCallCard({
           <label className="flex cursor-pointer items-center gap-2 rounded-lg border border-color2/15 px-3 py-2 text-sm">
             <Checkbox
               checked={student.called}
-              disabled={updateMutation.isPending}
+              disabled={busy}
               onCheckedChange={(v) => toggleCalled(v === true)}
             />
             {t("admin.callCenter.called")}
@@ -231,9 +343,13 @@ function StudentCallCard({
             size="sm"
             className="gap-2 bg-[#25D366] text-white hover:bg-[#1fb855]"
             onClick={notify}
-            disabled={!student.parentPhoneNumber}
+            disabled={!student.parentPhoneNumber || busy}
           >
-            <MessageCircle className="h-4 w-4" />
+            {notifyMutation.isPending ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <MessageCircle className="h-4 w-4" />
+            )}
             {t("admin.callCenter.notify")}
           </Button>
         </div>
@@ -282,7 +398,7 @@ function StudentCallCard({
           onChange={(e) => setComment(e.target.value)}
           placeholder={t("admin.callCenter.commentPlaceholder")}
           className="min-h-[72px] resize-y"
-          disabled={updateMutation.isPending}
+          disabled={busy}
         />
         <div className="flex justify-end">
           <Button
@@ -290,8 +406,7 @@ function StudentCallCard({
             variant="outline"
             size="sm"
             disabled={
-              updateMutation.isPending ||
-              comment.trim() === (student.comment ?? "").trim()
+              busy || comment.trim() === (student.comment ?? "").trim()
             }
             onClick={saveComment}
           >
@@ -299,12 +414,22 @@ function StudentCallCard({
           </Button>
         </div>
       </div>
+
+      {canViewHistory && (
+        <StudentHistory
+          courseId={courseId}
+          lectureId={lectureId}
+          studentId={student.id}
+        />
+      )}
     </div>
   );
 }
 
 const CallCenterPage = () => {
   const { t } = useTranslation();
+  const { hasPermission } = useDashboardPermissions();
+  const canViewHistory = hasPermission(Permission.ViewCallCenterHistory);
   const { download, isDownloading } = useDownloadFile();
   const [level, setLevel] = useState<StudentLevel | undefined>();
   const [courseId, setCourseId] = useState<string | undefined>();
@@ -605,6 +730,7 @@ const CallCenterPage = () => {
                   lectureId={lectureId}
                   courseTitle={selectedCourse?.title}
                   lectureTitle={selectedLecture?.title}
+                  canViewHistory={canViewHistory}
                 />
               ))}
             </div>

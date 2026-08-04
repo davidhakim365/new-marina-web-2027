@@ -80,6 +80,7 @@ public sealed class CallCenterController(ICallCenterService callCenterService) :
                 LectureId = lectureId,
                 StudentId = studentId,
                 ActorId = actor.Id,
+                ActorRole = actor.Role,
                 Comment = request.Comment,
                 Called = request.Called,
             });
@@ -88,6 +89,64 @@ public sealed class CallCenterController(ICallCenterService callCenterService) :
         {
             Data = data,
             Message = "Call center contact updated"
+        };
+    }
+
+    [HttpPost("courses/{courseId:guid}/lectures/{lectureId:guid}/students/{studentId:guid}/notify")]
+    [ApiAuthorize(Role = UserRole.Assistant, Permissions = [Permission.ManageCallCenter])]
+    [SwaggerOperation(OperationId = "LogCallCenterNotify")]
+    public async Task<ApiWrapper.Success<CallCenterStudentDto>> LogNotify(
+        Guid courseId,
+        Guid lectureId,
+        Guid studentId,
+        [FromBody] LogCallCenterNotifyRequest request)
+    {
+        var actor = HttpContext.CurrentUser()
+            ?? throw new ApiException(AuthErrors.Unauthorized);
+
+        var data = await callCenterService.LogNotifyAsync(
+            new LogCallCenterNotifyCommand
+            {
+                CourseId = courseId,
+                LectureId = lectureId,
+                StudentId = studentId,
+                ActorId = actor.Id,
+                ActorRole = actor.Role,
+                Comment = request.Comment,
+                MarkCalled = request.MarkCalled ?? true,
+            });
+
+        return new ApiWrapper.Success<CallCenterStudentDto>
+        {
+            Data = data,
+            Message = "Notify logged successfully"
+        };
+    }
+
+    [HttpGet("courses/{courseId:guid}/lectures/{lectureId:guid}/students/{studentId:guid}/history")]
+    [ApiAuthorize(Role = UserRole.Assistant, Permissions = [Permission.ViewCallCenterHistory])]
+    [SwaggerOperation(OperationId = "GetCallCenterHistory")]
+    public async Task<ApiWrapper.Success<PageList<CallCenterHistoryItemDto>>> GetHistory(
+        Guid courseId,
+        Guid lectureId,
+        Guid studentId,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20)
+    {
+        var data = await callCenterService.QueryHistoryAsync(
+            new GetCallCenterHistoryQuery
+            {
+                CourseId = courseId,
+                LectureId = lectureId,
+                StudentId = studentId,
+                Page = page < 1 ? 1 : page,
+                PageSize = pageSize is < 1 or > 100 ? 20 : pageSize,
+            });
+
+        return new ApiWrapper.Success<PageList<CallCenterHistoryItemDto>>
+        {
+            Data = data,
+            Message = "Call center history fetched successfully"
         };
     }
 

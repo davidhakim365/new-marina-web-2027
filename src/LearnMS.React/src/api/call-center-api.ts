@@ -63,6 +63,30 @@ export const getCallCenterStudents = (
     )
     .then((res) => res.data);
 
+export type CallCenterHistoryAction =
+  | "Called"
+  | "Uncalled"
+  | "Comment"
+  | "Notify";
+
+export type CallCenterHistoryItem = {
+  id: string;
+  action: CallCenterHistoryAction;
+  actorName: string;
+  actorId: string;
+  comment?: string | null;
+  createdAt: string;
+};
+
+export type CallCenterHistoryPage = {
+  items: CallCenterHistoryItem[];
+  page: number;
+  pageSize: number;
+  totalCount: number;
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
+};
+
 export const updateCallCenterContact = (
   courseId: string,
   lectureId: string,
@@ -75,6 +99,47 @@ export const updateCallCenterContact = (
       body
     )
     .then((res) => res.data);
+
+export const logCallCenterNotify = (
+  courseId: string,
+  lectureId: string,
+  studentId: string,
+  body: { comment?: string | null; markCalled?: boolean } = {}
+) =>
+  api
+    .post<ApiSuccess<CallCenterStudent>>(
+      `/api/call-center/courses/${courseId}/lectures/${lectureId}/students/${studentId}/notify`,
+      body
+    )
+    .then((res) => res.data);
+
+export const getCallCenterHistory = (
+  courseId: string,
+  lectureId: string,
+  studentId: string,
+  params: { page?: number; pageSize?: number } = {}
+) =>
+  api
+    .get<ApiSuccess<CallCenterHistoryPage>>(
+      `/api/call-center/courses/${courseId}/lectures/${lectureId}/students/${studentId}/history`,
+      { params }
+    )
+    .then((res) => res.data);
+
+export function getCallCenterHistoryQueryKey(
+  courseId: string,
+  lectureId: string,
+  studentId: string,
+  params?: { page?: number; pageSize?: number }
+) {
+  return [
+    "/api/call-center/history",
+    courseId,
+    lectureId,
+    studentId,
+    params,
+  ] as const;
+}
 
 export function useCallCenterStudentsQuery(
   courseId: string | undefined,
@@ -90,6 +155,22 @@ export function useCallCenterStudentsQuery(
     queryFn: () => getCallCenterStudents(courseId!, lectureId!, params),
     enabled: !!courseId && !!lectureId,
   });
+}
+
+function invalidateCallCenter(
+  qc: ReturnType<typeof useQueryClient>,
+  courseId: string,
+  lectureId: string,
+  studentId?: string
+) {
+  qc.invalidateQueries({
+    queryKey: ["/api/call-center/students", courseId, lectureId],
+  });
+  if (studentId) {
+    qc.invalidateQueries({
+      queryKey: ["/api/call-center/history", courseId, lectureId, studentId],
+    });
+  }
 }
 
 export function useUpdateCallCenterContact() {
@@ -110,10 +191,49 @@ export function useUpdateCallCenterContact() {
         { comment: vars.comment, called: vars.called }
       ),
     onSuccess: (_, vars) => {
-      qc.invalidateQueries({
-        queryKey: ["/api/call-center/students", vars.courseId, vars.lectureId],
-      });
+      invalidateCallCenter(qc, vars.courseId, vars.lectureId, vars.studentId);
     },
+  });
+}
+
+export function useLogCallCenterNotify() {
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: (vars: {
+      courseId: string;
+      lectureId: string;
+      studentId: string;
+      comment?: string | null;
+      markCalled?: boolean;
+    }) =>
+      logCallCenterNotify(vars.courseId, vars.lectureId, vars.studentId, {
+        comment: vars.comment,
+        markCalled: vars.markCalled,
+      }),
+    onSuccess: (_, vars) => {
+      invalidateCallCenter(qc, vars.courseId, vars.lectureId, vars.studentId);
+    },
+  });
+}
+
+export function useCallCenterHistoryQuery(
+  courseId: string | undefined,
+  lectureId: string | undefined,
+  studentId: string | undefined,
+  enabled: boolean,
+  params: { page?: number; pageSize?: number } = { page: 1, pageSize: 20 }
+) {
+  return useQuery({
+    queryKey: getCallCenterHistoryQueryKey(
+      courseId ?? "",
+      lectureId ?? "",
+      studentId ?? "",
+      params
+    ),
+    queryFn: () =>
+      getCallCenterHistory(courseId!, lectureId!, studentId!, params),
+    enabled: enabled && !!courseId && !!lectureId && !!studentId,
   });
 }
 

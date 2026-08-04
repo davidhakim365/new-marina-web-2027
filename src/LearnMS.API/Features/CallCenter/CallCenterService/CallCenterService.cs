@@ -52,44 +52,134 @@ public sealed class CallCenterService(AppDbContext context) : ICallCenterService
     public async Task<CallCenterStudentDto> UpdateContactAsync(UpdateCallCenterContactCommand command)
     {
         var lecture = await LoadLectureAsync(command.CourseId, command.LectureId);
-
-        var student = await context.Set<Student>()
-            .Include(x => x.LectureHomeworks.Where(h => h.LectureId == command.LectureId).Take(1))
-            .Include(x => x.LectureQuizzes.Where(q => q.LectureId == command.LectureId).Take(1))
-            .Include(x => x.LectureAttendances.Where(a => a.LectureId == command.LectureId).Take(1))
-            .Include(x => x.QuizSubmissions.Where(s => s.Quiz.LectureId == command.LectureId))
-                .ThenInclude(s => s.Quiz)
-            .FirstOrDefaultAsync(x => x.Id == command.StudentId && x.Level == lecture.Course.Level)
-            ?? throw new ApiException(CallCenterErrors.StudentNotFound);
-
-        var contact = await context.Set<CallCenterContact>()
-            .FirstOrDefaultAsync(c => c.LectureId == command.LectureId && c.StudentId == command.StudentId);
-
-        if (contact is null)
-        {
-            contact = new CallCenterContact
-            {
-                LectureId = command.LectureId,
-                StudentId = command.StudentId,
-            };
-            context.Add(contact);
-        }
+        var student = await LoadStudentForLectureAsync(lecture, command.LectureId, command.StudentId);
+        var contact = await GetOrCreateContactAsync(command.LectureId, command.StudentId);
+        var actorName = await ResolveActorNameAsync(command.ActorId, command.ActorRole);
+        var history = new List<CallCenterHistoryEvent>();
 
         if (command.Comment is not null)
-            contact.Comment = string.IsNullOrWhiteSpace(command.Comment) ? null : command.Comment.Trim();
+        {
+            var nextComment = string.IsNullOrWhiteSpace(command.Comment) ? null : command.Comment.Trim();
+            var previousComment = contact.Comment;
+            if (!string.Equals(previousComment, nextComment, StringComparison.Ordinal))
+            {
+                contact.Comment = nextComment;
+                history.Add(CreateHistory(
+                    command.LectureId,
+                    command.StudentId,
+                    command.ActorId,
+                    actorName,
+                    CallCenterHistoryAction.Comment,
+                    nextComment));
+            }
+        }
 
-        if (command.Called is not null)
+        if (command.Called is not null && contact.Called != command.Called.Value)
         {
             contact.Called = command.Called.Value;
             contact.CalledAt = command.Called.Value ? DateTime.UtcNow : null;
+            history.Add(CreateHistory(
+                command.LectureId,
+                command.StudentId,
+                command.ActorId,
+                actorName,
+                command.Called.Value ? CallCenterHistoryAction.Called : CallCenterHistoryAction.Uncalled,
+                contact.Comment));
         }
 
         contact.UpdatedAt = DateTime.UtcNow;
         contact.UpdatedBy = command.ActorId;
 
+        if (history.Count > 0)
+            context.AddRange(history);
+
         await context.SaveChangesAsync();
 
         return MapStudent(student, lecture, contact);
+    }
+
+    public async Task<CallCenterStudentDto> LogNotifyAsync(LogCallCenterNotifyCommand command)
+    {
+        var lecture = await LoadLectureAsync(command.CourseId, command.LectureId);
+        var student = await LoadStudentForLectureAsync(lecture, command.LectureId, command.StudentId);
+        var contact = await GetOrCreateContactAsync(command.LectureId, command.StudentId);
+        var actorName = await ResolveActorNameAsync(command.ActorId, command.ActorRole);
+        var history = new List<CallCenterHistoryEvent>();
+
+        if (command.Comment is not null)
+        {
+            var nextComment = string.IsNullOrWhiteSpace(command.Comment) ? null : command.Comment.Trim();
+            if (!string.Equals(contact.Comment, nextComment, StringComparison.Ordinal))
+            {
+                contact.Comment = nextComment;
+                history.Add(CreateHistory(
+                    command.LectureId,
+                    command.StudentId,
+                    command.ActorId,
+                    actorName,
+                    CallCenterHistoryAction.Comment,
+                    nextComment));
+            }
+        }
+
+        if (command.MarkCalled && !contact.Called)
+        {
+            contact.Called = true;
+            contact.CalledAt = DateTime.UtcNow;
+            history.Add(CreateHistory(
+                command.LectureId,
+                command.StudentId,
+                command.ActorId,
+                actorName,
+                CallCenterHistoryAction.Called,
+                contact.Comment));
+        }
+
+        history.Add(CreateHistory(
+            command.LectureId,
+            command.StudentId,
+            command.ActorId,
+            actorName,
+            CallCenterHistoryAction.Notify,
+            contact.Comment));
+
+        contact.UpdatedAt = DateTime.UtcNow;
+        contact.UpdatedBy = command.ActorId;
+        context.AddRange(history);
+        await context.SaveChangesAsync();
+
+        return MapStudent(student, lecture, contact);
+    }
+
+    public async Task<PageList<CallCenterHistoryItemDto>> QueryHistoryAsync(GetCallCenterHistoryQuery query)
+    {
+        var lecture = await LoadLectureAsync(query.CourseId, query.LectureId);
+
+        var studentExists = await context.Set<Student>()
+            .AsNoTracking()
+            .AnyAsync(x => x.Id == query.StudentId && x.Level == lecture.Course.Level);
+
+        if (!studentExists)
+            throw new ApiException(CallCenterErrors.StudentNotFound);
+
+        var historyQuery = context.Set<CallCenterHistoryEvent>()
+            .AsNoTracking()
+            .Where(x => x.LectureId == query.LectureId && x.StudentId == query.StudentId)
+            .OrderByDescending(x => x.CreatedAt)
+            .Select(x => new CallCenterHistoryItemDto
+            {
+                Id = x.Id,
+                Action = x.Action,
+                ActorId = x.ActorId,
+                ActorName = x.ActorName,
+                Comment = x.Comment,
+                CreatedAt = x.CreatedAt,
+            });
+
+        return await PageList<CallCenterHistoryItemDto>.CreateAsync(
+            historyQuery,
+            query.Page,
+            query.PageSize);
     }
 
     public async IAsyncEnumerable<IEnumerable<ExportCallCenterStudentRow>> ExportStudentsAsync(
@@ -130,6 +220,79 @@ public sealed class CallCenterService(AppDbContext context) : ICallCenterService
             .Include(x => x.Course)
             .FirstOrDefaultAsync(x => x.Id == lectureId && x.CourseId == courseId)
             ?? throw new ApiException(CallCenterErrors.LectureNotFound);
+    }
+
+    private async Task<Student> LoadStudentForLectureAsync(Lecture lecture, Guid lectureId, Guid studentId)
+    {
+        return await context.Set<Student>()
+            .Include(x => x.LectureHomeworks.Where(h => h.LectureId == lectureId).Take(1))
+            .Include(x => x.LectureQuizzes.Where(q => q.LectureId == lectureId).Take(1))
+            .Include(x => x.LectureAttendances.Where(a => a.LectureId == lectureId).Take(1))
+            .Include(x => x.QuizSubmissions.Where(s => s.Quiz.LectureId == lectureId))
+                .ThenInclude(s => s.Quiz)
+            .FirstOrDefaultAsync(x => x.Id == studentId && x.Level == lecture.Course.Level)
+            ?? throw new ApiException(CallCenterErrors.StudentNotFound);
+    }
+
+    private async Task<CallCenterContact> GetOrCreateContactAsync(Guid lectureId, Guid studentId)
+    {
+        var contact = await context.Set<CallCenterContact>()
+            .FirstOrDefaultAsync(c => c.LectureId == lectureId && c.StudentId == studentId);
+
+        if (contact is not null)
+            return contact;
+
+        contact = new CallCenterContact
+        {
+            LectureId = lectureId,
+            StudentId = studentId,
+        };
+        context.Add(contact);
+        return contact;
+    }
+
+    private async Task<string> ResolveActorNameAsync(Guid actorId, UserRole role)
+    {
+        if (role == UserRole.Teacher)
+            return "Teacher";
+
+        var assistantName = await context.Set<Assistant>()
+            .AsNoTracking()
+            .Where(a => a.Id == actorId)
+            .Select(a => a.FullName)
+            .FirstOrDefaultAsync();
+
+        if (!string.IsNullOrWhiteSpace(assistantName))
+            return assistantName.Trim();
+
+        var email = await context.Set<Account>()
+            .AsNoTracking()
+            .Where(a => a.Id == actorId)
+            .Select(a => a.Email)
+            .FirstOrDefaultAsync();
+
+        return string.IsNullOrWhiteSpace(email) ? "Assistant" : email;
+    }
+
+    private static CallCenterHistoryEvent CreateHistory(
+        Guid lectureId,
+        Guid studentId,
+        Guid actorId,
+        string actorName,
+        CallCenterHistoryAction action,
+        string? comment)
+    {
+        return new CallCenterHistoryEvent
+        {
+            Id = Guid.NewGuid(),
+            LectureId = lectureId,
+            StudentId = studentId,
+            ActorId = actorId,
+            ActorName = actorName,
+            Action = action,
+            Comment = comment,
+            CreatedAt = DateTime.UtcNow,
+        };
     }
 
     private IQueryable<Student> BuildStudentsQuery(
