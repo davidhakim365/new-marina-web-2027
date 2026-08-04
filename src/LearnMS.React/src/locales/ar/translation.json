@@ -742,7 +742,81 @@
       "description": "إدارة المساعدين والصلاحيات.",
       "add": "إضافة مساعد",
       "code": "الكود",
-      "permissions": "الصلاحيات"
+      "permissions": "الصلاحيات",
+      "permissionsTitle": "الصلاحيات",
+      "permissionsHint": "{{enabled}} من {{total}} صلاحية مفعّلة",
+      "searchPermissions": "ابحث في الصلاحيات...",
+      "noPermissionsMatch": "لا توجد صلاحيات مطابقة للبحث.",
+      "groupEnabled": "{{enabled}}/{{total}} مفعّلة",
+      "enableAll": "تفعيل الكل",
+      "disableAll": "إيقاف الكل",
+      "permissionGroups": {
+        "content": "الكورسات والمحتوى",
+        "students": "الطلاب",
+        "callCenter": "مركز الاتصال",
+        "finance": "أكواد الرصيد",
+        "rewards": "التفاح والمكافآت",
+        "team": "الفريق",
+        "other": "أخرى"
+      },
+      "permissionLabels": {
+        "ViewStatistics": {
+          "title": "عرض الإحصائيات",
+          "description": "فتح إحصائيات الدخل والحضور في لوحة التحكم."
+        },
+        "ManageCourses": {
+          "title": "إدارة الكورسات",
+          "description": "إنشاء وتعديل الكورسات والمحاضرات والكويزات والدرجات."
+        },
+        "ManageLecture": {
+          "title": "المحاضرات المهمة",
+          "description": "تحديد وإدارة المحاضرات المهمة."
+        },
+        "ManageFiles": {
+          "title": "الملفات والأسئلة",
+          "description": "إدارة ملفات PDF وبنك الأسئلة."
+        },
+        "ManageStudents": {
+          "title": "إدارة الطلاب",
+          "description": "عرض وتعديل وتصدير قائمة الطلاب."
+        },
+        "ManageGrantedAccess": {
+          "title": "صلاحيات الوصول",
+          "description": "منح الطلاب وصولاً مجانياً للمحاضرات."
+        },
+        "ManageExpirationTime": {
+          "title": "وقت الانتهاء",
+          "description": "تغيير تواريخ انتهاء المحاضرات للطلاب."
+        },
+        "ManageCallCenter": {
+          "title": "مركز الاتصال",
+          "description": "فتح مركز الاتصال وتحديث الملاحظات وتسجيل الاتصال وإرسال واتساب."
+        },
+        "ViewCallCenterHistory": {
+          "title": "سجل مركز الاتصال",
+          "description": "معرفة من اتصل أو أرسل إشعاراً للطالب وما التعليق."
+        },
+        "ManageCreditCodes": {
+          "title": "إدارة أكواد الرصيد",
+          "description": "عرض وإدارة أكواد الرصيد الموجودة."
+        },
+        "GenerateCreditCodes": {
+          "title": "إنشاء أكواد الرصيد",
+          "description": "إنشاء أكواد رصيد جديدة."
+        },
+        "ManageStudentApples": {
+          "title": "تفاح الطلاب",
+          "description": "إضافة أو خصم التفاح من الطلاب."
+        },
+        "ManageAppleRewardsStore": {
+          "title": "متجر مكافآت التفاح",
+          "description": "إدارة عناصر المكافآت والطلبات."
+        },
+        "ManageAssistants": {
+          "title": "إدارة المساعدين",
+          "description": "إنشاء المساعدين وتغيير صلاحياتهم."
+        }
+      }
     },
     "profile": {
       "description": "معاينة ملفك الشخصي. المعلم فقط يمكنه تحديث الاسم أو الصورة.",

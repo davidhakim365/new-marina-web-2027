@@ -9,6 +9,7 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
+import { getPermissionMeta } from "@/lib/assistant-permissions";
 import { useModalStore } from "@/store/use-modal-store";
 import { Assistant, assistantDisplayName } from "@/types/assistants";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -99,16 +100,23 @@ function AssistantListItem({ assistant }: { assistant: Assistant }) {
                 {t("admin.assistants.permissions")}
               </Button>
             </HoverCardTrigger>
-            <HoverCardContent className="w-fit space-y-1">
-              {assistant.permissions?.map((permission) => (
-                <Badge
-                  key={permission}
-                  variant="secondary"
-                  className="mr-1 bg-color2/10 text-color2"
-                >
-                  {permission}
-                </Badge>
-              ))}
+            <HoverCardContent className="w-72 space-y-1">
+              {(assistant.permissions?.length ?? 0) === 0 ? (
+                <p className="text-sm text-muted-foreground">—</p>
+              ) : (
+                assistant.permissions?.map((permission) => {
+                  const meta = getPermissionMeta(permission);
+                  return (
+                    <Badge
+                      key={permission}
+                      variant="secondary"
+                      className="mr-1 bg-color2/10 text-color2"
+                    >
+                      {t(meta.titleKey, { defaultValue: permission })}
+                    </Badge>
+                  );
+                })
+              )}
             </HoverCardContent>
           </HoverCard>
           <Link to={`/dashboard/assistants/${assistant.id}`}>

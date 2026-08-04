@@ -740,7 +740,81 @@
       "description": "Manage teaching assistants and permissions.",
       "add": "Add Assistant",
       "code": "Code",
-      "permissions": "Permissions"
+      "permissions": "Permissions",
+      "permissionsTitle": "Permissions",
+      "permissionsHint": "{{enabled}} of {{total}} permissions enabled",
+      "searchPermissions": "Search permissions...",
+      "noPermissionsMatch": "No permissions match your search.",
+      "groupEnabled": "{{enabled}}/{{total}} enabled",
+      "enableAll": "Enable all",
+      "disableAll": "Disable all",
+      "permissionGroups": {
+        "content": "Courses & Content",
+        "students": "Students",
+        "callCenter": "Call Center",
+        "finance": "Credit Codes",
+        "rewards": "Apples & Rewards",
+        "team": "Team",
+        "other": "Other"
+      },
+      "permissionLabels": {
+        "ViewStatistics": {
+          "title": "View statistics",
+          "description": "Open the dashboard income and attendance statistics."
+        },
+        "ManageCourses": {
+          "title": "Manage courses",
+          "description": "Create and edit courses, lectures, quizzes, and grades."
+        },
+        "ManageLecture": {
+          "title": "Important lectures",
+          "description": "Mark and manage important lectures."
+        },
+        "ManageFiles": {
+          "title": "Files & questions",
+          "description": "Manage PDF files and the question bank."
+        },
+        "ManageStudents": {
+          "title": "Manage students",
+          "description": "View, edit, and export the student list."
+        },
+        "ManageGrantedAccess": {
+          "title": "Granted access",
+          "description": "Give students free access to lectures."
+        },
+        "ManageExpirationTime": {
+          "title": "Expiration time",
+          "description": "Change lecture expiration dates for students."
+        },
+        "ManageCallCenter": {
+          "title": "Call Center",
+          "description": "Open Call Center, update comments, mark called, and send WhatsApp."
+        },
+        "ViewCallCenterHistory": {
+          "title": "Call Center history",
+          "description": "See who called or notified a student and their comments."
+        },
+        "ManageCreditCodes": {
+          "title": "Manage credit codes",
+          "description": "View and manage existing credit codes."
+        },
+        "GenerateCreditCodes": {
+          "title": "Generate credit codes",
+          "description": "Create new credit codes."
+        },
+        "ManageStudentApples": {
+          "title": "Student apples",
+          "description": "Add or remove apples for students."
+        },
+        "ManageAppleRewardsStore": {
+          "title": "Apple rewards store",
+          "description": "Manage reward items and orders."
+        },
+        "ManageAssistants": {
+          "title": "Manage assistants",
+          "description": "Create assistants and change their permissions."
+        }
+      }
     },
     "profile": {
       "description": "Your profile preview. Only a teacher can update your name or photo.",

@@ -17,6 +17,7 @@ import { DialogFooter } from "@/components/ui/dialog";
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -25,14 +26,20 @@ import {
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  getPermissionMeta,
+  groupPermissions,
+} from "@/lib/assistant-permissions";
 import { toast } from "@/lib/utils";
 import { assistantIncomesColumns } from "@/pages/dashboard/assistants/columns";
 import { AssistantIncomesDataTable } from "@/pages/dashboard/assistants/data-table";
 import { Assistant, assistantDisplayName } from "@/types/assistants";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { PaginationState, RowSelectionState } from "@tanstack/react-table";
-import { useState } from "react";
+import { Search } from "lucide-react";
+import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 import { FaMoneyBillAlt, FaMoneyCheckAlt } from "react-icons/fa";
 import { useParams } from "react-router-dom";
 import { z } from "zod";
@@ -82,12 +89,15 @@ const AssistantDetailsPage = () => {
 };
 
 function AssistantDetails({ assistant }: { assistant: Assistant }) {
+  const { t } = useTranslation();
   const { data: permissions, isLoading } = usePermissionsQuery();
   const deleteAssistantMutation = useDeleteAssistantMutation();
-
   const updateAssistantMutation = useUpdateAssistantMutation();
+  const [permissionSearch, setPermissionSearch] = useState("");
 
-  const PermissionsSchema = permissions?.data.items.reduce(
+  const permissionKeys = permissions?.data.items ?? [];
+
+  const PermissionsSchema = permissionKeys.reduce(
     (acc, value) => ({ ...acc, [value]: z.boolean() }),
     {}
   );
@@ -103,7 +113,7 @@ function AssistantDetails({ assistant }: { assistant: Assistant }) {
     ...PermissionsSchema,
   });
 
-  const permissionsValues = permissions?.data.items.reduce(
+  const permissionsValues = permissionKeys.reduce(
     (acc, value) => ({
       ...acc,
       [value]: assistant.permissions.includes(value),
@@ -121,6 +131,35 @@ function AssistantDetails({ assistant }: { assistant: Assistant }) {
       ...permissionsValues,
     },
   });
+
+  const groupedPermissions = useMemo(() => {
+    const query = permissionSearch.trim().toLowerCase();
+    const filtered = permissionKeys.filter((key) => {
+      if (!query) return true;
+      const meta = getPermissionMeta(key);
+      const title = t(meta.titleKey, { defaultValue: key }).toLowerCase();
+      const description = meta.descriptionKey
+        ? t(meta.descriptionKey, { defaultValue: "" }).toLowerCase()
+        : "";
+      return (
+        key.toLowerCase().includes(query) ||
+        title.includes(query) ||
+        description.includes(query)
+      );
+    });
+    return groupPermissions(filtered);
+  }, [permissionKeys, permissionSearch, t]);
+
+  const watchedValues = form.watch();
+  const enabledCount = permissionKeys.filter((key) =>
+    Boolean((watchedValues as Record<string, unknown>)[key])
+  ).length;
+
+  const setGroupEnabled = (keys: string[], enabled: boolean) => {
+    for (const key of keys) {
+      form.setValue(key as any, enabled, { shouldDirty: true });
+    }
+  };
 
   const onDeleting = () => {
     deleteAssistantMutation.mutate(
@@ -150,9 +189,7 @@ function AssistantDetails({ assistant }: { assistant: Assistant }) {
       code,
       profilePicture: nextPicture || undefined,
       clearProfilePicture: !nextPicture && !!previousPicture,
-      permissions: perms
-        ? permissions?.data.items.filter((p) => (perms as any)[p])
-        : [],
+      permissions: permissionKeys.filter((p) => (perms as any)[p]),
     });
     updateAssistantMutation.mutate(
       { id: assistant.id, data: request },
@@ -177,7 +214,9 @@ function AssistantDetails({ assistant }: { assistant: Assistant }) {
           <div className="mb-2 flex items-center gap-3">
             <Avatar className="size-14 border border-color2/20">
               <AvatarImage src={assistant.profilePicture ?? undefined} />
-              <AvatarFallback>{initials(assistantDisplayName(assistant))}</AvatarFallback>
+              <AvatarFallback>
+                {initials(assistantDisplayName(assistant))}
+              </AvatarFallback>
             </Avatar>
             <div>
               <p className="font-semibold">{assistantDisplayName(assistant)}</p>
@@ -233,33 +272,124 @@ function AssistantDetails({ assistant }: { assistant: Assistant }) {
               <FormItem>
                 <FormLabel>Password</FormLabel>
                 <FormControl>
-                  <Input {...field} type="password" placeholder="Leave blank to keep current" />
+                  <Input
+                    {...field}
+                    type="password"
+                    placeholder="Leave blank to keep current"
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
-          {permissions?.data.items.map((p) => (
-            <FormField
-              key={p}
-              control={form.control}
-              name={p as any}
-              render={({ field }) => (
-                <FormItem className="flex flex-row items-center justify-between p-4 border rounded-lg">
-                  <div className="space-y-0.5">
-                    <FormLabel className="text-base">{p}</FormLabel>
+
+          <div className="mt-4 space-y-4">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <h3 className="text-lg font-semibold">
+                  {t("admin.assistants.permissionsTitle")}
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  {t("admin.assistants.permissionsHint", {
+                    enabled: enabledCount,
+                    total: permissionKeys.length,
+                  })}
+                </p>
+              </div>
+              <div className="relative w-full sm:max-w-xs">
+                <Search className="pointer-events-none absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  value={permissionSearch}
+                  onChange={(e) => setPermissionSearch(e.target.value)}
+                  placeholder={t("admin.assistants.searchPermissions")}
+                  className="ps-9"
+                />
+              </div>
+            </div>
+
+            {groupedPermissions.length === 0 ? (
+              <p className="rounded-lg border border-dashed p-4 text-sm text-muted-foreground">
+                {t("admin.assistants.noPermissionsMatch")}
+              </p>
+            ) : (
+              groupedPermissions.map((group) => {
+                const groupKeys = group.items.map((item) => item.key);
+                const enabledInGroup = groupKeys.filter((key) =>
+                  Boolean((watchedValues as Record<string, unknown>)[key])
+                ).length;
+
+                return (
+                  <div
+                    key={group.group}
+                    className="overflow-hidden rounded-xl border border-color2/15"
+                  >
+                    <div className="flex flex-col gap-2 border-b border-color2/10 bg-muted/30 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+                      <div>
+                        <p className="font-semibold">{t(group.titleKey)}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {t("admin.assistants.groupEnabled", {
+                            enabled: enabledInGroup,
+                            total: groupKeys.length,
+                          })}
+                        </p>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          onClick={() => setGroupEnabled(groupKeys, true)}
+                        >
+                          {t("admin.assistants.enableAll")}
+                        </Button>
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => setGroupEnabled(groupKeys, false)}
+                        >
+                          {t("admin.assistants.disableAll")}
+                        </Button>
+                      </div>
+                    </div>
+                    <div className="divide-y divide-color2/10">
+                      {group.items.map((item) => (
+                        <FormField
+                          key={item.key}
+                          control={form.control}
+                          name={item.key as any}
+                          render={({ field }) => (
+                            <FormItem className="flex flex-row items-start justify-between gap-4 px-4 py-3">
+                              <div className="min-w-0 space-y-1">
+                                <FormLabel className="text-base font-medium">
+                                  {t(item.titleKey, { defaultValue: item.key })}
+                                </FormLabel>
+                                {item.descriptionKey ? (
+                                  <FormDescription>
+                                    {t(item.descriptionKey)}
+                                  </FormDescription>
+                                ) : null}
+                                <p className="text-[11px] text-muted-foreground/80">
+                                  {item.key}
+                                </p>
+                              </div>
+                              <FormControl>
+                                <Switch
+                                  checked={field.value}
+                                  onCheckedChange={field.onChange}
+                                />
+                              </FormControl>
+                            </FormItem>
+                          )}
+                        />
+                      ))}
+                    </div>
                   </div>
-                  <FormControl>
-                    <Switch
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                      aria-readonly
-                    />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-          ))}
+                );
+              })
+            )}
+          </div>
+
           <DialogFooter className="mt-4">
             <Confirmation
               button={
