@@ -9,7 +9,6 @@ import AddValueQuestionModal from "@/pages/dashboard/questions/add-value-questio
 import AddEssayQuestionModal from "@/pages/dashboard/questions/add-essay-question-modal";
 import SelectQuestionsModal from "@/pages/dashboard/questions/select-questions-modal";
 import AddCreditModal from "@/pages/dashboard/students/add-credit-modal";
-import AddStudentModal from "@/pages/dashboard/students/add-student-modal";
 import LectureAssetsModal from "@/pages/student/lectures/lecture-assets-modal";
 import ProfileModal from "@/pages/student/profile/profile-modal";
 import { useModalStore } from "@/store/use-modal-store";
@@ -18,7 +17,6 @@ import React from "react";
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const modals: Record<string, React.FC<any>> = {
   "add-assistant-modal": AddAssistantModal,
-  "add-student-modal": AddStudentModal,
   "add-credit-modal": AddCreditModal,
   "profile-modal": ProfileModal,
   "forgot-password-modal": ForgotPasswordModal,

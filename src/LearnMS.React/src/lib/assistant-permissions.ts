@@ -61,6 +61,11 @@ const PERMISSION_META: Record<string, Omit<PermissionMeta, "key">> = {
     titleKey: "admin.assistants.permissionLabels.ManageStudents.title",
     descriptionKey: "admin.assistants.permissionLabels.ManageStudents.description",
   },
+  AddStudents: {
+    group: "students",
+    titleKey: "admin.assistants.permissionLabels.AddStudents.title",
+    descriptionKey: "admin.assistants.permissionLabels.AddStudents.description",
+  },
   ManageGrantedAccess: {
     group: "students",
     titleKey: "admin.assistants.permissionLabels.ManageGrantedAccess.title",

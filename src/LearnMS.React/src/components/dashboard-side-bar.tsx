@@ -19,6 +19,7 @@ import {
   QrCode,
   Shield,
   Star,
+  UserPlus,
   UserRound,
   Users,
 } from "lucide-react";
@@ -37,6 +38,7 @@ type NavItem = {
     | "admin.nav.files"
     | "admin.nav.questions"
     | "admin.nav.students"
+    | "admin.nav.addStudents"
     | "admin.nav.grantedAccess"
     | "admin.nav.expirationTime"
     | "admin.nav.callCenter"
@@ -100,8 +102,17 @@ const userItems: NavItem[] = [
     to: "/dashboard/students",
     labelKey: "admin.nav.students",
     icon: Users,
-    match: (pathname) => pathname.startsWith("/dashboard/students"),
+    match: (pathname) =>
+      pathname.startsWith("/dashboard/students") &&
+      !pathname.startsWith("/dashboard/students/add"),
     permission: Permission.ManageStudents,
+  },
+  {
+    to: "/dashboard/students/add",
+    labelKey: "admin.nav.addStudents",
+    icon: UserPlus,
+    match: (pathname) => pathname.startsWith("/dashboard/students/add"),
+    anyPermissions: [Permission.AddStudents, Permission.ManageStudents],
   },
   {
     to: "/dashboard/granted-access",

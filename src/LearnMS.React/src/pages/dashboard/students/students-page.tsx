@@ -16,7 +16,8 @@ import { useGetAllStudents } from "@/generated/api";
 import { StudentLevel } from "@/generated/model";
 import useDownloadFile from "@/hooks/useDownloadFile";
 import { useStudentsColumns } from "@/pages/dashboard/students/columns";
-import { useModalStore } from "@/store/use-modal-store";
+import { useDashboardPermissions } from "@/hooks/use-dashboard-permissions";
+import { Permission } from "@/generated/model";
 import { PaginationState } from "@tanstack/react-table";
 import {
   Download,
@@ -29,7 +30,7 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useSearchParams } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import {
   ADMIN_LEVEL_I18N_KEYS,
   STUDENT_LEVEL_ORDER,
@@ -37,7 +38,11 @@ import {
 
 const StudentsPage = () => {
   const { t } = useTranslation();
-  const { openModal } = useModalStore();
+  const { hasAnyPermission } = useDashboardPermissions();
+  const canAddStudents = hasAnyPermission([
+    Permission.AddStudents,
+    Permission.ManageStudents,
+  ]);
   const { download, isDownloading } = useDownloadFile();
   const [searchParams, setSearchParams] = useSearchParams({});
   const studentsColumns = useStudentsColumns();
@@ -94,13 +99,17 @@ const StudentsPage = () => {
       description={t("admin.students.description")}
       icon={Users}
       actions={
-        <Button
-          onClick={() => openModal("add-student-modal")}
-          className="bg-gradient-to-r from-color1 to-color2 shadow-md shadow-color2/20 hover:opacity-90"
-        >
-          <Plus className="mr-2 h-4 w-4" />
-          {t("admin.students.addStudent")}
-        </Button>
+        canAddStudents ? (
+          <Button
+            asChild
+            className="bg-gradient-to-r from-color1 to-color2 shadow-md shadow-color2/20 hover:opacity-90"
+          >
+            <Link to="/dashboard/students/add">
+              <Plus className="mr-2 h-4 w-4" />
+              {t("admin.students.addStudent")}
+            </Link>
+          </Button>
+        ) : undefined
       }
       fullWidth
     >

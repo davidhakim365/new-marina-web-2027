@@ -661,6 +661,7 @@
       "files": "Files",
       "questions": "Questions",
       "students": "Students",
+      "addStudents": "Add Students",
       "grantedAccess": "Granted Access",
       "expirationTime": "Expiration Time",
       "callCenter": "Call Center",
@@ -734,6 +735,21 @@
         "submit": "Submit",
         "createdTitle": "Student created",
         "createdDesc": "Student created successfully"
+      },
+      "addPage": {
+        "title": "Add Students",
+        "description": "Create student accounts step by step. The form resets after each student so you can keep going.",
+        "stepAccount": "Account",
+        "stepProfile": "Profile",
+        "stepContact": "Contact",
+        "stepOf": "Step {{current}} of {{total}}",
+        "next": "Next",
+        "back": "Back",
+        "create": "Create student",
+        "reviewTitle": "Review",
+        "lastAddedTitle": "Last added student",
+        "lastAddedEmpty": "No student added yet in this session.",
+        "readyHint": "Ready for the next student"
       }
     },
     "assistants": {
@@ -777,6 +793,10 @@
         "ManageStudents": {
           "title": "Manage students",
           "description": "View, edit, and export the student list."
+        },
+        "AddStudents": {
+          "title": "Add students",
+          "description": "Create new student accounts without access to the full student list."
         },
         "ManageGrantedAccess": {
           "title": "Granted access",

@@ -23,6 +23,7 @@ import QuestionsPage from "@/pages/dashboard/questions/questions-page";
 import QuizPage from "@/pages/dashboard/quizzes/quiz-page";
 import MyProfilePage from "@/pages/dashboard/rewards/my-profile-page";
 import StatisticsPage from "@/pages/dashboard/statistics/statistics-page";
+import AddStudentPage from "@/pages/dashboard/students/add-student-page";
 import StudentDetailsPage from "@/pages/dashboard/students/student-details-page";
 import StudentsPage from "@/pages/dashboard/students/students-page";
 import { StudentCoursePage } from "@/pages/student/courses/student-course-page";
@@ -339,6 +340,18 @@ function App() {
                     permissions={["ManageStudents"]}
                   >
                     <StudentsPage />
+                  </RequireAuth>
+                }
+              />
+              <Route
+                path="students/add"
+                element={
+                  <RequireAuth
+                    roles={["Teacher", "Assistant"]}
+                    permissions={["AddStudents", "ManageStudents"]}
+                    requireAnyPermission
+                  >
+                    <AddStudentPage />
                   </RequireAuth>
                 }
               />

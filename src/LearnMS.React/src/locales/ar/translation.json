@@ -663,6 +663,7 @@
       "files": "الملفات",
       "questions": "الأسئلة",
       "students": "الطلاب",
+      "addStudents": "إضافة طلاب",
       "grantedAccess": "صلاحيات الوصول",
       "expirationTime": "وقت الانتهاء",
       "callCenter": "مركز الاتصال",
@@ -736,6 +737,21 @@
         "submit": "حفظ",
         "createdTitle": "تم إنشاء الطالب",
         "createdDesc": "تم إنشاء الطالب بنجاح"
+      },
+      "addPage": {
+        "title": "إضافة طلاب",
+        "description": "إنشاء حسابات الطلاب خطوة بخطوة. يتم إعادة تعيين النموذج بعد كل طالب لتتمكن من المتابعة.",
+        "stepAccount": "الحساب",
+        "stepProfile": "الملف",
+        "stepContact": "التواصل",
+        "stepOf": "الخطوة {{current}} من {{total}}",
+        "next": "التالي",
+        "back": "رجوع",
+        "create": "إنشاء طالب",
+        "reviewTitle": "مراجعة",
+        "lastAddedTitle": "آخر طالب تمت إضافته",
+        "lastAddedEmpty": "لم تتم إضافة طالب بعد في هذه الجلسة.",
+        "readyHint": "جاهز للطالب التالي"
       }
     },
     "assistants": {
@@ -779,6 +795,10 @@
         "ManageStudents": {
           "title": "إدارة الطلاب",
           "description": "عرض وتعديل وتصدير قائمة الطلاب."
+        },
+        "AddStudents": {
+          "title": "إضافة طلاب",
+          "description": "إنشاء حسابات طلاب جديدة دون الوصول إلى قائمة الطلاب الكاملة."
         },
         "ManageGrantedAccess": {
           "title": "صلاحيات الوصول",
