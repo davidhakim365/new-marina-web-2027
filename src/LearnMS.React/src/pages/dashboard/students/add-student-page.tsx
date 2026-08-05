@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -33,22 +34,66 @@ import { Check, ChevronLeft, ChevronRight, UserPlus } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
+import { z } from "zod";
 
 const LAST_ADDED_KEY = "add-students:last-added";
 const TOTAL_STEPS = 3;
+
+const AddStudentFormSchema = z
+  .object({
+    mode: z.enum(["online", "offline"]),
+    email: z.string().email().min(1, { message: "Email is required" }),
+    school: z.string().min(1, { message: "School is required" }),
+    password: z
+      .string()
+      .min(8, { message: "Password must be at least 8 characters" }),
+    confirmPassword: z
+      .string()
+      .min(8, { message: "Password must be at least 8 characters" }),
+    fullName: z.string().min(3, { message: "Name is required" }),
+    phoneNumber: z.string().min(1, { message: "Phone number is required" }),
+    parentPhoneNumber: z
+      .string()
+      .min(1, { message: "Parent phone number is required" }),
+    studentCode: z.string().optional(),
+    governorate: z.string().min(1, { message: "المحافظة مطلوبة" }),
+    level: z.enum(["Level0", "Level1", "Level2", "Level3", "Level4", "Level5"]),
+  })
+  .superRefine((data, ctx) => {
+    if (data.password !== data.confirmPassword) {
+      ctx.addIssue({
+        path: ["confirmPassword"],
+        code: "custom",
+        message: "Passwords do not match",
+      });
+    }
+    if (data.mode === "offline") {
+      if (!data.studentCode || data.studentCode.length < 6) {
+        ctx.addIssue({
+          path: ["studentCode"],
+          code: "custom",
+          message: "ID must be at least 6 characters",
+        });
+      }
+    }
+  });
+
+type AddStudentFormValues = z.infer<typeof AddStudentFormSchema>;
 
 type LastAddedStudent = {
   fullName: string;
   email: string;
   studentCode: string;
   phoneNumber: string;
-  level: CreateStudentRequest["level"];
+  level: AddStudentFormValues["level"];
   school: string;
   governorate: string;
   parentPhoneNumber: string;
+  mode: AddStudentFormValues["mode"];
 };
 
-const emptyDefaults: CreateStudentRequest = {
+const emptyDefaults: AddStudentFormValues = {
+  mode: "offline",
   email: "",
   password: "",
   confirmPassword: "",
@@ -61,11 +106,29 @@ const emptyDefaults: CreateStudentRequest = {
   phoneNumber: "",
 };
 
-const STEP_FIELDS: (keyof CreateStudentRequest)[][] = [
-  ["email", "password", "confirmPassword"],
-  ["fullName", "studentCode", "level", "school", "governorate"],
-  ["phoneNumber", "parentPhoneNumber"],
-];
+function getStepFields(
+  step: number,
+  mode: AddStudentFormValues["mode"]
+): (keyof AddStudentFormValues)[] {
+  if (step === 0) {
+    return mode === "offline" ? ["mode", "studentCode"] : ["mode"];
+  }
+  if (step === 1) {
+    return [
+      "fullName",
+      "phoneNumber",
+      "parentPhoneNumber",
+      "level",
+      "school",
+      "governorate",
+    ];
+  }
+  return ["email", "password", "confirmPassword"];
+}
+
+function generateStudentCode() {
+  return `ONL-${Math.floor(100000 + Math.random() * 900000)}`;
+}
 
 function readLastAdded(): LastAddedStudent | null {
   try {
@@ -86,38 +149,64 @@ const AddStudentPage = () => {
   const createStudentMutation = useCreateStudentMutation();
   const [step, setStep] = useState(0);
   const [lastAdded, setLastAdded] = useState<LastAddedStudent | null>(null);
-  const emailInputRef = useRef<HTMLInputElement | null>(null);
+  const modeSelectRef = useRef<HTMLButtonElement | null>(null);
 
-  const form = useForm<CreateStudentRequest>({
-    resolver: zodResolver(CreateStudentRequest),
+  const form = useForm<AddStudentFormValues>({
+    resolver: zodResolver(AddStudentFormSchema),
     defaultValues: emptyDefaults,
     mode: "onTouched",
   });
+
+  const studyMode = form.watch("mode");
 
   useEffect(() => {
     setLastAdded(readLastAdded());
   }, []);
 
+  useEffect(() => {
+    if (studyMode === "online") {
+      form.clearErrors("studentCode");
+      form.setValue("studentCode", "");
+    }
+  }, [studyMode, form]);
+
   const goNext = async () => {
-    const valid = await form.trigger(STEP_FIELDS[step]);
+    const valid = await form.trigger(getStepFields(step, form.getValues("mode")));
     if (!valid) return;
     setStep((s) => Math.min(s + 1, TOTAL_STEPS - 1));
   };
 
   const goBack = () => setStep((s) => Math.max(s - 1, 0));
 
-  const onSubmit = (data: CreateStudentRequest) => {
-    createStudentMutation.mutate(data, {
+  const onSubmit = (data: AddStudentFormValues) => {
+    const studentCode =
+      data.mode === "online" ? generateStudentCode() : (data.studentCode ?? "");
+
+    const payload: CreateStudentRequest = {
+      email: data.email,
+      password: data.password,
+      confirmPassword: data.confirmPassword,
+      fullName: data.fullName,
+      level: data.level,
+      school: data.school,
+      governorate: data.governorate,
+      parentPhoneNumber: data.parentPhoneNumber,
+      studentCode,
+      phoneNumber: data.phoneNumber,
+    };
+
+    createStudentMutation.mutate(payload, {
       onSuccess: () => {
         const summary: LastAddedStudent = {
           fullName: data.fullName,
           email: data.email,
-          studentCode: data.studentCode,
+          studentCode,
           phoneNumber: data.phoneNumber,
           level: data.level,
           school: data.school,
           governorate: data.governorate,
           parentPhoneNumber: data.parentPhoneNumber,
+          mode: data.mode,
         };
         writeLastAdded(summary);
         setLastAdded(summary);
@@ -127,16 +216,16 @@ const AddStudentPage = () => {
         });
         form.reset(emptyDefaults);
         setStep(0);
-        requestAnimationFrame(() => emailInputRef.current?.focus());
+        requestAnimationFrame(() => modeSelectRef.current?.focus());
       },
     });
   };
 
   const values = form.watch();
   const stepLabels = [
+    t("admin.students.addPage.stepStudyMode"),
+    t("admin.students.addPage.stepStudentInfo"),
     t("admin.students.addPage.stepAccount"),
-    t("admin.students.addPage.stepProfile"),
-    t("admin.students.addPage.stepContact"),
   ];
 
   return (
@@ -166,6 +255,14 @@ const AddStudentPage = () => {
                     {t("admin.students.modal.studentId")}:{" "}
                   </span>
                   <span className="font-medium">{lastAdded.studentCode}</span>
+                </p>
+                <p>
+                  <span className="text-muted-foreground">
+                    {t("admin.students.addPage.studyMode")}:{" "}
+                  </span>
+                  <span className="font-medium">
+                    {t(`auth.forms.mode.options.${lastAdded.mode}`)}
+                  </span>
                 </p>
                 <p>
                   <span className="text-muted-foreground">
@@ -211,7 +308,8 @@ const AddStudentPage = () => {
                       className={cn(
                         "flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold",
                         done && "bg-color2 text-white",
-                        active && "bg-gradient-to-r from-color1 to-color2 text-white",
+                        active &&
+                          "bg-gradient-to-r from-color1 to-color2 text-white",
                         !done && !active && "bg-muted text-muted-foreground"
                       )}
                     >
@@ -220,7 +318,9 @@ const AddStudentPage = () => {
                     <span
                       className={cn(
                         "truncate text-sm",
-                        active ? "font-medium text-foreground" : "text-muted-foreground"
+                        active
+                          ? "font-medium text-foreground"
+                          : "text-muted-foreground"
                       )}
                     >
                       {label}
@@ -250,58 +350,64 @@ const AddStudentPage = () => {
                 className="space-y-4"
               >
                 {step === 0 && (
-                  <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="space-y-4">
                     <FormField
                       control={form.control}
-                      name="email"
-                      render={({ field }) => (
-                        <FormItem className="sm:col-span-2">
-                          <FormLabel>{t("admin.students.modal.email")}</FormLabel>
-                          <FormControl>
-                            <Input
-                              type="email"
-                              autoComplete="off"
-                              {...field}
-                              ref={(el) => {
-                                field.ref(el);
-                                emailInputRef.current = el;
-                              }}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="password"
+                      name="mode"
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>
-                            {t("admin.students.modal.password")}
+                            {t("admin.students.addPage.studyMode")}
                           </FormLabel>
-                          <FormControl>
-                            <Input type="password" autoComplete="new-password" {...field} />
-                          </FormControl>
+                          <Select
+                            onValueChange={field.onChange}
+                            value={field.value}
+                          >
+                            <FormControl>
+                              <SelectTrigger ref={modeSelectRef}>
+                                <SelectValue
+                                  placeholder={t(
+                                    "admin.students.addPage.studyModePlaceholder"
+                                  )}
+                                />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="offline">
+                                {t("auth.forms.mode.options.offline")}
+                              </SelectItem>
+                              <SelectItem value="online">
+                                {t("auth.forms.mode.options.online")}
+                              </SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormDescription>
+                            {studyMode === "online"
+                              ? t("admin.students.addPage.onlineIdHint")
+                              : t("admin.students.addPage.offlineIdHint")}
+                          </FormDescription>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
-                    <FormField
-                      control={form.control}
-                      name="confirmPassword"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>
-                            {t("admin.students.modal.confirmPassword")}
-                          </FormLabel>
-                          <FormControl>
-                            <Input type="password" autoComplete="new-password" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+
+                    {studyMode === "offline" && (
+                      <FormField
+                        control={form.control}
+                        name="studentCode"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>
+                              {t("admin.students.modal.studentId")}
+                            </FormLabel>
+                            <FormControl>
+                              <Input {...field} value={field.value ?? ""} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    )}
                   </div>
                 )}
 
@@ -324,11 +430,26 @@ const AddStudentPage = () => {
                     />
                     <FormField
                       control={form.control}
-                      name="studentCode"
+                      name="phoneNumber"
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>
-                            {t("admin.students.modal.studentId")}
+                            {t("admin.students.modal.phoneNumber")}
+                          </FormLabel>
+                          <FormControl>
+                            <Input {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="parentPhoneNumber"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>
+                            {t("admin.students.modal.parentPhoneNumber")}
                           </FormLabel>
                           <FormControl>
                             <Input {...field} />
@@ -387,7 +508,7 @@ const AddStudentPage = () => {
                       control={form.control}
                       name="governorate"
                       render={({ field }) => (
-                        <FormItem>
+                        <FormItem className="sm:col-span-2">
                           <FormLabel>
                             {t("admin.students.modal.governorate")}
                           </FormLabel>
@@ -424,14 +545,14 @@ const AddStudentPage = () => {
                     <div className="grid gap-4 sm:grid-cols-2">
                       <FormField
                         control={form.control}
-                        name="phoneNumber"
+                        name="email"
                         render={({ field }) => (
-                          <FormItem>
+                          <FormItem className="sm:col-span-2">
                             <FormLabel>
-                              {t("admin.students.modal.phoneNumber")}
+                              {t("admin.students.modal.email")}
                             </FormLabel>
                             <FormControl>
-                              <Input {...field} />
+                              <Input type="email" autoComplete="off" {...field} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -439,14 +560,37 @@ const AddStudentPage = () => {
                       />
                       <FormField
                         control={form.control}
-                        name="parentPhoneNumber"
+                        name="password"
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>
-                              {t("admin.students.modal.parentPhoneNumber")}
+                              {t("admin.students.modal.password")}
                             </FormLabel>
                             <FormControl>
-                              <Input {...field} />
+                              <Input
+                                type="password"
+                                autoComplete="new-password"
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="confirmPassword"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>
+                              {t("admin.students.modal.confirmPassword")}
+                            </FormLabel>
+                            <FormControl>
+                              <Input
+                                type="password"
+                                autoComplete="new-password"
+                                {...field}
+                              />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -461,23 +605,35 @@ const AddStudentPage = () => {
                       <dl className="grid gap-2 text-sm sm:grid-cols-2">
                         <div>
                           <dt className="text-muted-foreground">
-                            {t("admin.students.modal.fullName")}
+                            {t("admin.students.addPage.studyMode")}
                           </dt>
-                          <dd className="font-medium">{values.fullName || "—"}</dd>
-                        </div>
-                        <div>
-                          <dt className="text-muted-foreground">
-                            {t("admin.students.modal.email")}
-                          </dt>
-                          <dd className="font-medium">{values.email || "—"}</dd>
+                          <dd className="font-medium">
+                            {t(`auth.forms.mode.options.${values.mode}`)}
+                          </dd>
                         </div>
                         <div>
                           <dt className="text-muted-foreground">
                             {t("admin.students.modal.studentId")}
                           </dt>
                           <dd className="font-medium">
-                            {values.studentCode || "—"}
+                            {values.mode === "online"
+                              ? t("admin.students.addPage.onlineIdAuto")
+                              : values.studentCode || "—"}
                           </dd>
+                        </div>
+                        <div>
+                          <dt className="text-muted-foreground">
+                            {t("admin.students.modal.fullName")}
+                          </dt>
+                          <dd className="font-medium">
+                            {values.fullName || "—"}
+                          </dd>
+                        </div>
+                        <div>
+                          <dt className="text-muted-foreground">
+                            {t("admin.students.modal.email")}
+                          </dt>
+                          <dd className="font-medium">{values.email || "—"}</dd>
                         </div>
                         <div>
                           <dt className="text-muted-foreground">
@@ -489,16 +645,10 @@ const AddStudentPage = () => {
                         </div>
                         <div>
                           <dt className="text-muted-foreground">
-                            {t("admin.students.modal.schoolName")}
-                          </dt>
-                          <dd className="font-medium">{values.school || "—"}</dd>
-                        </div>
-                        <div>
-                          <dt className="text-muted-foreground">
-                            {t("admin.students.modal.governorate")}
+                            {t("admin.students.modal.phoneNumber")}
                           </dt>
                           <dd className="font-medium">
-                            {values.governorate || "—"}
+                            {values.phoneNumber || "—"}
                           </dd>
                         </div>
                       </dl>
@@ -523,7 +673,10 @@ const AddStudentPage = () => {
                       <ChevronRight className="ms-1 h-4 w-4" />
                     </Button>
                   ) : (
-                    <Button type="submit" disabled={createStudentMutation.isPending}>
+                    <Button
+                      type="submit"
+                      disabled={createStudentMutation.isPending}
+                    >
                       {t("admin.students.addPage.create")}
                     </Button>
                   )}
