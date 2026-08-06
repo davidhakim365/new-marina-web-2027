@@ -12,6 +12,7 @@ public sealed record GetCallCenterStudentsQuery
     public int PageSize { get; init; } = 20;
     public bool? Called { get; init; }
     public bool? Absent { get; init; }
+    public bool? Online { get; init; }
 }
 
 public sealed record UpdateCallCenterContactCommand
@@ -62,6 +63,7 @@ public sealed record CallCenterStudentDto
     [Required] public required string FullName { get; init; }
     [Required] public required string ParentPhoneNumber { get; init; }
     [Required] public required bool Attended { get; init; }
+    [Required] public required bool IsOnline { get; init; }
     public decimal? QuizScore { get; init; }
     public decimal? QuizFullMark { get; init; }
     public int? OnlineQuizCorrect { get; init; }
@@ -103,6 +105,7 @@ public sealed record ExportCallCenterStudentsQuery
     public string? Search { get; init; }
     public bool? Called { get; init; }
     public bool? Absent { get; init; }
+    public bool? Online { get; init; }
 }
 
 public sealed record ExportCallCenterStudentRow
@@ -110,6 +113,7 @@ public sealed record ExportCallCenterStudentRow
     public required string StudentCode { get; init; }
     public required string FullName { get; init; }
     public required string ParentPhoneNumber { get; init; }
+    public required string StudentType { get; init; }
     public required string Attendance { get; init; }
     public string? QuizScore { get; init; }
     public string? Homework { get; init; }

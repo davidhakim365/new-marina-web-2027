@@ -31,7 +31,13 @@ public sealed class CallCenterService(AppDbContext context) : ICallCenterService
     public async Task<PageList<CallCenterStudentDto>> QueryStudentsAsync(GetCallCenterStudentsQuery query)
     {
         var lecture = await LoadLectureAsync(query.CourseId, query.LectureId);
-        var studentsQuery = BuildStudentsQuery(lecture, query.LectureId, query.Search, query.Called, query.Absent);
+        var studentsQuery = BuildStudentsQuery(
+            lecture,
+            query.LectureId,
+            query.Search,
+            query.Called,
+            query.Absent,
+            query.Online);
 
         var contacts = await context.Set<CallCenterContact>()
             .AsNoTracking()
@@ -186,7 +192,13 @@ public sealed class CallCenterService(AppDbContext context) : ICallCenterService
         ExportCallCenterStudentsQuery query)
     {
         var lecture = await LoadLectureAsync(query.CourseId, query.LectureId);
-        var studentsQuery = BuildStudentsQuery(lecture, query.LectureId, query.Search, query.Called, query.Absent);
+        var studentsQuery = BuildStudentsQuery(
+            lecture,
+            query.LectureId,
+            query.Search,
+            query.Called,
+            query.Absent,
+            query.Online);
 
         var contacts = await context.Set<CallCenterContact>()
             .AsNoTracking()
@@ -300,7 +312,8 @@ public sealed class CallCenterService(AppDbContext context) : ICallCenterService
         Guid lectureId,
         string? search,
         bool? called,
-        bool? absent)
+        bool? absent,
+        bool? online)
     {
         var studentsQuery = context.Set<Student>()
             .AsNoTracking()
@@ -347,8 +360,23 @@ public sealed class CallCenterService(AppDbContext context) : ICallCenterService
                     c.LectureId == lectureId && c.StudentId == x.Id && c.Called));
         }
 
+        if (online == true)
+        {
+            studentsQuery = studentsQuery.Where(x =>
+                x.StudentCode.ToUpper().StartsWith("ONL-"));
+        }
+        else if (online == false)
+        {
+            studentsQuery = studentsQuery.Where(x =>
+                !x.StudentCode.ToUpper().StartsWith("ONL-"));
+        }
+
         return studentsQuery;
     }
+
+    private static bool IsOnlineStudent(string studentCode) =>
+        !string.IsNullOrWhiteSpace(studentCode) &&
+        studentCode.StartsWith("ONL-", StringComparison.OrdinalIgnoreCase);
 
     private static ExportCallCenterStudentRow ToExportRow(CallCenterStudentDto student)
     {
@@ -370,6 +398,7 @@ public sealed class CallCenterService(AppDbContext context) : ICallCenterService
             StudentCode = student.StudentCode,
             FullName = student.FullName,
             ParentPhoneNumber = student.ParentPhoneNumber,
+            StudentType = student.IsOnline ? "Online" : "Offline",
             Attendance = student.Attended ? "Present" : "Absent",
             QuizScore = FormatQuiz(student),
             Homework = Score(student.HomeworkScore, student.HomeworkFullMark),
@@ -395,6 +424,7 @@ public sealed class CallCenterService(AppDbContext context) : ICallCenterService
             FullName = student.FullName,
             ParentPhoneNumber = student.ParentPhoneNumber,
             Attended = attendance is { AttendedAt: not null },
+            IsOnline = IsOnlineStudent(student.StudentCode),
             QuizScore = student.LectureQuizzes.FirstOrDefault(q => q.LectureId == lecture.Id)?.Score,
             QuizFullMark = lecture.QuizFullMark,
             OnlineQuizCorrect = onlineTotal > 0 ? onlineCorrect : null,

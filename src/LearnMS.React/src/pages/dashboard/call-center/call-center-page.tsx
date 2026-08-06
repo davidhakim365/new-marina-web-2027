@@ -41,6 +41,7 @@ import {
   ChevronDown,
   ChevronUp,
   Download,
+  Globe,
   History,
   Loader2,
   MessageCircle,
@@ -307,6 +308,16 @@ function StudentCallCard({
                 {t("admin.callCenter.absent")}
               </Badge>
             )}
+            {student.isOnline ? (
+              <Badge className="gap-1 bg-sky-500/15 text-sky-700 hover:bg-sky-500/20">
+                <Globe className="h-3.5 w-3.5" />
+                {t("admin.callCenter.online")}
+              </Badge>
+            ) : (
+              <Badge className="gap-1 bg-amber-500/15 text-amber-700 hover:bg-amber-500/20">
+                {t("admin.callCenter.offline")}
+              </Badge>
+            )}
           </div>
           <p className="flex items-center gap-1.5 text-sm text-muted-foreground">
             <Phone className="h-3.5 w-3.5" />
@@ -410,6 +421,9 @@ const CallCenterPage = () => {
   const [calledFilter, setCalledFilter] = useState<"all" | "called" | "notCalled">(
     "all"
   );
+  const [modeFilter, setModeFilter] = useState<"all" | "online" | "offline">(
+    "all"
+  );
   const [{ pageIndex, pageSize }, setPagination] = useState<PaginationState>({
     pageIndex: 0,
     pageSize: 20,
@@ -425,6 +439,12 @@ const CallCenterPage = () => {
     attendanceFilter === "absent"
       ? true
       : attendanceFilter === "present"
+        ? false
+        : undefined;
+  const onlineQueryParam =
+    modeFilter === "online"
+      ? true
+      : modeFilter === "offline"
         ? false
         : undefined;
 
@@ -462,6 +482,7 @@ const CallCenterPage = () => {
     search: debouncedSearch || undefined,
     absent: absentQueryParam,
     called: calledQueryParam,
+    online: onlineQueryParam,
   });
 
   const totalCount = studentsQuery.data?.data?.totalCount ?? 0;
@@ -475,6 +496,8 @@ const CallCenterPage = () => {
       params.set("called", String(calledQueryParam));
     if (absentQueryParam !== undefined)
       params.set("absent", String(absentQueryParam));
+    if (onlineQueryParam !== undefined)
+      params.set("online", String(onlineQueryParam));
     const qs = params.toString();
     const safeTitle = (selectedLecture?.title || "lecture")
       .replace(/[^\w\-]+/g, "_")
@@ -610,6 +633,28 @@ const CallCenterPage = () => {
                 />
               </div>
               <div className="flex flex-wrap gap-2">
+                <Select
+                  value={modeFilter}
+                  onValueChange={(v) => {
+                    setModeFilter(v as typeof modeFilter);
+                    setPagination((p) => ({ ...p, pageIndex: 0 }));
+                  }}
+                >
+                  <SelectTrigger className="w-[150px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">
+                      {t("admin.callCenter.filterAllModes")}
+                    </SelectItem>
+                    <SelectItem value="online">
+                      {t("admin.callCenter.filterOnline")}
+                    </SelectItem>
+                    <SelectItem value="offline">
+                      {t("admin.callCenter.filterOffline")}
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
                 <Select
                   value={attendanceFilter}
                   onValueChange={(v) => {

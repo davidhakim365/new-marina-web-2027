@@ -40,7 +40,8 @@ public sealed class CallCenterController(ICallCenterService callCenterService) :
         [FromQuery] int pageSize = 20,
         [FromQuery] string? search = null,
         [FromQuery] bool? called = null,
-        [FromQuery] bool? absent = null)
+        [FromQuery] bool? absent = null,
+        [FromQuery] bool? online = null)
     {
         var data = await callCenterService.QueryStudentsAsync(
             new GetCallCenterStudentsQuery
@@ -52,6 +53,7 @@ public sealed class CallCenterController(ICallCenterService callCenterService) :
                 Search = search,
                 Called = called,
                 Absent = absent,
+                Online = online,
             });
 
         return new ApiWrapper.Success<PageList<CallCenterStudentDto>>
@@ -158,7 +160,8 @@ public sealed class CallCenterController(ICallCenterService callCenterService) :
         Guid lectureId,
         [FromQuery] string? search = null,
         [FromQuery] bool? called = null,
-        [FromQuery] bool? absent = null)
+        [FromQuery] bool? absent = null,
+        [FromQuery] bool? online = null)
     {
         var data = callCenterService.ExportStudentsAsync(
             new ExportCallCenterStudentsQuery
@@ -168,6 +171,7 @@ public sealed class CallCenterController(ICallCenterService callCenterService) :
                 Search = search,
                 Called = called,
                 Absent = absent,
+                Online = online,
             });
 
         Response.Headers.Append("Content-Type", "text/csv; charset=utf-8");

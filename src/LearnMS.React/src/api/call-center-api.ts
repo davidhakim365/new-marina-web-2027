@@ -7,6 +7,7 @@ export type CallCenterStudent = {
   fullName: string;
   parentPhoneNumber: string;
   attended: boolean;
+  isOnline: boolean;
   quizScore?: number | null;
   quizFullMark?: number | null;
   onlineQuizCorrect?: number | null;
@@ -38,6 +39,7 @@ export type CallCenterStudentsParams = {
   search?: string;
   called?: boolean;
   absent?: boolean;
+  online?: boolean;
 };
 
 export function getCallCenterStudentsQueryKey(
@@ -275,6 +277,14 @@ export function buildCallCenterWhatsAppMessage(student: CallCenterStudent, opts:
       ? "غائب"
       : "Absent";
 
+  const studentType = student.isOnline
+    ? ar
+      ? "أونلاين"
+      : "Online"
+    : ar
+      ? "أوفلاين"
+      : "Offline";
+
   const quiz = formatCallCenterQuizScore(student);
 
   const homework =
@@ -289,6 +299,7 @@ export function buildCallCenterWhatsAppMessage(student: CallCenterStudent, opts:
       "اهلا بيك في منصة ميس مارينا عاطف و دا متابعة ابن حضرتك عندنا",
       `تقرير الطالب: ${student.fullName}`,
       `كود الطالب: ${student.studentCode}`,
+      `نوع الطالب: ${studentType}`,
       opts.courseTitle ? `الكورس: ${opts.courseTitle}` : null,
       opts.lectureTitle ? `المحاضرة: ${opts.lectureTitle}` : null,
       `الحضور: ${attended}`,
@@ -304,6 +315,7 @@ export function buildCallCenterWhatsAppMessage(student: CallCenterStudent, opts:
     "Hello,",
     `Student report: ${student.fullName}`,
     `Student code: ${student.studentCode}`,
+    `Student type: ${studentType}`,
     opts.courseTitle ? `Course: ${opts.courseTitle}` : null,
     opts.lectureTitle ? `Lecture: ${opts.lectureTitle}` : null,
     `Attendance: ${attended}`,
