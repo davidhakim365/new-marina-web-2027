@@ -15,6 +15,12 @@ AXIOS_INSTANCE.interceptors.request.use((config) => {
   return config;
 });
 
+const ALREADY_REGISTERED_CODES = new Set([
+  "auth/email-already-exists",
+  "auth/email-already-code",
+  "auth/phone-already-exists",
+]);
+
 AXIOS_INSTANCE.interceptors.response.use(
   (response) => response,
   (error) => {
@@ -25,11 +31,14 @@ AXIOS_INSTANCE.interceptors.response.use(
         localStorage.removeItem("token");
       }
 
-      toast({
-        title: "Couldn't load, please try again",
-        description: data.message,
-        variant: "destructive",
-      });
+      // Let signup / add-student UI show localized friendly guidance.
+      if (!ALREADY_REGISTERED_CODES.has(data?.code)) {
+        toast({
+          title: "Couldn't load, please try again",
+          description: data.message,
+          variant: "destructive",
+        });
+      }
 
       throw new ApiError(data.code, data.message);
     }

@@ -290,9 +290,22 @@ const AddStudentPage = () => {
       setStep(0);
       requestAnimationFrame(() => modeSelectRef.current?.focus());
     } catch (error) {
+      const apiError = error as {
+        code?: string;
+        message?: string;
+        response?: { data?: { code?: string; message?: string } };
+      };
+      const errorCode = apiError.code || apiError.response?.data?.code;
+      const alreadyRegisteredMessageByCode: Record<string, string> = {
+        "auth/email-already-exists": t("auth.forms.errors.emailTaken"),
+        "auth/email-already-code": t("auth.forms.errors.studentCodeTaken"),
+        "auth/phone-already-exists": t("auth.forms.errors.phoneTaken"),
+      };
       const errorMessage =
-        (error as { response?: { data?: { message?: string } } })?.response
-          ?.data?.message || t("auth.forms.errors.registrationFailed");
+        (errorCode && alreadyRegisteredMessageByCode[errorCode]) ||
+        apiError.message ||
+        apiError.response?.data?.message ||
+        t("auth.forms.errors.registrationFailed");
       toast({
         title: t("auth.forms.errors.registrationFailed"),
         description: errorMessage,

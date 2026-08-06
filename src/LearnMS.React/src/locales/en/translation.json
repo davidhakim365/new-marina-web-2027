@@ -588,9 +588,10 @@
         "registrationFailed": "Registration failed",
         "accountCreated": "Account Created Successfully",
         "welcomeBack": "Welcome back!",
-        "studentCodeTaken": "This student ID is already registered.",
-        "phoneTaken": "This phone number is already registered.",
-        "emailTaken": "This email is already registered.",
+        "studentCodeTaken": "This student ID is already linked to an account. You've already signed up with us and can't access it. Please contact platform support at 01044556061",
+        "phoneTaken": "This phone number is already linked to an account. You've already signed up with us and can't access it. Please contact platform support at 01044556061",
+        "emailTaken": "This email is already linked to an account. You've already signed up with us and can't access it. Please contact platform support at 01044556061",
+        "alreadyRegistered": "These details are already linked to an account. You've already signed up with us and can't access it. Please contact platform support at 01044556061",
         "availabilityCheckFailed": "Could not verify your details. Please try again."
       }
     }
