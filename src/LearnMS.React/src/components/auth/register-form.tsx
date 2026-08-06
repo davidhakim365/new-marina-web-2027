@@ -87,6 +87,7 @@ const RegisterForm = ({ setIsLoginView }: RegisterFormProps) => {
   });
 
   const mode = registerForm.watch("mode");
+  const values = registerForm.watch();
   const registerErrors = registerForm.formState.errors;
 
   const formContainerVariants = {
@@ -554,6 +555,85 @@ const RegisterForm = ({ setIsLoginView }: RegisterFormProps) => {
               passwordShown={passwordShown}
               setPasswordShown={setPasswordShown}
             />
+          </motion.div>
+
+          <motion.div
+            variants={inputVariants}
+            className="rounded-xl border border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-700 dark:bg-zinc-800/60"
+          >
+            <p className="mb-2 text-sm font-medium text-zinc-900 dark:text-zinc-100">
+              {t("auth.forms.steps.reviewTitle")}
+            </p>
+            <dl className="grid gap-2 text-sm sm:grid-cols-2">
+              <div>
+                <dt className="text-zinc-500 dark:text-zinc-400">
+                  {t("auth.forms.mode.label")}
+                </dt>
+                <dd className="font-medium text-zinc-900 dark:text-zinc-100">
+                  {t(`auth.forms.mode.options.${values.mode}`)}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-zinc-500 dark:text-zinc-400">
+                  {t("auth.forms.studentCode.label")}
+                </dt>
+                <dd className="font-medium text-zinc-900 dark:text-zinc-100">
+                  {values.mode === "online"
+                    ? t("auth.forms.steps.onlineIdAuto")
+                    : values.studentCode || "—"}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-zinc-500 dark:text-zinc-400">
+                  {t("auth.forms.fullName.label")}
+                </dt>
+                <dd className="font-medium text-zinc-900 dark:text-zinc-100">
+                  {values.fullName || "—"}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-zinc-500 dark:text-zinc-400">
+                  {t("auth.forms.phoneNumber.label")}
+                </dt>
+                <dd className="font-medium text-zinc-900 dark:text-zinc-100">
+                  {values.phoneNumber || "—"}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-zinc-500 dark:text-zinc-400">
+                  {t("auth.forms.parentPhoneNumber.label")}
+                </dt>
+                <dd className="font-medium text-zinc-900 dark:text-zinc-100">
+                  {values.parentPhoneNumber || "—"}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-zinc-500 dark:text-zinc-400">
+                  {t("auth.forms.level.label")}
+                </dt>
+                <dd className="font-medium text-zinc-900 dark:text-zinc-100">
+                  {values.level
+                    ? t(AUTH_LEVEL_I18N_KEYS[values.level])
+                    : "—"}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-zinc-500 dark:text-zinc-400">
+                  {t("auth.forms.school.label")}
+                </dt>
+                <dd className="font-medium text-zinc-900 dark:text-zinc-100">
+                  {values.school || "—"}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-zinc-500 dark:text-zinc-400">
+                  {t("auth.forms.governorate.label")}
+                </dt>
+                <dd className="font-medium text-zinc-900 dark:text-zinc-100">
+                  {values.governorate || "—"}
+                </dd>
+              </div>
+            </dl>
           </motion.div>
         </>
       )}

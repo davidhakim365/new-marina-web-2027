@@ -571,6 +571,8 @@
         "back": "Back",
         "onlineIdHint": "Online students get an automatic student ID.",
         "offlineIdHint": "Enter your center student ID.",
+        "onlineIdAuto": "Auto-generated on create",
+        "reviewTitle": "Review",
         "creating": "Creating account...",
         "loggingIn": "Logging in..."
       },
