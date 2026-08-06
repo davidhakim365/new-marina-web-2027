@@ -300,7 +300,7 @@ export function buildCallCenterWhatsAppMessage(student: CallCenterStudent, opts:
 
   if (ar) {
     return [
-      "السلام عليكم ورحمة الله،",
+      "اهلا بيك في منصة ميس مارينا عاطف و دا متابعة ابن حضرتك عندنا",
       `تقرير الطالب: ${student.fullName}`,
       `كود الطالب: ${student.studentCode}`,
       opts.courseTitle ? `الكورس: ${opts.courseTitle}` : null,
