@@ -536,10 +536,15 @@
       },
       "mode": {
         "label": "Type of Student",
+        "placeholder": "Select type of student",
         "options": {
           "online": "Online Student ",
           "offline": "Center Student "
         }
+      },
+      "governorate": {
+        "label": "Governorate",
+        "placeholder": "Select governorate"
       },
       "school": {
         "label": "School",
@@ -557,14 +562,34 @@
           "level5": "2nd Secondary Baccalaureate"
         }
       },
+      "steps": {
+        "studyMode": "Study mode",
+        "studentInfo": "Student info",
+        "account": "Account",
+        "stepOf": "Step {{current}} of {{total}}",
+        "next": "Next",
+        "back": "Back",
+        "onlineIdHint": "Online students get an automatic student ID.",
+        "offlineIdHint": "Enter your center student ID.",
+        "creating": "Creating account...",
+        "loggingIn": "Logging in..."
+      },
       "forgotPassword": "Forgot Password?",
       "signIn": "Sign In",
       "createAccount": "Create Account",
+      "success": {
+        "registrationTitle": "Registration successful",
+        "registrationDescription": "Please sign in with your new account."
+      },
       "errors": {
         "loginFailed": "Login failed",
         "registrationFailed": "Registration failed",
         "accountCreated": "Account Created Successfully",
-        "welcomeBack": "Welcome back!"
+        "welcomeBack": "Welcome back!",
+        "studentCodeTaken": "This student ID is already registered.",
+        "phoneTaken": "This phone number is already registered.",
+        "emailTaken": "This email is already registered.",
+        "availabilityCheckFailed": "Could not verify your details. Please try again."
       }
     }
   },

@@ -55,8 +55,12 @@ export const RegisterRequest = z
       errorMap: () => ({ message: "Level is required" }),
     }),
     fullName: z.string().min(1, { message: "Name is required" }),
-    phoneNumber: z.string(),
-    parentPhoneNumber: z.string(),
+    phoneNumber: z
+      .string()
+      .length(11, { message: "Phone number must be 11 digits" }),
+    parentPhoneNumber: z
+      .string()
+      .length(11, { message: "Parent phone number must be 11 digits" }),
     studentCode: z.string().optional(),
     school: z.string().min(1, { message: "School is required" }),
     governorate: z.string().min(1, { message: "المحافظة مطلوبة" }),
@@ -89,11 +93,45 @@ export const RegisterRequest = z
         });
       }
     }
+
+    if (
+      data.phoneNumber &&
+      data.parentPhoneNumber &&
+      data.phoneNumber === data.parentPhoneNumber
+    ) {
+      ctx.addIssue({
+        path: ["phoneNumber"],
+        code: "custom",
+        message: "Student phone must differ from parent phone",
+      });
+    }
   });
 export type RegisterRequest = z.infer<typeof RegisterRequest>;
 export type RegisterResponse = {
   id: string;
 };
+
+export type StudentAvailabilityResult = {
+  studentCodeAvailable: boolean;
+  phoneNumberAvailable: boolean;
+  emailAvailable: boolean;
+};
+
+export async function checkStudentAvailability(params: {
+  studentCode?: string;
+  phoneNumber?: string;
+  email?: string;
+}): Promise<StudentAvailabilityResult> {
+  const search = new URLSearchParams();
+  if (params.studentCode) search.set("studentCode", params.studentCode);
+  if (params.phoneNumber) search.set("phoneNumber", params.phoneNumber);
+  if (params.email) search.set("email", params.email);
+
+  const res = await api.get<ApiResponse<StudentAvailabilityResult>>(
+    `/api/auth/students/availability?${search.toString()}`
+  );
+  return res.data.data;
+}
 
 export function useLoginMutation() {
   const qrc = useQueryClient();

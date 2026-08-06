@@ -16,6 +16,9 @@ public sealed class StudentsService(AppDbContext db, IPasswordHasher passwordHas
 {
     public async Task ExecuteAsync(CreateStudentCommand command)
     {
+        if (string.Equals(command.PhoneNumber.Trim(), command.ParentPhoneNumber.Trim(), StringComparison.Ordinal))
+            throw new ApiException(AuthErrors.PhoneSameAsParent);
+
         var account = await db.Accounts.FirstOrDefaultAsync(x =>
             x.Email.ToLower() == command.Email.ToLower()
         );
@@ -31,6 +34,12 @@ public sealed class StudentsService(AppDbContext db, IPasswordHasher passwordHas
         {
             throw new ApiException(AuthErrors.code);
         }
+
+        var phone = await db.Students
+            .FirstOrDefaultAsync(x => x.PhoneNumber == command.PhoneNumber.Trim());
+
+        if (phone != null)
+            throw new ApiException(AuthErrors.PhoneAlreadyExists);
 
         var passwordHash = passwordHasher.Hash(command.Password.Trim());
 

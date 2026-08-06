@@ -7,7 +7,7 @@ public interface IAuthService
     // Registration
     Task<RegisterResult> ExecuteAsync(RegisterStudentCommand command);
     Task<RegisterResult> ExecuteAsync(RegisterStudentExternalCommand command);
-
+    Task<CheckStudentAvailabilityResult> ExecuteAsync(CheckStudentAvailabilityQuery query);
 
     Task ExecuteAsync(ForgotPasswordCommand command);
     Task ExecuteAsync(ResetPasswordCommand command);

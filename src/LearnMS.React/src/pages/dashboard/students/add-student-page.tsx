@@ -2,7 +2,10 @@ import {
   CreateStudentRequest,
   useCreateStudentMutation,
 } from "@/api/students-api";
-import { EGYPT_GOVERNORATES } from "@/api/auth-api";
+import {
+  checkStudentAvailability,
+  EGYPT_GOVERNORATES,
+} from "@/api/auth-api";
 import { DashboardCard } from "@/components/dashboard/dashboard-card";
 import { DashboardPageShell } from "@/components/dashboard/dashboard-page-shell";
 import { Button } from "@/components/ui/button";
@@ -51,10 +54,12 @@ const AddStudentFormSchema = z
       .string()
       .min(8, { message: "Password must be at least 8 characters" }),
     fullName: z.string().min(3, { message: "Name is required" }),
-    phoneNumber: z.string().min(1, { message: "Phone number is required" }),
+    phoneNumber: z
+      .string()
+      .length(11, { message: "Phone number must be 11 digits" }),
     parentPhoneNumber: z
       .string()
-      .min(1, { message: "Parent phone number is required" }),
+      .length(11, { message: "Parent phone number must be 11 digits" }),
     studentCode: z.string().optional(),
     governorate: z.string().min(1, { message: "المحافظة مطلوبة" }),
     level: z.enum(["Level0", "Level1", "Level2", "Level3", "Level4", "Level5"]),
@@ -75,6 +80,13 @@ const AddStudentFormSchema = z
           message: "ID must be at least 6 characters",
         });
       }
+    }
+    if (data.phoneNumber === data.parentPhoneNumber) {
+      ctx.addIssue({
+        path: ["phoneNumber"],
+        code: "custom",
+        message: "Student phone must differ from parent phone",
+      });
     }
   });
 
@@ -148,6 +160,7 @@ const AddStudentPage = () => {
   const { t } = useTranslation();
   const createStudentMutation = useCreateStudentMutation();
   const [step, setStep] = useState(0);
+  const [checkingAvailability, setCheckingAvailability] = useState(false);
   const [lastAdded, setLastAdded] = useState<LastAddedStudent | null>(null);
   const modeSelectRef = useRef<HTMLButtonElement | null>(null);
 
@@ -173,52 +186,121 @@ const AddStudentPage = () => {
   const goNext = async () => {
     const valid = await form.trigger(getStepFields(step, form.getValues("mode")));
     if (!valid) return;
-    setStep((s) => Math.min(s + 1, TOTAL_STEPS - 1));
+
+    setCheckingAvailability(true);
+    try {
+      const values = form.getValues();
+
+      if (step === 0 && values.mode === "offline" && values.studentCode) {
+        const availability = await checkStudentAvailability({
+          studentCode: values.studentCode,
+        });
+        if (!availability.studentCodeAvailable) {
+          form.setError("studentCode", {
+            type: "manual",
+            message: t("auth.forms.errors.studentCodeTaken"),
+          });
+          return;
+        }
+      }
+
+      if (step === 1) {
+        const availability = await checkStudentAvailability({
+          phoneNumber: values.phoneNumber,
+        });
+        if (!availability.phoneNumberAvailable) {
+          form.setError("phoneNumber", {
+            type: "manual",
+            message: t("auth.forms.errors.phoneTaken"),
+          });
+          return;
+        }
+      }
+
+      setStep((s) => Math.min(s + 1, TOTAL_STEPS - 1));
+    } catch {
+      toast({
+        title: t("auth.forms.errors.registrationFailed"),
+        description: t("auth.forms.errors.availabilityCheckFailed"),
+        variant: "destructive",
+      });
+    } finally {
+      setCheckingAvailability(false);
+    }
   };
 
   const goBack = () => setStep((s) => Math.max(s - 1, 0));
 
-  const onSubmit = (data: AddStudentFormValues) => {
-    const studentCode =
-      data.mode === "online" ? generateStudentCode() : (data.studentCode ?? "");
-
-    const payload: CreateStudentRequest = {
-      email: data.email,
-      password: data.password,
-      confirmPassword: data.confirmPassword,
-      fullName: data.fullName,
-      level: data.level,
-      school: data.school,
-      governorate: data.governorate,
-      parentPhoneNumber: data.parentPhoneNumber,
-      studentCode,
-      phoneNumber: data.phoneNumber,
-    };
-
-    createStudentMutation.mutate(payload, {
-      onSuccess: () => {
-        const summary: LastAddedStudent = {
-          fullName: data.fullName,
-          email: data.email,
-          studentCode,
-          phoneNumber: data.phoneNumber,
-          level: data.level,
-          school: data.school,
-          governorate: data.governorate,
-          parentPhoneNumber: data.parentPhoneNumber,
-          mode: data.mode,
-        };
-        writeLastAdded(summary);
-        setLastAdded(summary);
-        toast({
-          title: t("admin.students.modal.createdTitle"),
-          description: t("admin.students.modal.createdDesc"),
+  const onSubmit = async (data: AddStudentFormValues) => {
+    setCheckingAvailability(true);
+    try {
+      const emailCheck = await checkStudentAvailability({ email: data.email });
+      if (!emailCheck.emailAvailable) {
+        form.setError("email", {
+          type: "manual",
+          message: t("auth.forms.errors.emailTaken"),
         });
-        form.reset(emptyDefaults);
-        setStep(0);
-        requestAnimationFrame(() => modeSelectRef.current?.focus());
-      },
-    });
+        return;
+      }
+
+      let studentCode =
+        data.mode === "online" ? generateStudentCode() : (data.studentCode ?? "");
+
+      if (data.mode === "online") {
+        for (let attempt = 0; attempt < 5; attempt++) {
+          const codeCheck = await checkStudentAvailability({ studentCode });
+          if (codeCheck.studentCodeAvailable) break;
+          studentCode = generateStudentCode();
+        }
+      }
+
+      const payload: CreateStudentRequest = {
+        email: data.email,
+        password: data.password,
+        confirmPassword: data.confirmPassword,
+        fullName: data.fullName,
+        level: data.level,
+        school: data.school,
+        governorate: data.governorate,
+        parentPhoneNumber: data.parentPhoneNumber,
+        studentCode,
+        phoneNumber: data.phoneNumber,
+      };
+
+      await createStudentMutation.mutateAsync(payload);
+
+      const summary: LastAddedStudent = {
+        fullName: data.fullName,
+        email: data.email,
+        studentCode,
+        phoneNumber: data.phoneNumber,
+        level: data.level,
+        school: data.school,
+        governorate: data.governorate,
+        parentPhoneNumber: data.parentPhoneNumber,
+        mode: data.mode,
+      };
+      writeLastAdded(summary);
+      setLastAdded(summary);
+      toast({
+        title: t("admin.students.modal.createdTitle"),
+        description: t("admin.students.modal.createdDesc"),
+      });
+      form.reset(emptyDefaults);
+      setStep(0);
+      requestAnimationFrame(() => modeSelectRef.current?.focus());
+    } catch (error) {
+      const errorMessage =
+        (error as { response?: { data?: { message?: string } } })?.response
+          ?.data?.message || t("auth.forms.errors.registrationFailed");
+      toast({
+        title: t("auth.forms.errors.registrationFailed"),
+        description: errorMessage,
+        variant: "destructive",
+      });
+    } finally {
+      setCheckingAvailability(false);
+    }
   };
 
   const values = form.watch();
@@ -346,7 +428,9 @@ const AddStudentPage = () => {
               }}
             >
               <fieldset
-                disabled={createStudentMutation.isPending}
+                disabled={
+                  createStudentMutation.isPending || checkingAvailability
+                }
                 className="space-y-4"
               >
                 {step === 0 && (
@@ -661,21 +745,31 @@ const AddStudentPage = () => {
                     type="button"
                     variant="outline"
                     onClick={goBack}
-                    disabled={step === 0 || createStudentMutation.isPending}
+                    disabled={
+                      step === 0 ||
+                      createStudentMutation.isPending ||
+                      checkingAvailability
+                    }
                   >
                     <ChevronLeft className="me-1 h-4 w-4" />
                     {t("admin.students.addPage.back")}
                   </Button>
 
                   {step < TOTAL_STEPS - 1 ? (
-                    <Button type="button" onClick={() => void goNext()}>
+                    <Button
+                      type="button"
+                      onClick={() => void goNext()}
+                      disabled={checkingAvailability}
+                    >
                       {t("admin.students.addPage.next")}
                       <ChevronRight className="ms-1 h-4 w-4" />
                     </Button>
                   ) : (
                     <Button
                       type="submit"
-                      disabled={createStudentMutation.isPending}
+                      disabled={
+                        createStudentMutation.isPending || checkingAvailability
+                      }
                     >
                       {t("admin.students.addPage.create")}
                     </Button>

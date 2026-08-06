@@ -16,6 +16,9 @@ public sealed class StudentsConfigurations : IEntityTypeConfiguration<Student>
         builder.Property(x => x.Level)
             .HasConversion(x => x.ToString(), x => (StudentLevel)Enum.Parse(typeof(StudentLevel), x));
 
+        builder.HasIndex(x => x.StudentCode).IsUnique();
+        builder.HasIndex(x => x.PhoneNumber).IsUnique();
+
         builder.HasMany(x => x.PurchasedLectures).WithMany(x => x.EnrolledStudents).UsingEntity<LectureEnrollment>(
             l => l.HasOne(x => x.Lecture).WithMany(x => x.LectureEnrollments).HasForeignKey(x => x.LectureId),
             r => r.HasOne(x => x.Student).WithMany(x => x.LectureEnrollments).HasForeignKey(x => x.StudentId)

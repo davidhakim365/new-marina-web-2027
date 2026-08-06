@@ -34,6 +34,27 @@ public sealed class AuthController : Controller
 
 
 
+    [HttpGet("students/availability")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<ApiWrapper.Success<CheckStudentAvailabilityResult>> CheckStudentAvailability(
+        [FromQuery] string? studentCode,
+        [FromQuery] string? phoneNumber,
+        [FromQuery] string? email)
+    {
+        var result = await _authService.ExecuteAsync(new CheckStudentAvailabilityQuery
+        {
+            StudentCode = studentCode,
+            PhoneNumber = phoneNumber,
+            Email = email,
+        });
+
+        return new()
+        {
+            Data = result,
+            Message = "Availability checked"
+        };
+    }
+
     [HttpPost("students/register")]
     [ProducesResponseType(StatusCodes.Status201Created)]
     public async Task<ApiWrapper.Success<RegisterResult>> RegisterStudent([FromBody] RegisterStudentRequest request)

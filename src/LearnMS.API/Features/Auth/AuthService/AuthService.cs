@@ -36,8 +36,41 @@ public sealed class AuthService : IAuthService
     }
 
 
+    public async Task<CheckStudentAvailabilityResult> ExecuteAsync(CheckStudentAvailabilityQuery query)
+    {
+        var result = new CheckStudentAvailabilityResult();
+
+        if (!string.IsNullOrWhiteSpace(query.StudentCode))
+        {
+            var code = query.StudentCode.Trim();
+            var exists = await _dbContext.Students.AnyAsync(x => x.StudentCode == code);
+            result = result with { StudentCodeAvailable = !exists };
+        }
+
+        if (!string.IsNullOrWhiteSpace(query.PhoneNumber))
+        {
+            var phone = query.PhoneNumber.Trim();
+            var exists = await _dbContext.Students.AnyAsync(x => x.PhoneNumber == phone);
+            result = result with { PhoneNumberAvailable = !exists };
+        }
+
+        if (!string.IsNullOrWhiteSpace(query.Email))
+        {
+            var email = query.Email.Trim().ToLower();
+            var exists = await _dbContext.Accounts.AnyAsync(x => x.Email.ToLower() == email);
+            result = result with { EmailAvailable = !exists };
+        }
+
+        return result;
+    }
+
     public async Task<RegisterResult> ExecuteAsync(RegisterStudentCommand command)
     {
+        if (string.Equals(command.PhoneNumber.Trim(), command.ParentPhoneNumber.Trim(), StringComparison.Ordinal))
+        {
+            throw new ApiException(AuthErrors.PhoneSameAsParent);
+        }
+
         var account = await _dbContext.Accounts
             .FirstOrDefaultAsync(x => x.Email.ToLower() == command.Email.ToLower());
 
@@ -54,7 +87,13 @@ public sealed class AuthService : IAuthService
             throw new ApiException(AuthErrors.code);
         }
 
+        var phone = await _dbContext.Students
+            .FirstOrDefaultAsync(x => x.PhoneNumber == command.PhoneNumber.Trim());
 
+        if (phone != null)
+        {
+            throw new ApiException(AuthErrors.PhoneAlreadyExists);
+        }
 
         var passwordHash = _passwordHasher.Hash(command.Password.Trim());
 

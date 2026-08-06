@@ -538,10 +538,15 @@
       },
       "mode": {
         "label": "بتشوف الحصة فين ",
+        "placeholder": "اختار نوع الطالب",
         "options": {
           "online": "طالب منصة ",
           "offline": "طالب سنتر "
         }
+      },
+      "governorate": {
+        "label": "المحافظة",
+        "placeholder": "اختار المحافظة"
       },
       "school": {
         "label": "المدرسة",
@@ -559,14 +564,34 @@
           "level5": "الصف الثاني الثانوي بكلوريا"
         }
       },
+      "steps": {
+        "studyMode": "نوع الدراسة",
+        "studentInfo": "بيانات الطالب",
+        "account": "الحساب",
+        "stepOf": "الخطوة {{current}} من {{total}}",
+        "next": "التالي",
+        "back": "رجوع",
+        "onlineIdHint": "طالب المنصة يحصل على رقم طالب تلقائي.",
+        "offlineIdHint": "أدخل رقم طالب السنتر.",
+        "creating": "جاري إنشاء الحساب...",
+        "loggingIn": "جاري تسجيل الدخول..."
+      },
       "forgotPassword": "نسيت كلمة المرور؟",
       "signIn": "تسجيل الدخول",
       "createAccount": "إنشاء حساب",
+      "success": {
+        "registrationTitle": "تم التسجيل بنجاح",
+        "registrationDescription": "من فضلك سجّل الدخول بحسابك الجديد."
+      },
       "errors": {
         "loginFailed": "فشل تسجيل الدخول",
         "registrationFailed": "فشل التسجيل",
         "accountCreated": "تم إنشاء الحساب بنجاح",
-        "welcomeBack": "مرحباً بعودتك!"
+        "welcomeBack": "مرحباً بعودتك!",
+        "studentCodeTaken": "رقم الطالب مسجل بالفعل.",
+        "phoneTaken": "رقم الهاتف مسجل بالفعل.",
+        "emailTaken": "البريد الإلكتروني مسجل بالفعل.",
+        "availabilityCheckFailed": "تعذر التحقق من البيانات. حاول مرة أخرى."
       }
     }
   },

@@ -33,8 +33,12 @@ export const CreateStudentRequest = z
       .string()
       .min(8, { message: "Password must be at least 8 characters" }),
     fullName: z.string().min(3, { message: "Name is required" }),
-    phoneNumber: z.string(),
-    parentPhoneNumber: z.string(),
+    phoneNumber: z
+      .string()
+      .length(11, { message: "Phone number must be 11 digits" }),
+    parentPhoneNumber: z
+      .string()
+      .length(11, { message: "Parent phone number must be 11 digits" }),
     studentCode: z
       .string()
       .min(1, { message: "ID must be at least 6 characters" }),
@@ -42,9 +46,21 @@ export const CreateStudentRequest = z
 
     level: z.enum(["Level0", "Level1", "Level2", "Level3", "Level4", "Level5"]),
   })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: "Passwords do not match",
-    path: ["confirmPassword"],
+  .superRefine((data, ctx) => {
+    if (data.password !== data.confirmPassword) {
+      ctx.addIssue({
+        path: ["confirmPassword"],
+        code: "custom",
+        message: "Passwords do not match",
+      });
+    }
+    if (data.phoneNumber === data.parentPhoneNumber) {
+      ctx.addIssue({
+        path: ["phoneNumber"],
+        code: "custom",
+        message: "Student phone must differ from parent phone",
+      });
+    }
   });
 
 export type CreateStudentRequest = z.infer<typeof CreateStudentRequest>;

@@ -12,9 +12,9 @@ public sealed record RegisterStudentRequest(
     string School,
     [Required]
     string FullName,
-    [Required]
+    [Required, Length(11, 11)]
     string PhoneNumber,
-    [Required]
+    [Required, Length(11, 11)]
     string ParentPhoneNumber,
     [Required]
     string StudentCode,

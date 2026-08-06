@@ -723,6 +723,12 @@ namespace LearnMS.API.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.HasIndex("PhoneNumber")
+                        .IsUnique();
+
+                    b.HasIndex("StudentCode")
+                        .IsUnique();
+
                     b.ToTable("Students");
                 });
 
