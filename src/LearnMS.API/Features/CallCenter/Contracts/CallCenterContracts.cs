@@ -34,7 +34,7 @@ public sealed record LogCallCenterNotifyCommand
     public required Guid ActorId { get; init; }
     public required UserRole ActorRole { get; init; }
     public string? Comment { get; init; }
-    public bool MarkCalled { get; init; } = true;
+    public bool MarkCalled { get; init; } = false;
 }
 
 public sealed record GetCallCenterHistoryQuery

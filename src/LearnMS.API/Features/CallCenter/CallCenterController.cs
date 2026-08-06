@@ -115,7 +115,7 @@ public sealed class CallCenterController(ICallCenterService callCenterService) :
                 ActorId = actor.Id,
                 ActorRole = actor.Role,
                 Comment = request.Comment,
-                MarkCalled = request.MarkCalled ?? true,
+                MarkCalled = request.MarkCalled ?? false,
             });
 
         return new ApiWrapper.Success<CallCenterStudentDto>

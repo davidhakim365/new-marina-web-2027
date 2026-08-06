@@ -187,7 +187,7 @@ function StudentCallCard({
   lectureTitle?: string;
   canViewHistory: boolean;
 }) {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const updateMutation = useUpdateCallCenterContact();
   const notifyMutation = useLogCallCenterNotify();
   const [comment, setComment] = useState(student.comment ?? "");
@@ -196,7 +196,6 @@ function StudentCallCard({
     setComment(student.comment ?? "");
   }, [student.comment, student.id]);
 
-  const locale = i18n.language.startsWith("ar") ? "ar" : "en";
   const busy = updateMutation.isPending || notifyMutation.isPending;
 
   const saveComment = () => {
@@ -251,7 +250,6 @@ function StudentCallCard({
     const opened = openCallCenterWhatsApp(snapshot, {
       courseTitle,
       lectureTitle,
-      locale,
     });
     if (!opened) {
       toast({
@@ -268,7 +266,7 @@ function StudentCallCard({
         lectureId,
         studentId: student.id,
         comment: comment.trim(),
-        markCalled: !student.called,
+        markCalled: false,
       },
       {
         onSuccess: () => {

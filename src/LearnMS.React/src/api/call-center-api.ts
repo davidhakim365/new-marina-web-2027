@@ -266,27 +266,10 @@ export function formatCallCenterQuizScore(student: CallCenterStudent): string {
 export function buildCallCenterWhatsAppMessage(student: CallCenterStudent, opts: {
   lectureTitle?: string;
   courseTitle?: string;
-  locale?: "ar" | "en";
 }) {
-  const ar = (opts.locale ?? "ar") === "ar";
-  const attended = student.attended
-    ? ar
-      ? "حاضر"
-      : "Present"
-    : ar
-      ? "غائب"
-      : "Absent";
-
-  const studentType = student.isOnline
-    ? ar
-      ? "أونلاين"
-      : "Online"
-    : ar
-      ? "أوفلاين"
-      : "Offline";
-
+  const attended = student.attended ? "حاضر" : "غائب";
+  const studentType = student.isOnline ? "أونلاين" : "أوفلاين";
   const quiz = formatCallCenterQuizScore(student);
-
   const homework =
     student.homeworkScore != null
       ? student.homeworkFullMark != null
@@ -294,34 +277,17 @@ export function buildCallCenterWhatsAppMessage(student: CallCenterStudent, opts:
         : `${student.homeworkScore}`
       : "—";
 
-  if (ar) {
-    return [
-      "اهلا بيك في منصة ميس مارينا عاطف و دا متابعة ابن حضرتك عندنا",
-      `تقرير الطالب: ${student.fullName}`,
-      `كود الطالب: ${student.studentCode}`,
-      `نوع الطالب: ${studentType}`,
-      opts.courseTitle ? `الكورس: ${opts.courseTitle}` : null,
-      opts.lectureTitle ? `المحاضرة: ${opts.lectureTitle}` : null,
-      `الحضور: ${attended}`,
-      `درجة الكويز: ${quiz}`,
-      `درجة الواجب: ${homework}`,
-      student.comment ? `ملاحظة: ${student.comment}` : null,
-    ]
-      .filter(Boolean)
-      .join("\n");
-  }
-
   return [
-    "Hello,",
-    `Student report: ${student.fullName}`,
-    `Student code: ${student.studentCode}`,
-    `Student type: ${studentType}`,
-    opts.courseTitle ? `Course: ${opts.courseTitle}` : null,
-    opts.lectureTitle ? `Lecture: ${opts.lectureTitle}` : null,
-    `Attendance: ${attended}`,
-    `Quiz score: ${quiz}`,
-    `Homework: ${homework}`,
-    student.comment ? `Note: ${student.comment}` : null,
+    "اهلا بيك في منصة ميس مارينا عاطف و دا متابعة ابن حضرتك عندنا",
+    `تقرير الطالب: ${student.fullName}`,
+    `كود الطالب: ${student.studentCode}`,
+    `نوع الطالب: ${studentType}`,
+    opts.courseTitle ? `الكورس: ${opts.courseTitle}` : null,
+    opts.lectureTitle ? `المحاضرة: ${opts.lectureTitle}` : null,
+    `الحضور: ${attended}`,
+    `درجة الكويز: ${quiz}`,
+    `درجة الواجب: ${homework}`,
+    student.comment ? `ملاحظة: ${student.comment}` : null,
   ]
     .filter(Boolean)
     .join("\n");
@@ -332,7 +298,6 @@ export function openCallCenterWhatsApp(
   opts: {
     lectureTitle?: string;
     courseTitle?: string;
-    locale?: "ar" | "en";
   }
 ) {
   const phone = toWhatsAppPhone(student.parentPhoneNumber);
