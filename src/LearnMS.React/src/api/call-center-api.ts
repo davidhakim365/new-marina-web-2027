@@ -9,13 +9,10 @@ export type CallCenterStudent = {
   attended: boolean;
   quizScore?: number | null;
   quizFullMark?: number | null;
+  onlineQuizCorrect?: number | null;
+  onlineQuizTotal?: number | null;
   homeworkScore?: number | null;
   homeworkFullMark?: number | null;
-  chooseCorrect?: number | null;
-  chooseTotal?: number | null;
-  essayCorrect?: number | null;
-  essayTotal?: number | null;
-  essayPending?: number | null;
   comment?: string | null;
   called: boolean;
   calledAt?: string | null;
@@ -252,6 +249,18 @@ export function toWhatsAppPhone(phone: string): string | null {
   return null;
 }
 
+export function formatCallCenterQuizScore(student: CallCenterStudent): string {
+  if (student.onlineQuizTotal != null && student.onlineQuizTotal > 0) {
+    return `${student.onlineQuizCorrect ?? 0}/${student.onlineQuizTotal}`;
+  }
+  if (student.quizScore != null) {
+    return student.quizFullMark != null
+      ? `${student.quizScore}/${student.quizFullMark}`
+      : `${student.quizScore}`;
+  }
+  return "—";
+}
+
 export function buildCallCenterWhatsAppMessage(student: CallCenterStudent, opts: {
   lectureTitle?: string;
   courseTitle?: string;
@@ -266,30 +275,7 @@ export function buildCallCenterWhatsAppMessage(student: CallCenterStudent, opts:
       ? "غائب"
       : "Absent";
 
-  const quiz =
-    student.quizScore != null
-      ? student.quizFullMark != null
-        ? `${student.quizScore}/${student.quizFullMark}`
-        : `${student.quizScore}`
-      : ar
-        ? "—"
-        : "—";
-
-  const choose =
-    student.chooseTotal != null
-      ? `${student.chooseCorrect ?? 0}/${student.chooseTotal}`
-      : "—";
-
-  const essay =
-    student.essayTotal != null
-      ? `${student.essayCorrect ?? 0}/${student.essayTotal}${
-          student.essayPending
-            ? ar
-              ? ` (قيد التصحيح: ${student.essayPending})`
-              : ` (pending: ${student.essayPending})`
-            : ""
-        }`
-      : "—";
+  const quiz = formatCallCenterQuizScore(student);
 
   const homework =
     student.homeworkScore != null
@@ -307,9 +293,7 @@ export function buildCallCenterWhatsAppMessage(student: CallCenterStudent, opts:
       opts.lectureTitle ? `المحاضرة: ${opts.lectureTitle}` : null,
       `الحضور: ${attended}`,
       `درجة الكويز: ${quiz}`,
-      `الواجب (اختيار): ${choose}`,
-      `الواجب (مقالي): ${essay}`,
-      `درجة الواجب الورقي: ${homework}`,
+      `درجة الواجب: ${homework}`,
       student.comment ? `ملاحظة: ${student.comment}` : null,
     ]
       .filter(Boolean)
@@ -324,9 +308,7 @@ export function buildCallCenterWhatsAppMessage(student: CallCenterStudent, opts:
     opts.lectureTitle ? `Lecture: ${opts.lectureTitle}` : null,
     `Attendance: ${attended}`,
     `Quiz score: ${quiz}`,
-    `Homework (choose): ${choose}`,
-    `Homework (essay): ${essay}`,
-    `Offline homework: ${homework}`,
+    `Homework: ${homework}`,
     student.comment ? `Note: ${student.comment}` : null,
   ]
     .filter(Boolean)

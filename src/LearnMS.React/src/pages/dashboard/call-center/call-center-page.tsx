@@ -1,6 +1,7 @@
 import {
   CallCenterHistoryAction,
   CallCenterStudent,
+  formatCallCenterQuizScore,
   openCallCenterWhatsApp,
   useCallCenterHistoryQuery,
   useCallCenterStudentsQuery,
@@ -67,25 +68,11 @@ function ScoreText({
   return <span className="font-medium tabular-nums">{score}</span>;
 }
 
-function RatioText({
-  correct,
-  total,
-  pending,
-}: {
-  correct?: number | null;
-  total?: number | null;
-  pending?: number | null;
-}) {
-  if (total == null)
+function QuizScoreText({ student }: { student: CallCenterStudent }) {
+  const value = formatCallCenterQuizScore(student);
+  if (value === "—")
     return <span className="text-muted-foreground">—</span>;
-  return (
-    <span className="font-medium tabular-nums">
-      {correct ?? 0}/{total}
-      {pending ? (
-        <span className="ms-1 text-xs text-amber-600">({pending})</span>
-      ) : null}
-    </span>
-  );
+  return <span className="font-medium tabular-nums">{value}</span>;
 }
 
 function historyActionLabel(
@@ -355,35 +342,16 @@ function StudentCallCard({
         </div>
       </div>
 
-      <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+      <div className="mt-4 grid grid-cols-2 gap-3">
         <div className="rounded-lg bg-muted/40 px-3 py-2">
           <p className="text-xs text-muted-foreground">
             {t("admin.callCenter.quiz")}
           </p>
-          <ScoreText score={student.quizScore} fullMark={student.quizFullMark} />
+          <QuizScoreText student={student} />
         </div>
         <div className="rounded-lg bg-muted/40 px-3 py-2">
           <p className="text-xs text-muted-foreground">
-            {t("admin.callCenter.homeworkChoose")}
-          </p>
-          <RatioText
-            correct={student.chooseCorrect}
-            total={student.chooseTotal}
-          />
-        </div>
-        <div className="rounded-lg bg-muted/40 px-3 py-2">
-          <p className="text-xs text-muted-foreground">
-            {t("admin.callCenter.homeworkEssay")}
-          </p>
-          <RatioText
-            correct={student.essayCorrect}
-            total={student.essayTotal}
-            pending={student.essayPending}
-          />
-        </div>
-        <div className="rounded-lg bg-muted/40 px-3 py-2">
-          <p className="text-xs text-muted-foreground">
-            {t("admin.callCenter.offlineHomework")}
+            {t("admin.callCenter.homework")}
           </p>
           <ScoreText
             score={student.homeworkScore}
