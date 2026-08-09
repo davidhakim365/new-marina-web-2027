@@ -616,10 +616,10 @@ function LectureAccordionContent({ lecture }: { lecture: StudentLectureDto }) {
               title: t("lectures.purchaseSuccessful"),
               description: t("courses.enrollNow"),
             });
-            // Invalidate relevant queries to refresh the data
             queryClient.invalidateQueries({
               queryKey: getGetStudentCourseDetailsQueryKey(courseId!),
             });
+            navigate(`/courses/${courseId}/lectures/${lecture.id}`);
           },
           onError: (error) => {
             if (isInsufficientBalanceError(error)) {

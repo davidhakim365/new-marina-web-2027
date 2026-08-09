@@ -284,24 +284,33 @@ public sealed class CoursesService : ICoursesService
         var course =
             await _context
                 .Set<Course>()
-                .Include(x => x.EnrolledStudents.Where(x => x.Id == command.StudentId).Take(1))
+                .Include(x => x.CourseEnrollments.Where(x => x.StudentId == command.StudentId))
                 .Include(x => x.Lectures.Where(x => x.Id == command.LectureId).Take(1))
-                .ThenInclude(x => x.EnrolledStudents.Where(x => x.Id == command.StudentId))
+                .ThenInclude(x => x.LectureEnrollments.Where(x => x.StudentId == command.StudentId))
                 .FirstOrDefaultAsync(x => x.Id == command.CourseId && x.IsPublished)
             ?? throw new ApiException(CoursesErrors.NotFound);
 
         if (course.Lectures.FirstOrDefault() is not { } lecture)
             throw new ApiException(LecturesErrors.NotFound);
 
-        student.BuyOrRenewLecture(course, lecture);
+        var purchasedOrRenewed = student.BuyOrRenewLecture(course, lecture);
 
-        var lessonAttendances = await _context
-            .Set<LessonAttendance>()
-            .Where(x => x.StudentId == command.StudentId && x.Lesson.LectureId == command.LectureId)
-            .ToListAsync();
+        // Only reset attendance when a real purchase/renewal happened.
+        if (purchasedOrRenewed)
+        {
+            var lessonAttendances = await _context
+                .Set<LessonAttendance>()
+                .Where(x =>
+                    x.StudentId == command.StudentId && x.Lesson.LectureId == command.LectureId
+                )
+                .ToListAsync();
 
-        _context.Update(course);
-        _context.RemoveRange(lessonAttendances);
+            _context.Update(course);
+            _context.RemoveRange(lessonAttendances);
+            await _context.SaveChangesAsync();
+            return;
+        }
+
         await _context.SaveChangesAsync();
     }
 

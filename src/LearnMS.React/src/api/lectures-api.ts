@@ -1,5 +1,9 @@
 import { ApiResponse, api } from "@/api";
-import { getGetLectureQueryKey, getGetProfileQueryKey } from "@/generated/api";
+import {
+  getGetLectureQueryKey,
+  getGetProfileQueryKey,
+  getGetStudentCourseDetailsQueryKey,
+} from "@/generated/api";
 import { LectureDetails, SingleLectureStudent } from "@/types/lectures";
 import { PageList } from "@/types/page-list";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -133,12 +137,16 @@ export const useBuyLectureMutation = () => {
     {},
     { lectureId: string; courseId: string }
   >({
+    throwOnError: false,
     onSuccess: (_, { lectureId, courseId }) => {
       qc.invalidateQueries({
         queryKey: ["lecture", { id: lectureId, courseId }],
       });
       qc.invalidateQueries({ queryKey: ["course", { id: courseId }] });
       qc.invalidateQueries({ queryKey: ["courses"] });
+      qc.invalidateQueries({
+        queryKey: getGetStudentCourseDetailsQueryKey(courseId),
+      });
       qc.invalidateQueries({ queryKey: getGetProfileQueryKey() });
     },
     mutationFn: ({ lectureId, courseId }) =>

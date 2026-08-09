@@ -147,15 +147,18 @@ public class Student : User
         }
     }
 
-    public void BuyOrRenewLecture(Course course, Lecture lecture)
+    /// <returns>True when a purchase or renewal was applied; false when access was already active.</returns>
+    public bool BuyOrRenewLecture(Course course, Lecture lecture)
     {
+        // Already unlocked via active course enrollment — treat as success (no charge).
         if (course.CourseEnrollments.Any(x => x.StudentId == Id && x.ExpiresAt > DateTime.UtcNow))
-            throw new ApiException(CoursesErrors.AlreadyPurchased);
+            return false;
 
         var lectureEnrollment = lecture.LectureEnrollments.FirstOrDefault(x => x.StudentId == Id);
 
+        // Already unlocked via active lecture enrollment — treat as success (no charge).
         if (lectureEnrollment?.ExpiresAt > DateTime.UtcNow)
-            throw new ApiException(LecturesErrors.AlreadyPurchased);
+            return false;
 
         if (lectureEnrollment != null)
         {
@@ -189,6 +192,8 @@ public class Student : User
                 }
             );
         }
+
+        return true;
     }
 
     public void BuyOrRetakeExam(Exam exam)

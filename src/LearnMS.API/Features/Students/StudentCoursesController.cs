@@ -37,10 +37,10 @@ public class StudentCoursesController(ICurrentUserService currentUserService, Ap
                     ExamsCount = c.Exams.Count,
                     Enrollment = user == null
                         ? null
-                        : c.CourseEnrollments.OrderByDescending(es => es.ExpiresAt)
-                            .Take(1)
-                            .FirstOrDefault(es =>
-                                es.StudentId == user.Id)
+                        : c.CourseEnrollments
+                            .Where(es => es.StudentId == user.Id)
+                            .OrderByDescending(es => es.ExpiresAt)
+                            .FirstOrDefault()
                 }
             )
             .ToListAsync();
@@ -87,10 +87,9 @@ public class StudentCoursesController(ICurrentUserService currentUserService, Ap
                     Enrollment = user == null
                         ? null
                         : c.CourseEnrollments
+                            .Where(es => es.StudentId == user.Id)
                             .OrderByDescending(es => es.ExpiresAt)
-                            .Take(1)
-                            .FirstOrDefault(es =>
-                                es.StudentId == user.Id),
+                            .FirstOrDefault(),
                     Lectures = c.Lectures
                         .Where(l => l.IsPublished)
                         .Select(l => new
@@ -107,10 +106,9 @@ public class StudentCoursesController(ICurrentUserService currentUserService, Ap
                             Enrollment = user == null
                                 ? null
                                 : l.LectureEnrollments
+                                    .Where(es => es.StudentId == user.Id)
                                     .OrderByDescending(es => es.ExpiresAt)
-                                    .Take(1)
-                                    .FirstOrDefault(es =>
-                                        es.StudentId == user.Id),
+                                    .FirstOrDefault(),
                             Assets = l.Assets.Select(a => new StudentAssetDto()
                             {
                                 Id = a.Id,
@@ -191,6 +189,8 @@ public class StudentCoursesController(ICurrentUserService currentUserService, Ap
         }
 
         DateTime? courseExpires = course.Enrollment?.ExpiresAt;
+        var hasActiveCourseEnrollment =
+            courseExpires.HasValue && courseExpires.Value > DateTime.UtcNow;
 
         List<StudentLectureDto> lectures = course.Lectures.Select(l => new StudentLectureDto()
         {
@@ -205,7 +205,11 @@ public class StudentCoursesController(ICurrentUserService currentUserService, Ap
             Assets = l.Assets,
             ExpirationDays = l.ExpirationDays,
             Items = l.Lessons.Cast<StudentLectureItemDto>().Union(l.Quizzes).OrderBy(i => i.Order).ToList(),
-            ExpiresAt = courseExpires ?? l.Enrollment?.ExpiresAt,
+            // Active course enrollment unlocks all lectures; otherwise use lecture enrollment.
+            // Do not let an expired course enrollment hide an active lecture purchase.
+            ExpiresAt = hasActiveCourseEnrollment
+                ? courseExpires
+                : l.Enrollment?.ExpiresAt ?? courseExpires,
         }).ToList();
 
         var courseDto = new StudentCourseDetailsDto()
