@@ -13,6 +13,7 @@ public sealed record GetCallCenterStudentsQuery
     public bool? Called { get; init; }
     public bool? Absent { get; init; }
     public bool? Online { get; init; }
+    public bool? HasCredit { get; init; }
 }
 
 public sealed record UpdateCallCenterContactCommand
@@ -46,6 +47,13 @@ public sealed record GetCallCenterHistoryQuery
     public int PageSize { get; init; } = 20;
 }
 
+public sealed record GetCallCenterStudentLecturesQuery
+{
+    public required Guid CourseId { get; init; }
+    public required Guid LectureId { get; init; }
+    public required Guid StudentId { get; init; }
+}
+
 public sealed record CallCenterHistoryItemDto
 {
     [Required] public required Guid Id { get; init; }
@@ -73,6 +81,25 @@ public sealed record CallCenterStudentDto
     public string? Comment { get; init; }
     [Required] public required bool Called { get; init; }
     public DateTime? CalledAt { get; init; }
+    [Required] public required decimal Credit { get; init; }
+}
+
+public sealed record CallCenterStudentLectureDto
+{
+    [Required] public required Guid LectureId { get; init; }
+    [Required] public required string LectureTitle { get; init; }
+    [Required] public required Guid CourseId { get; init; }
+    [Required] public required string CourseTitle { get; init; }
+    [Required] public required int Order { get; init; }
+    [Required] public required bool IsCurrent { get; init; }
+    [Required] public required bool Attended { get; init; }
+    public decimal? QuizScore { get; init; }
+    public decimal? QuizFullMark { get; init; }
+    public int? OnlineQuizCorrect { get; init; }
+    public int? OnlineQuizTotal { get; init; }
+    public decimal? HomeworkScore { get; init; }
+    public decimal? HomeworkFullMark { get; init; }
+    [Required] public required string EnrollmentStatus { get; init; }
 }
 
 public sealed record UpdateCallCenterContactRequest
@@ -106,6 +133,7 @@ public sealed record ExportCallCenterStudentsQuery
     public bool? Called { get; init; }
     public bool? Absent { get; init; }
     public bool? Online { get; init; }
+    public bool? HasCredit { get; init; }
 }
 
 public sealed record ExportCallCenterStudentRow
@@ -117,6 +145,7 @@ public sealed record ExportCallCenterStudentRow
     public required string Attendance { get; init; }
     public string? QuizScore { get; init; }
     public string? Homework { get; init; }
+    public required decimal Credit { get; init; }
     public string? Comment { get; init; }
     public required string Called { get; init; }
     public string? CalledAt { get; init; }

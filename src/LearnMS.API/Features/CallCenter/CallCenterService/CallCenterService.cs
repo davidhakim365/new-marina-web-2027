@@ -37,7 +37,8 @@ public sealed class CallCenterService(AppDbContext context) : ICallCenterService
             query.Search,
             query.Called,
             query.Absent,
-            query.Online);
+            query.Online,
+            query.HasCredit);
 
         var contacts = await context.Set<CallCenterContact>()
             .AsNoTracking()
@@ -188,6 +189,81 @@ public sealed class CallCenterService(AppDbContext context) : ICallCenterService
             query.PageSize);
     }
 
+    public async Task<IReadOnlyList<CallCenterStudentLectureDto>> QueryStudentLecturesAsync(
+        GetCallCenterStudentLecturesQuery query)
+    {
+        var lecture = await LoadLectureAsync(query.CourseId, query.LectureId);
+
+        var studentExists = await context.Set<Student>()
+            .AsNoTracking()
+            .AnyAsync(x => x.Id == query.StudentId && x.Level == lecture.Course.Level);
+
+        if (!studentExists)
+            throw new ApiException(CallCenterErrors.StudentNotFound);
+
+        var studentId = query.StudentId;
+        var currentLectureId = query.LectureId;
+        var currentCourseId = query.CourseId;
+        var now = DateTime.UtcNow;
+
+        var rows = await context.Set<Lecture>()
+            .AsNoTracking()
+            .Where(l => l.Course.IsPublished && l.Course.Level == lecture.Course.Level)
+            .OrderBy(l => l.CourseId == currentCourseId ? 0 : 1)
+            .ThenBy(l => l.Course.Title)
+            .ThenBy(l => l.Order)
+            .Select(l => new
+            {
+                l.Id,
+                l.Title,
+                l.CourseId,
+                CourseTitle = l.Course.Title ?? "Course",
+                l.Order,
+                IsCurrent = l.Id == currentLectureId,
+                Attended = l.LectureAttendances.Any(a => a.StudentId == studentId && a.AttendedAt != null)
+                    || l.Lessons.Any(lesson => lesson.AttendedStudents.Any(s => s.Id == studentId)),
+                QuizScore = l.LectureQuizzes
+                    .Where(q => q.StudentId == studentId)
+                    .Select(q => (decimal?)q.Score)
+                    .FirstOrDefault(),
+                l.QuizFullMark,
+                OnlineCorrect = l.Quizzes
+                    .SelectMany(q => q.QuizSubmissions.Where(sub => sub.StudentId == studentId))
+                    .Sum(sub => (int?)sub.NumOfCorrect) ?? 0,
+                OnlineTotal = l.Quizzes
+                    .SelectMany(q => q.QuizSubmissions.Where(sub => sub.StudentId == studentId))
+                    .Sum(sub => (int?)sub.NumOfQuestions) ?? 0,
+                HomeworkScore = l.LectureHomeworks
+                    .Where(h => h.StudentId == studentId)
+                    .Select(h => (decimal?)h.Score)
+                    .FirstOrDefault(),
+                l.HomeworkFullMark,
+                EnrollmentStatus = l.LectureEnrollments
+                    .Where(e => e.StudentId == studentId)
+                    .Select(e => e.ExpiresAt >= now ? "Active" : "Expired")
+                    .FirstOrDefault() ?? "NotEnrolled",
+            })
+            .ToListAsync();
+
+        return rows.Select(l => new CallCenterStudentLectureDto
+        {
+            LectureId = l.Id,
+            LectureTitle = l.Title,
+            CourseId = l.CourseId,
+            CourseTitle = l.CourseTitle,
+            Order = l.Order,
+            IsCurrent = l.IsCurrent,
+            Attended = l.Attended,
+            QuizScore = l.QuizScore,
+            QuizFullMark = l.QuizFullMark,
+            OnlineQuizCorrect = l.OnlineTotal > 0 ? l.OnlineCorrect : null,
+            OnlineQuizTotal = l.OnlineTotal > 0 ? l.OnlineTotal : null,
+            HomeworkScore = l.HomeworkScore,
+            HomeworkFullMark = l.HomeworkFullMark,
+            EnrollmentStatus = l.EnrollmentStatus,
+        }).ToList();
+    }
+
     public async IAsyncEnumerable<IEnumerable<ExportCallCenterStudentRow>> ExportStudentsAsync(
         ExportCallCenterStudentsQuery query)
     {
@@ -198,7 +274,8 @@ public sealed class CallCenterService(AppDbContext context) : ICallCenterService
             query.Search,
             query.Called,
             query.Absent,
-            query.Online);
+            query.Online,
+            query.HasCredit);
 
         var contacts = await context.Set<CallCenterContact>()
             .AsNoTracking()
@@ -313,7 +390,8 @@ public sealed class CallCenterService(AppDbContext context) : ICallCenterService
         string? search,
         bool? called,
         bool? absent,
-        bool? online)
+        bool? online,
+        bool? hasCredit)
     {
         var studentsQuery = context.Set<Student>()
             .AsNoTracking()
@@ -371,6 +449,15 @@ public sealed class CallCenterService(AppDbContext context) : ICallCenterService
                 !x.StudentCode.ToUpper().StartsWith("ONL-"));
         }
 
+        if (hasCredit == true)
+        {
+            studentsQuery = studentsQuery.Where(x => x.Credit > 0);
+        }
+        else if (hasCredit == false)
+        {
+            studentsQuery = studentsQuery.Where(x => x.Credit == 0);
+        }
+
         return studentsQuery;
     }
 
@@ -402,6 +489,7 @@ public sealed class CallCenterService(AppDbContext context) : ICallCenterService
             Attendance = student.Attended ? "Present" : "Absent",
             QuizScore = FormatQuiz(student),
             Homework = Score(student.HomeworkScore, student.HomeworkFullMark),
+            Credit = student.Credit,
             Comment = student.Comment ?? "",
             Called = student.Called ? "Yes" : "No",
             CalledAt = student.CalledAt?.ToString("u") ?? "",
@@ -434,6 +522,7 @@ public sealed class CallCenterService(AppDbContext context) : ICallCenterService
             Comment = contact?.Comment,
             Called = contact?.Called ?? false,
             CalledAt = contact?.CalledAt,
+            Credit = student.Credit,
         };
     }
 }

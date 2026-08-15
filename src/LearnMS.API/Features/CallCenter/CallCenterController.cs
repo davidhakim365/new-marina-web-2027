@@ -41,7 +41,8 @@ public sealed class CallCenterController(ICallCenterService callCenterService) :
         [FromQuery] string? search = null,
         [FromQuery] bool? called = null,
         [FromQuery] bool? absent = null,
-        [FromQuery] bool? online = null)
+        [FromQuery] bool? online = null,
+        [FromQuery] bool? hasCredit = null)
     {
         var data = await callCenterService.QueryStudentsAsync(
             new GetCallCenterStudentsQuery
@@ -54,6 +55,7 @@ public sealed class CallCenterController(ICallCenterService callCenterService) :
                 Called = called,
                 Absent = absent,
                 Online = online,
+                HasCredit = hasCredit,
             });
 
         return new ApiWrapper.Success<PageList<CallCenterStudentDto>>
@@ -152,6 +154,29 @@ public sealed class CallCenterController(ICallCenterService callCenterService) :
         };
     }
 
+    [HttpGet("courses/{courseId:guid}/lectures/{lectureId:guid}/students/{studentId:guid}/lectures")]
+    [ApiAuthorize(Role = UserRole.Assistant, Permissions = [Permission.ManageCallCenter])]
+    [SwaggerOperation(OperationId = "GetCallCenterStudentLectures")]
+    public async Task<ApiWrapper.Success<IReadOnlyList<CallCenterStudentLectureDto>>> GetStudentLectures(
+        Guid courseId,
+        Guid lectureId,
+        Guid studentId)
+    {
+        var data = await callCenterService.QueryStudentLecturesAsync(
+            new GetCallCenterStudentLecturesQuery
+            {
+                CourseId = courseId,
+                LectureId = lectureId,
+                StudentId = studentId,
+            });
+
+        return new ApiWrapper.Success<IReadOnlyList<CallCenterStudentLectureDto>>
+        {
+            Data = data,
+            Message = "Student lecture history fetched successfully"
+        };
+    }
+
     [HttpGet("courses/{courseId:guid}/lectures/{lectureId:guid}/students/export")]
     [ApiAuthorize(Role = UserRole.Assistant, Permissions = [Permission.ManageCallCenter])]
     [SwaggerOperation(OperationId = "ExportCallCenterStudents")]
@@ -161,7 +186,8 @@ public sealed class CallCenterController(ICallCenterService callCenterService) :
         [FromQuery] string? search = null,
         [FromQuery] bool? called = null,
         [FromQuery] bool? absent = null,
-        [FromQuery] bool? online = null)
+        [FromQuery] bool? online = null,
+        [FromQuery] bool? hasCredit = null)
     {
         var data = callCenterService.ExportStudentsAsync(
             new ExportCallCenterStudentsQuery
@@ -172,6 +198,7 @@ public sealed class CallCenterController(ICallCenterService callCenterService) :
                 Called = called,
                 Absent = absent,
                 Online = online,
+                HasCredit = hasCredit,
             });
 
         Response.Headers.Append("Content-Type", "text/csv; charset=utf-8");

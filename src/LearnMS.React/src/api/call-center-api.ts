@@ -17,6 +17,7 @@ export type CallCenterStudent = {
   comment?: string | null;
   called: boolean;
   calledAt?: string | null;
+  credit: number;
 };
 
 export type CallCenterStudentsPage = {
@@ -40,6 +41,7 @@ export type CallCenterStudentsParams = {
   called?: boolean;
   absent?: boolean;
   online?: boolean;
+  hasCredit?: boolean;
 };
 
 export function getCallCenterStudentsQueryKey(
@@ -140,6 +142,47 @@ export function getCallCenterHistoryQueryKey(
   ] as const;
 }
 
+export type CallCenterStudentLecture = {
+  lectureId: string;
+  lectureTitle: string;
+  courseId: string;
+  courseTitle: string;
+  order: number;
+  isCurrent: boolean;
+  attended: boolean;
+  quizScore?: number | null;
+  quizFullMark?: number | null;
+  onlineQuizCorrect?: number | null;
+  onlineQuizTotal?: number | null;
+  homeworkScore?: number | null;
+  homeworkFullMark?: number | null;
+  enrollmentStatus: "Active" | "Expired" | "NotEnrolled" | string;
+};
+
+export const getCallCenterStudentLectures = (
+  courseId: string,
+  lectureId: string,
+  studentId: string
+) =>
+  api
+    .get<ApiSuccess<CallCenterStudentLecture[]>>(
+      `/api/call-center/courses/${courseId}/lectures/${lectureId}/students/${studentId}/lectures`
+    )
+    .then((res) => res.data);
+
+export function getCallCenterStudentLecturesQueryKey(
+  courseId: string,
+  lectureId: string,
+  studentId: string
+) {
+  return [
+    "/api/call-center/student-lectures",
+    courseId,
+    lectureId,
+    studentId,
+  ] as const;
+}
+
 export function useCallCenterStudentsQuery(
   courseId: string | undefined,
   lectureId: string | undefined,
@@ -236,6 +279,24 @@ export function useCallCenterHistoryQuery(
   });
 }
 
+export function useCallCenterStudentLecturesQuery(
+  courseId: string | undefined,
+  lectureId: string | undefined,
+  studentId: string | undefined,
+  enabled: boolean
+) {
+  return useQuery({
+    queryKey: getCallCenterStudentLecturesQueryKey(
+      courseId ?? "",
+      lectureId ?? "",
+      studentId ?? ""
+    ),
+    queryFn: () =>
+      getCallCenterStudentLectures(courseId!, lectureId!, studentId!),
+    enabled: enabled && !!courseId && !!lectureId && !!studentId,
+  });
+}
+
 /** Normalize Egyptian parent phones for wa.me / api.whatsapp.com */
 export function toWhatsAppPhone(phone: string): string | null {
   const digits = phone.replace(/[^\d]/g, "");
@@ -251,7 +312,12 @@ export function toWhatsAppPhone(phone: string): string | null {
   return null;
 }
 
-export function formatCallCenterQuizScore(student: CallCenterStudent): string {
+export function formatCallCenterQuizScore(student: {
+  onlineQuizCorrect?: number | null;
+  onlineQuizTotal?: number | null;
+  quizScore?: number | null;
+  quizFullMark?: number | null;
+}): string {
   if (student.onlineQuizTotal != null && student.onlineQuizTotal > 0) {
     return `${student.onlineQuizCorrect ?? 0}/${student.onlineQuizTotal}`;
   }

@@ -9,6 +9,9 @@ public interface ICallCenterService
     Task<CallCenterStudentDto> UpdateContactAsync(UpdateCallCenterContactCommand command);
     Task<CallCenterStudentDto> LogNotifyAsync(LogCallCenterNotifyCommand command);
     Task<PageList<CallCenterHistoryItemDto>> QueryHistoryAsync(GetCallCenterHistoryQuery query);
+    Task<IReadOnlyList<CallCenterStudentLectureDto>> QueryStudentLecturesAsync(
+        GetCallCenterStudentLecturesQuery query
+    );
     IAsyncEnumerable<IEnumerable<ExportCallCenterStudentRow>> ExportStudentsAsync(
         ExportCallCenterStudentsQuery query
     );

@@ -1,9 +1,11 @@
 import {
   CallCenterHistoryAction,
   CallCenterStudent,
+  CallCenterStudentLecture,
   formatCallCenterQuizScore,
   openCallCenterWhatsApp,
   useCallCenterHistoryQuery,
+  useCallCenterStudentLecturesQuery,
   useCallCenterStudentsQuery,
   useLogCallCenterNotify,
   useUpdateCallCenterContact,
@@ -47,6 +49,8 @@ import {
   MessageCircle,
   Phone,
   Search,
+  BookOpen,
+  Wallet,
   XCircle,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
@@ -92,6 +96,172 @@ function historyActionLabel(
     default:
       return action;
   }
+}
+
+function enrollmentStatusLabel(
+  status: CallCenterStudentLecture["enrollmentStatus"],
+  t: (key: string) => string
+) {
+  switch (status) {
+    case "Active":
+      return t("admin.callCenter.enrolled");
+    case "Expired":
+      return t("admin.callCenter.expired");
+    default:
+      return t("admin.callCenter.notEnrolled");
+  }
+}
+
+function StudentLectureHistory({
+  courseId,
+  lectureId,
+  studentId,
+}: {
+  courseId: string;
+  lectureId: string;
+  studentId: string;
+}) {
+  const { t } = useTranslation();
+  const [open, setOpen] = useState(false);
+  const lecturesQuery = useCallCenterStudentLecturesQuery(
+    courseId,
+    lectureId,
+    studentId,
+    open
+  );
+
+  const grouped = useMemo(() => {
+    const items = lecturesQuery.data?.data ?? [];
+    const groups: { courseTitle: string; lectures: CallCenterStudentLecture[] }[] =
+      [];
+    for (const item of items) {
+      const last = groups[groups.length - 1];
+      if (last && last.courseTitle === item.courseTitle) {
+        last.lectures.push(item);
+      } else {
+        groups.push({ courseTitle: item.courseTitle, lectures: [item] });
+      }
+    }
+    return groups;
+  }, [lecturesQuery.data]);
+
+  return (
+    <div className="mt-3 rounded-lg border border-color2/10 bg-muted/20">
+      <button
+        type="button"
+        className="flex w-full items-center justify-between gap-2 px-3 py-2 text-sm font-medium"
+        onClick={() => setOpen((v) => !v)}
+      >
+        <span className="flex items-center gap-2">
+          <BookOpen className="h-4 w-4 text-color2" />
+          {t("admin.callCenter.lectureHistoryTitle")}
+        </span>
+        {open ? (
+          <ChevronUp className="h-4 w-4 text-muted-foreground" />
+        ) : (
+          <ChevronDown className="h-4 w-4 text-muted-foreground" />
+        )}
+      </button>
+
+      {open && (
+        <div className="border-t border-color2/10 px-3 py-3">
+          {lecturesQuery.isLoading ? (
+            <Loading />
+          ) : grouped.length === 0 ? (
+            <p className="text-sm text-muted-foreground">
+              {t("admin.callCenter.lectureHistoryEmpty")}
+            </p>
+          ) : (
+            <div className="space-y-4">
+              {grouped.map((group) => (
+                <div key={group.courseTitle} className="space-y-2">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                    {group.courseTitle}
+                  </p>
+                  <div className="overflow-x-auto">
+                    <table className="w-full min-w-[520px] text-start text-sm">
+                      <thead>
+                        <tr className="text-xs text-muted-foreground">
+                          <th className="pb-2 pe-3 font-medium">
+                            {t("admin.callCenter.lectures")}
+                          </th>
+                          <th className="pb-2 pe-3 font-medium">
+                            {t("admin.callCenter.attendance")}
+                          </th>
+                          <th className="pb-2 pe-3 font-medium">
+                            {t("admin.callCenter.quiz")}
+                          </th>
+                          <th className="pb-2 pe-3 font-medium">
+                            {t("admin.callCenter.homework")}
+                          </th>
+                          <th className="pb-2 font-medium">
+                            {t("admin.callCenter.enrollment")}
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {group.lectures.map((item) => (
+                          <tr
+                            key={item.lectureId}
+                            className={cn(
+                              "border-t border-color2/10",
+                              item.isCurrent && "bg-color2/5"
+                            )}
+                          >
+                            <td className="py-2 pe-3">
+                              <div className="flex flex-wrap items-center gap-1.5">
+                                <span className="font-medium">
+                                  {item.lectureTitle}
+                                </span>
+                                {item.isCurrent ? (
+                                  <Badge variant="secondary" className="text-[10px]">
+                                    {t("admin.callCenter.lectureHistoryCurrent")}
+                                  </Badge>
+                                ) : null}
+                              </div>
+                            </td>
+                            <td className="py-2 pe-3">
+                              {item.attended ? (
+                                <Badge className="gap-1 bg-emerald-500/15 text-emerald-700 hover:bg-emerald-500/20">
+                                  {t("admin.callCenter.present")}
+                                </Badge>
+                              ) : (
+                                <Badge className="gap-1 bg-rose-500/15 text-rose-700 hover:bg-rose-500/20">
+                                  {t("admin.callCenter.absent")}
+                                </Badge>
+                              )}
+                            </td>
+                            <td className="py-2 pe-3 tabular-nums">
+                              {formatCallCenterQuizScore(item) === "—" ? (
+                                <span className="text-muted-foreground">—</span>
+                              ) : (
+                                formatCallCenterQuizScore(item)
+                              )}
+                            </td>
+                            <td className="py-2 pe-3">
+                              <ScoreText
+                                score={item.homeworkScore}
+                                fullMark={item.homeworkFullMark}
+                              />
+                            </td>
+                            <td className="py-2">
+                              <span className="text-xs text-muted-foreground">
+                                {enrollmentStatusLabel(item.enrollmentStatus, t)}
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
 }
 
 function StudentHistory({
@@ -316,6 +486,17 @@ function StudentCallCard({
                 {t("admin.callCenter.offline")}
               </Badge>
             )}
+            <Badge
+              className={cn(
+                "gap-1",
+                (student.credit ?? 0) > 0
+                  ? "bg-emerald-500/15 text-emerald-700 hover:bg-emerald-500/20"
+                  : "bg-rose-500/15 text-rose-700 hover:bg-rose-500/20"
+              )}
+            >
+              <Wallet className="h-3.5 w-3.5" />
+              {t("admin.callCenter.credit")}: {student.credit ?? 0}
+            </Badge>
           </div>
           <p className="flex items-center gap-1.5 text-sm text-muted-foreground">
             <Phone className="h-3.5 w-3.5" />
@@ -392,6 +573,12 @@ function StudentCallCard({
         </div>
       </div>
 
+      <StudentLectureHistory
+        courseId={courseId}
+        lectureId={lectureId}
+        studentId={student.id}
+      />
+
       {canViewHistory && (
         <StudentHistory
           courseId={courseId}
@@ -422,6 +609,9 @@ const CallCenterPage = () => {
   const [modeFilter, setModeFilter] = useState<"all" | "online" | "offline">(
     "all"
   );
+  const [creditFilter, setCreditFilter] = useState<"all" | "zero" | "hasCredit">(
+    "all"
+  );
   const [{ pageIndex, pageSize }, setPagination] = useState<PaginationState>({
     pageIndex: 0,
     pageSize: 20,
@@ -443,6 +633,12 @@ const CallCenterPage = () => {
     modeFilter === "online"
       ? true
       : modeFilter === "offline"
+        ? false
+        : undefined;
+  const hasCreditQueryParam =
+    creditFilter === "hasCredit"
+      ? true
+      : creditFilter === "zero"
         ? false
         : undefined;
 
@@ -481,6 +677,7 @@ const CallCenterPage = () => {
     absent: absentQueryParam,
     called: calledQueryParam,
     online: onlineQueryParam,
+    hasCredit: hasCreditQueryParam,
   });
 
   const totalCount = studentsQuery.data?.data?.totalCount ?? 0;
@@ -496,6 +693,8 @@ const CallCenterPage = () => {
       params.set("absent", String(absentQueryParam));
     if (onlineQueryParam !== undefined)
       params.set("online", String(onlineQueryParam));
+    if (hasCreditQueryParam !== undefined)
+      params.set("hasCredit", String(hasCreditQueryParam));
     const qs = params.toString();
     const safeTitle = (selectedLecture?.title || "lecture")
       .replace(/[^\w\-]+/g, "_")
@@ -672,6 +871,28 @@ const CallCenterPage = () => {
                     </SelectItem>
                     <SelectItem value="present">
                       {t("admin.callCenter.filterPresent")}
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+                <Select
+                  value={creditFilter}
+                  onValueChange={(v) => {
+                    setCreditFilter(v as typeof creditFilter);
+                    setPagination((p) => ({ ...p, pageIndex: 0 }));
+                  }}
+                >
+                  <SelectTrigger className="w-[220px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">
+                      {t("admin.callCenter.filterAllCredit")}
+                    </SelectItem>
+                    <SelectItem value="zero">
+                      {t("admin.callCenter.filterZeroCredit")}
+                    </SelectItem>
+                    <SelectItem value="hasCredit">
+                      {t("admin.callCenter.filterHasCredit")}
                     </SelectItem>
                   </SelectContent>
                 </Select>
