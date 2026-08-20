@@ -7,8 +7,9 @@ export function getAssistantHomePath(permissions: readonly string[]): string {
   if (has(Permission.ViewStatistics)) return "/dashboard";
   if (has(Permission.ManageStudents)) return "/dashboard/students";
   if (has(Permission.AddStudents)) return "/dashboard/students/add";
-  if (has(Permission.ManageCourses)) return "/dashboard/courses";
-  if (has(Permission.ManageLecture)) return "/dashboard/important-lectures";
+  if (has(Permission.ManageCourses) || has(Permission.ManageLecture)) {
+    return "/dashboard/courses";
+  }
   if (has(Permission.ManageCreditCodes) || has(Permission.GenerateCreditCodes)) {
     return "/dashboard/credit-codes";
   }

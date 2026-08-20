@@ -151,7 +151,8 @@ function App() {
                 element={
                   <RequireAuth
                     roles={["Teacher", "Assistant"]}
-                    permissions={["ManageCourses"]}
+                    permissions={["ManageCourses", "ManageLecture"]}
+                    requireAnyPermission
                   >
                     <CoursesPage />
                   </RequireAuth>
@@ -173,7 +174,8 @@ function App() {
                 element={
                   <RequireAuth
                     roles={["Teacher", "Assistant"]}
-                    permissions={["ManageCourses"]}
+                    permissions={["ManageCourses", "ManageLecture"]}
+                    requireAnyPermission
                   >
                     <DashboardCoursePage />
                   </RequireAuth>
@@ -184,7 +186,7 @@ function App() {
                 element={
                   <RequireAuth
                     roles={["Teacher", "Assistant"]}
-                    permissions={["ManageCourses"]}
+                    permissions={["ManageLecture"]}
                   >
                     <LectureDetailsPage />
                   </RequireAuth>
@@ -195,7 +197,7 @@ function App() {
                 element={
                   <RequireAuth
                     roles={["Teacher", "Assistant"]}
-                    permissions={["ManageCourses"]}
+                    permissions={["ManageLecture"]}
                   >
                     <LectureBarcodeScannerPage />
                   </RequireAuth>
@@ -206,7 +208,7 @@ function App() {
                 element={
                   <RequireAuth
                     roles={["Teacher", "Assistant"]}
-                    permissions={["ManageCourses"]}
+                    permissions={["ManageLecture"]}
                   >
                     <LessonDetailsPage />
                   </RequireAuth>
@@ -217,7 +219,7 @@ function App() {
                 element={
                   <RequireAuth
                     roles={["Teacher", "Assistant"]}
-                    permissions={["ManageCourses"]}
+                    permissions={["ManageLecture"]}
                   >
                     <QuizPage />
                   </RequireAuth>
@@ -228,7 +230,7 @@ function App() {
                 element={
                   <RequireAuth
                     roles={["Teacher", "Assistant"]}
-                    permissions={["ManageCourses"]}
+                    permissions={["ManageLecture"]}
                   >
                     <QuizPage />
                   </RequireAuth>

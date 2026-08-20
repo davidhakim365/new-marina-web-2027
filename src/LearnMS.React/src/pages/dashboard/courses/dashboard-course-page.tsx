@@ -4,6 +4,7 @@ import { DashboardPageShell } from "@/components/dashboard/dashboard-page-shell"
 import Loading from "@/components/loading/loading";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { useDashboardPermissions } from "@/hooks/use-dashboard-permissions";
 
 import {
   DropdownMenu,
@@ -39,7 +40,7 @@ import {
   useUnpublishCourse,
   useUpdateCourse,
 } from "@/generated/api";
-import { GetDashboardCourseResult, SingleCourseItem } from "@/generated/model";
+import { GetDashboardCourseResult, Permission, SingleCourseItem } from "@/generated/model";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from "@tanstack/react-query";
 import { Edit2, ListCollapse, Menu, Settings2, BookOpen } from "lucide-react";
@@ -53,6 +54,9 @@ const DashboardCoursePage = () => {
   const { t } = useTranslation();
   const { courseId } = useParams();
   const navigate = useNavigate();
+  const { hasPermission } = useDashboardPermissions();
+  const canManageCourses = hasPermission(Permission.ManageCourses);
+  const canManageLectures = hasPermission(Permission.ManageLecture);
 
   const { data, isLoading, isError, refetch } = useGetCourse(courseId!);
 
@@ -124,32 +128,38 @@ const DashboardCoursePage = () => {
       icon={BookOpen}
       fullWidth
       actions={
-        <div className="flex gap-2">
-          <Confirmation
-            disabled={deleteCourseMutation.isPending}
-            description={t("admin.courses.deleteConfirm")}
-            title={t("admin.courses.deleteTitle")}
-            onConfirm={onDeleting}
-            button={
-              <Button variant="destructive" disabled={deleteCourseMutation.isPending}>
-                {t("admin.common.delete")}
-              </Button>
-            }
-          />
-          <Button
-            onClick={onPublishing}
-            className="border border-color2/40 bg-gradient-to-r from-color1 to-color2 text-white shadow-md shadow-color2/20 hover:opacity-90"
-          >
-            {course.isPublished
-              ? t("admin.courses.unpublish")
-              : t("admin.courses.publish")}
-          </Button>
-        </div>
+        canManageCourses ? (
+          <div className="flex gap-2">
+            <Confirmation
+              disabled={deleteCourseMutation.isPending}
+              description={t("admin.courses.deleteConfirm")}
+              title={t("admin.courses.deleteTitle")}
+              onConfirm={onDeleting}
+              button={
+                <Button variant="destructive" disabled={deleteCourseMutation.isPending}>
+                  {t("admin.common.delete")}
+                </Button>
+              }
+            />
+            <Button
+              onClick={onPublishing}
+              className="border border-color2/40 bg-gradient-to-r from-color1 to-color2 text-white shadow-md shadow-color2/20 hover:opacity-90"
+            >
+              {course.isPublished
+                ? t("admin.courses.unpublish")
+                : t("admin.courses.publish")}
+            </Button>
+          </div>
+        ) : undefined
       }
     >
       <div className="grid w-full grid-cols-1 gap-6 lg:grid-cols-2">
-        <CourseDetailsForm {...course} />
-        <CourseContentForm {...course} />
+        {canManageCourses && <CourseDetailsForm {...course} />}
+        <CourseContentForm
+          {...course}
+          canManageCourses={canManageCourses}
+          canManageLectures={canManageLectures}
+        />
       </div>
     </DashboardPageShell>
   );
@@ -330,10 +340,19 @@ function CourseDetailsForm({
   );
 }
 
-function CourseContentForm({ items, id }: GetDashboardCourseResult) {
+function CourseContentForm({
+  items,
+  id,
+  canManageCourses,
+  canManageLectures,
+}: GetDashboardCourseResult & {
+  canManageCourses: boolean;
+  canManageLectures: boolean;
+}) {
   const { t } = useTranslation();
   const [isAddingLecture, setIsAddingLecture] = useState(false);
   const navigate = useNavigate();
+  const canAddContent = canManageLectures || canManageCourses;
 
   return (
     <div className='flex flex-col gap-4 p-4'>
@@ -343,30 +362,36 @@ function CourseContentForm({ items, id }: GetDashboardCourseResult) {
           {t("admin.courses.content")}
         </div>
         <div className='flex items-center justify-center gap-2'>
-          {!isAddingLecture ? (
+          {canAddContent && !isAddingLecture ? (
             <>
               <DropdownMenu>
                 <DropdownMenuTrigger>
                   <Menu />
                 </DropdownMenuTrigger>
                 <DropdownMenuContent>
-                  <DropdownMenuItem
-                    className='hover:bg-color2 hover:text-white hover:cursor-pointer'
-                    onClick={() => setIsAddingLecture(true)}>
-                    {t("admin.courses.addLecture")}
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                    onClick={() =>
-                      navigate(`/dashboard/courses/${id}/exams/add`)
-                    }
-                    className='hover:bg-color2 hover:text-white hover:cursor-pointer'>
-                    {t("admin.courses.addExam")}
-                  </DropdownMenuItem>
+                  {canManageLectures && (
+                    <DropdownMenuItem
+                      className='hover:bg-color2 hover:text-white hover:cursor-pointer'
+                      onClick={() => setIsAddingLecture(true)}>
+                      {t("admin.courses.addLecture")}
+                    </DropdownMenuItem>
+                  )}
+                  {canManageLectures && canManageCourses && (
+                    <DropdownMenuSeparator />
+                  )}
+                  {canManageCourses && (
+                    <DropdownMenuItem
+                      onClick={() =>
+                        navigate(`/dashboard/courses/${id}/exams/add`)
+                      }
+                      className='hover:bg-color2 hover:text-white hover:cursor-pointer'>
+                      {t("admin.courses.addExam")}
+                    </DropdownMenuItem>
+                  )}
                 </DropdownMenuContent>
               </DropdownMenu>
             </>
-          ) : (
+          ) : isAddingLecture ? (
             <Button
               variant='destructive'
               onClick={() => {
@@ -374,10 +399,10 @@ function CourseContentForm({ items, id }: GetDashboardCourseResult) {
               }}>
               {t("admin.courses.cancel")}
             </Button>
-          )}
+          ) : null}
         </div>
       </div>
-      {isAddingLecture && (
+      {isAddingLecture && canManageLectures && (
         <AddLectureForm
           courseId={id}
           onClose={() => setIsAddingLecture(false)}
@@ -386,7 +411,13 @@ function CourseContentForm({ items, id }: GetDashboardCourseResult) {
       {!isAddingLecture && (
         <div className='flex flex-col gap-2'>
           {items.map((item) => (
-            <CourseItem key={item.id} item={item} courseId={id} />
+            <CourseItem
+              key={item.id}
+              item={item}
+              courseId={id}
+              canManageCourses={canManageCourses}
+              canManageLectures={canManageLectures}
+            />
           ))}
         </div>
       )}
@@ -397,10 +428,17 @@ function CourseContentForm({ items, id }: GetDashboardCourseResult) {
 function CourseItem({
   item,
   courseId,
+  canManageCourses,
+  canManageLectures,
 }: {
   item: SingleCourseItem;
   courseId: string;
+  canManageCourses: boolean;
+  canManageLectures: boolean;
 }) {
+  const isExam = item.type === "Exam";
+  const canOpen = isExam ? canManageCourses : canManageLectures;
+
   return (
     <div className='flex items-center justify-between w-full gap-2 text-color2 bg-color2/10 border border-color2/25 rounded'>
       <div className='flex gap-2'>
@@ -409,13 +447,15 @@ function CourseItem({
       </div>
       <div className='flex items-center gap-2'>
         <Badge className='h-5'>{item.type}</Badge>
-        <Link
-          className='me-2'
-          to={`/dashboard/courses/${courseId}/${
-            item.type === "Exam" ? "exams" : "lectures"
-          }/${item.id}`}>
-          <Edit2 className='w-4 h-4' />
-        </Link>
+        {canOpen && (
+          <Link
+            className='me-2'
+            to={`/dashboard/courses/${courseId}/${
+              isExam ? "exams" : "lectures"
+            }/${item.id}`}>
+            <Edit2 className='w-4 h-4' />
+          </Link>
+        )}
       </div>
     </div>
   );

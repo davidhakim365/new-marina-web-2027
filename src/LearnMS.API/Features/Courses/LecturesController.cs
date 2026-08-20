@@ -36,7 +36,7 @@ public sealed class LecturesController : ControllerBase
 
 
     [HttpDelete("{lectureId:guid}")]
-    [ApiAuthorize(Role = UserRole.Assistant, Permissions = [Permission.ManageCourses])]
+    [ApiAuthorize(Role = UserRole.Assistant, Permissions = [Permission.ManageLecture, Permission.ManageCourses])]
     [SwaggerOperation(OperationId = "DeleteLecture")]
     public async Task<ApiWrapper.Success<object?>> Delete(Guid lectureId, Guid courseId)
     {
@@ -128,7 +128,7 @@ public sealed class LecturesController : ControllerBase
 
 
     [HttpPost]
-    [ApiAuthorize(Role = UserRole.Assistant, Permissions = [Permission.ManageCourses])]
+    [ApiAuthorize(Role = UserRole.Assistant, Permissions = [Permission.ManageLecture, Permission.ManageCourses])]
     [SwaggerOperation(OperationId = "CreateLecture")]
     public async Task<ApiWrapper.Success<object?>> Post(
         [FromBody] CreateLectureRequest request,
@@ -144,7 +144,7 @@ public sealed class LecturesController : ControllerBase
 
 
     [HttpPatch("{lectureId:guid}")]
-    [ApiAuthorize(Role = UserRole.Assistant, Permissions = [Permission.ManageCourses])]
+    [ApiAuthorize(Role = UserRole.Assistant, Permissions = [Permission.ManageLecture, Permission.ManageCourses])]
     [SwaggerOperation(OperationId = "UpdateLecture")]
     public async Task<ApiWrapper.Success<object?>> Patch(
         [FromForm] UpdateLectureRequest request,
@@ -174,7 +174,7 @@ public sealed class LecturesController : ControllerBase
 
 
     [HttpPost("{lectureId:guid}/publish")]
-    [ApiAuthorize(Role = UserRole.Assistant, Permissions = [Permission.ManageCourses])]
+    [ApiAuthorize(Role = UserRole.Assistant, Permissions = [Permission.ManageLecture, Permission.ManageCourses])]
     [SwaggerOperation(OperationId = "PublishLecture")]
     public async Task<ApiWrapper.Success<object?>> Publish(Guid lectureId, Guid courseId)
     {
@@ -188,7 +188,7 @@ public sealed class LecturesController : ControllerBase
 
 
     [HttpPost("{lectureId:guid}/unPublish")]
-    [ApiAuthorize(Role = UserRole.Assistant, Permissions = [Permission.ManageCourses])]
+    [ApiAuthorize(Role = UserRole.Assistant, Permissions = [Permission.ManageLecture, Permission.ManageCourses])]
     [SwaggerOperation(OperationId = "UnPublishLecture")]
     public async Task<ApiWrapper.Success<object?>> Unpublish(Guid lectureId, Guid courseId)
     {
@@ -201,7 +201,7 @@ public sealed class LecturesController : ControllerBase
 
 
     [HttpPut("{lectureId:guid}/students/{studentId:guid}/homework")]
-    [ApiAuthorize(Role = UserRole.Assistant, Permissions = [Permission.ManageCourses])]
+    [ApiAuthorize(Role = UserRole.Assistant, Permissions = [Permission.ManageLecture, Permission.ManageCourses])]
     [SwaggerOperation(OperationId = "ChangeLectureHomeworkScore")]
     public async Task<ApiWrapper.Success<object?>> ChangeHomeworkScore(
         [FromBody] ChangeLectureHomeworkScoreRequest request,
@@ -225,7 +225,7 @@ public sealed class LecturesController : ControllerBase
 
 
     [HttpPut("{lectureId:guid}/students/{studentId:guid}/quiz")]
-    [ApiAuthorize(Role = UserRole.Assistant, Permissions = [Permission.ManageCourses])]
+    [ApiAuthorize(Role = UserRole.Assistant, Permissions = [Permission.ManageLecture, Permission.ManageCourses])]
     [SwaggerOperation(OperationId = "ChangeLectureQuizScore")]
     public async Task<ApiWrapper.Success<object?>> ChangeQuizScore(
         [FromBody] ChangeLectureQuizScoreRequest request,
@@ -249,7 +249,7 @@ public sealed class LecturesController : ControllerBase
 
 
     [HttpGet("{lectureId:guid}/students")]
-    [ApiAuthorize(Role = UserRole.Assistant, Permissions = [Permission.ManageCourses])]
+    [ApiAuthorize(Role = UserRole.Assistant, Permissions = [Permission.ManageLecture, Permission.ManageCourses])]
     [SwaggerOperation(OperationId = "GetLectureStudents")]
     public async Task<ApiWrapper.Success<PageList<SingleLectureStudent>>> GetStudents(
         Guid lectureId,
@@ -279,7 +279,7 @@ public sealed class LecturesController : ControllerBase
 
 
     [HttpPut("{lectureId:guid}/assets")]
-    [ApiAuthorize(Role = UserRole.Assistant, Permissions = [Permission.ManageCourses])]
+    [ApiAuthorize(Role = UserRole.Assistant, Permissions = [Permission.ManageLecture, Permission.ManageCourses])]
     [SwaggerOperation(OperationId = "UpdateLectureAssets")]
     public async Task<ApiWrapper.Success<object?>> UpdateAssets(
         [FromBody] List<string> assetsIds,
@@ -300,7 +300,7 @@ public sealed class LecturesController : ControllerBase
     }
 
     [HttpPost("{lectureId:guid}/pdf-links")]
-    [ApiAuthorize(Role = UserRole.Assistant, Permissions = [Permission.ManageCourses])]
+    [ApiAuthorize(Role = UserRole.Assistant, Permissions = [Permission.ManageLecture, Permission.ManageCourses])]
     [SwaggerOperation(OperationId = "AddLecturePdfLinks")]
     public async Task<ApiWrapper.Success<AddLecturePdfLinksResult>> AddPdfLinks(
         [FromBody] List<AddLecturePdfLinkItem> items,
@@ -325,7 +325,7 @@ public sealed class LecturesController : ControllerBase
     }
 
     [HttpPost("{lectureId:guid}/students/{code}/attend")]
-    [ApiAuthorize(Role = UserRole.Assistant, Permissions = [Permission.ManageCourses])]
+    [ApiAuthorize(Role = UserRole.Assistant, Permissions = [Permission.ManageLecture, Permission.ManageCourses])]
     [SwaggerOperation(OperationId = "AttendLecture")]
     public async Task<ApiWrapper.Success<object?>> AttendLecture(
         Guid lectureId,
@@ -379,7 +379,7 @@ public sealed class LecturesController : ControllerBase
 
 
     [HttpPost("{lectureId:guid}/students/{studentId:guid}/toggle-attendance")]
-    [ApiAuthorize(Role = UserRole.Assistant, Permissions = [Permission.ManageCourses])]
+    [ApiAuthorize(Role = UserRole.Assistant, Permissions = [Permission.ManageLecture, Permission.ManageCourses])]
     [SwaggerOperation(OperationId = "ToggleLectureAttendance")]
     public async Task<ApiWrapper.Success<object?>> ToggleAttendance(
         Guid lectureId,
@@ -401,7 +401,7 @@ public sealed class LecturesController : ControllerBase
 
 
     [HttpPost("{lectureId:guid}/students/{studentId:guid}/enroll")]
-    [ApiAuthorize(Role = UserRole.Assistant, Permissions = [Permission.ManageCourses, Permission.ManageGrantedAccess])]
+    [ApiAuthorize(Role = UserRole.Assistant, Permissions = [Permission.ManageLecture, Permission.ManageCourses, Permission.ManageGrantedAccess])]
     [SwaggerOperation(OperationId = "EnrollStudentInLecture")]
     public async Task<ApiWrapper.Success<object?>> EnrollStudent(
         Guid lectureId,
@@ -424,7 +424,7 @@ public sealed class LecturesController : ControllerBase
 
     [HttpGet("{lectureId:guid}/students/export")]
     [SwaggerOperation(OperationId = "ExportLectureStudents")]
-    [ApiAuthorize(Role = UserRole.Assistant, Permissions = [Permission.ManageCourses])]
+    [ApiAuthorize(Role = UserRole.Assistant, Permissions = [Permission.ManageLecture, Permission.ManageCourses])]
     public async Task<IActionResult> Export(Guid lectureId, Guid courseId)
     {
         var data = _coursesService.QueryAsync(
@@ -450,7 +450,7 @@ public sealed class LecturesController : ControllerBase
 
     [HttpPost("{lectureId:guid}/grades")]
     [SwaggerOperation(OperationId = "UpdateLectureGrades")]
-    [ApiAuthorize(Role = UserRole.Assistant, Permissions = [Permission.ManageCourses])]
+    [ApiAuthorize(Role = UserRole.Assistant, Permissions = [Permission.ManageLecture, Permission.ManageCourses])]
     public async Task<ApiWrapper.Success<object?>> UpdateLectureGrades(
         [FromBody] UpdateLectureGradesRequest request,
         Guid courseId,

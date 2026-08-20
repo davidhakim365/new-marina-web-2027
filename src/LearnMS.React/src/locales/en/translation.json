@@ -813,11 +813,11 @@
         },
         "ManageCourses": {
           "title": "Manage courses",
-          "description": "Create and edit courses, lectures, quizzes, and grades."
+          "description": "Create and edit courses and exams. Lecture access needs Manage lectures."
         },
         "ManageLecture": {
-          "title": "Important lectures",
-          "description": "Mark and manage important lectures."
+          "title": "Manage lectures",
+          "description": "Create and edit lectures, lessons, quizzes, attendance, grades, and important lectures."
         },
         "ManageFiles": {
           "title": "Files & questions",
