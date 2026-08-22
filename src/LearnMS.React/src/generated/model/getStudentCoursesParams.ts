@@ -7,5 +7,5 @@
 import type { StudentLevel } from './studentLevel';
 
 export type GetStudentCoursesParams = {
-level: StudentLevel;
+level?: StudentLevel;
 };

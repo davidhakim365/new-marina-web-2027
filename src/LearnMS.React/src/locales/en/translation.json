@@ -322,6 +322,10 @@
   },
   "courses": {
     "heroTitle": "Content",
+    "guestOverview": "Browse every course. Sign in or create an account to start learning.",
+    "signedInOverview": "Choose a course to continue learning.",
+    "noCourses": "No courses available yet",
+    "noCoursesDescription": "Published courses will appear here. Please check back soon.",
     "courseImageAlt": "Course Image",
     "coursePreview": "Course Preview",
     "renewal": "Renewal",
@@ -336,7 +340,8 @@
       "enroll": "Enroll Now",
       "continue": "Continue",
       "renew": "Renew",
-      "viewCourse": "View Course"
+      "viewCourse": "View Course",
+      "signInToView": "Sign in / Sign up"
     },
     "enrollmentPrice": "Enrollment Price",
     "renewalPrice": "Renewal Price",

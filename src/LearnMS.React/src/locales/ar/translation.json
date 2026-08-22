@@ -322,6 +322,10 @@
   },
   "courses": {
     "heroTitle": "المحتوى",
+    "guestOverview": "تصفح جميع الدورات. سجّل الدخول أو أنشئ حساباً لتبدأ التعلم.",
+    "signedInOverview": "اختر دورة لمتابعة التعلم.",
+    "noCourses": "لا توجد دورات متاحة حالياً",
+    "noCoursesDescription": "ستظهر الدورات المنشورة هنا. يرجى المراجعة لاحقاً.",
     "courseImageAlt": "صورة الدورة",
     "coursePreview": "معاينة الدورة",
     "renewal": "التجديد",
@@ -336,7 +340,8 @@
       "enroll": "سجل الآن",
       "continue": "متابعة",
       "renew": "تجديد",
-      "viewCourse": "عرض الدورة"
+      "viewCourse": "عرض الدورة",
+      "signInToView": "تسجيل الدخول / إنشاء حساب"
     },
     "enrollmentPrice": "سعر التسجيل",
     "renewalPrice": "سعر التجديد",

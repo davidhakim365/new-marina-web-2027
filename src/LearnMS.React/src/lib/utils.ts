@@ -18,3 +18,9 @@ export function getFirstCharacters(inputString: string): string {
 
 // Exporting the `sonner` and `toast` utilities
 export { sonner, toast };
+
+export function getSafeInternalPath(value: unknown): string | null {
+  if (typeof value !== "string") return null;
+  if (!value.startsWith("/") || value.startsWith("//")) return null;
+  return value;
+}

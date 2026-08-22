@@ -4,11 +4,12 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { LoginRequest, useLoginMutation } from "@/api/auth-api";
 import { toast } from "@/components/ui/use-toast";
+import { getSafeInternalPath } from "@/lib/utils";
 import { useModalStore } from "@/store/use-modal-store";
 import InputField from "./input-field";
 import { useTranslation } from "react-i18next";
 import { Button as ShadButton } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 
 const LoginForm = () => {
@@ -17,6 +18,7 @@ const LoginForm = () => {
   const loginMutation = useLoginMutation();
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
+  const location = useLocation();
   const isRTL = i18n.language === "ar";
 
   const loginForm = useForm<LoginRequest>({
@@ -94,7 +96,11 @@ const LoginForm = () => {
         if (data.data.role !== "Student") {
           navigate("/dashboard");
         } else {
-          navigate("/");
+          navigate(
+            getSafeInternalPath(
+              (location.state as { from?: unknown } | null)?.from
+            ) ?? "/"
+          );
         }
       },
     });

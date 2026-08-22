@@ -1,10 +1,10 @@
-using System.ComponentModel.DataAnnotations;
 using LearnMS.API.Common;
 using LearnMS.API.Data;
 using LearnMS.API.Entities;
 using LearnMS.API.Features.Courses;
 using LearnMS.API.Features.Students.Dtos;
 using LearnMS.API.Security;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Swashbuckle.AspNetCore.Annotations;
@@ -16,13 +16,16 @@ namespace LearnMS.API.Features.Students;
 public class StudentCoursesController(ICurrentUserService currentUserService, AppDbContext context) : ControllerBase
 {
     [HttpGet]
+    [AllowAnonymous]
     [SwaggerOperation(OperationId = nameof(GetStudentCourses))]
     public async Task<ApiWrapper.Success<List<StudentCourseDto>>> GetStudentCourses(
-        [Required] StudentLevel level)
+        StudentLevel? level)
     {
         CurrentUser? user = await currentUserService.GetUserAsync();
         var result = await context.Courses
-            .Where(c => c.Level == level && c.IsPublished)
+            .Where(c => c.IsPublished && (level == null || c.Level == level))
+            .OrderBy(c => c.Level)
+            .ThenBy(c => c.Title)
             .Select(c => new
                 {
                     c.Id,
@@ -66,6 +69,7 @@ public class StudentCoursesController(ICurrentUserService currentUserService, Ap
     }
 
     [HttpGet("{courseId:guid}")]
+    [AllowAnonymous]
     [SwaggerOperation(OperationId = nameof(GetStudentCourseDetails))]
     public async Task<ApiWrapper.Success<StudentCourseDetailsDto>> GetStudentCourseDetails(
         Guid courseId)

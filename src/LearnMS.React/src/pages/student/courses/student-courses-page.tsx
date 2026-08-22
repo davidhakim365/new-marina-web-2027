@@ -7,6 +7,7 @@ import {
   genRandomPattern,
 } from "@/components/ui/grid-feature-cards";
 import { motion } from "framer-motion";
+import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useParams, useNavigate } from "react-router-dom";
 
@@ -20,20 +21,48 @@ import {
   GraduationCap,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useGetStudentCourses } from "@/generated/api";
+import { getGetStudentCoursesQueryOptions, useGetProfile } from "@/generated/api";
 import { StudentCourseDto, StudentLevel } from "@/generated/model";
 import { CoursesGridSkeleton } from "@/components/ui/course-skeleton";
+import { useQueries } from "@tanstack/react-query";
+
+const LEVEL_ORDER: StudentLevel[] = [
+  "Level0",
+  "Level1",
+  "Level2",
+  "Level3",
+  "Level4",
+  "Level5",
+];
 
 export const StudentCoursesPage = () => {
   const { t, i18n } = useTranslation();
   const isRTL = i18n.language === "ar";
+  const { data: profile } = useGetProfile();
+  const isGuest =
+    !profile?.data || profile.data.$type !== "GetStudentProfileResult";
 
   const { levelNum } = useParams();
   const level = levelNum ? (`Level${levelNum}` as StudentLevel) : undefined;
+  const queryLevels = level ? [level] : LEVEL_ORDER;
 
-  const { data, isLoading } = useGetStudentCourses({
-    level: level || "Level0",
+  const courseQueries = useQueries({
+    queries: queryLevels.map((lvl) => ({
+      ...getGetStudentCoursesQueryOptions({ level: lvl }),
+      throwOnError: false as const,
+    })),
   });
+
+  const isLoading = courseQueries.some((query) => query.isLoading);
+  const courses = courseQueries.flatMap((query) => query.data?.data ?? []);
+
+  const coursesByLevel = useMemo(() => {
+    if (level) return null;
+    return LEVEL_ORDER.map((lvl) => ({
+      level: lvl,
+      courses: courses.filter((course) => course.level === lvl),
+    })).filter((group) => group.courses.length > 0);
+  }, [courses, level]);
 
   const getLevelDisplayName = (level: string) => {
     switch (level) {
@@ -57,7 +86,7 @@ export const StudentCoursesPage = () => {
   const headerGridPattern = genRandomPattern(30);
 
   return (
-    <div className="z-10 flex flex-col w-full h-full overflow-x-hidden bg-coursePage">
+    <div className="z-10 flex min-h-screen w-full flex-col overflow-x-hidden bg-coursePage">
       <div
         dir={isRTL ? "rtl" : "ltr"}
         className="relative flex flex-col-reverse items-center justify-between flex-grow px-4 py-10 mt-8 sm:px-8 md:px-12 lg:px-20 md:flex-row md:mt-20"
@@ -82,6 +111,16 @@ export const StudentCoursesPage = () => {
           >
             {t("courses.heroTitle")}
           </Heading>
+          <p
+            className={cn(
+              "mt-3 max-w-xl text-base text-muted-foreground sm:text-lg",
+              isRTL ? "mr-auto text-right" : "text-left"
+            )}
+          >
+            {isGuest
+              ? t("courses.guestOverview")
+              : t("courses.signedInOverview")}
+          </p>
           {level && (
             <div className="flex items-center justify-center gap-2 mt-4 md:justify-start">
               <GraduationCap className="w-5 h-5 text-primary" />
@@ -102,10 +141,46 @@ export const StudentCoursesPage = () => {
       >
         {isLoading ? (
           <CoursesGridSkeleton count={8} />
+        ) : courses.length === 0 ? (
+          <div className="flex w-full flex-col items-center justify-center gap-3 px-4 py-16 text-center">
+            <GraduationCap className="h-12 w-12 text-muted-foreground/60" />
+            <p className="text-lg font-semibold text-foreground">
+              {t("courses.noCourses")}
+            </p>
+            <p className="max-w-md text-sm text-muted-foreground">
+              {t("courses.noCoursesDescription")}
+            </p>
+          </div>
+        ) : coursesByLevel ? (
+          <div className="z-10 flex w-full flex-col gap-10 p-4 sm:p-6 md:p-12 lg:p-20">
+            {coursesByLevel.map((group) => (
+              <section key={group.level} className="flex flex-col gap-4">
+                <div className="flex items-center gap-2">
+                  <GraduationCap className="h-5 w-5 text-primary" />
+                  <h2 className="text-xl font-bold sm:text-2xl">
+                    {getLevelDisplayName(group.level)}
+                  </h2>
+                </div>
+                <div className="grid w-full grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+                  {group.courses.map((course) => (
+                    <CourseCard
+                      key={course.id}
+                      course={course}
+                      isGuest={isGuest}
+                    />
+                  ))}
+                </div>
+              </section>
+            ))}
+          </div>
         ) : (
           <div className="z-10 grid w-full grid-cols-1 gap-4 p-4 sm:gap-6 sm:p-6 md:gap-8 md:p-12 lg:p-20 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
-            {data?.data?.map((course) => (
-              <CourseCard key={course.id} course={course} />
+            {courses.map((course) => (
+              <CourseCard
+                key={course.id}
+                course={course}
+                isGuest={isGuest}
+              />
             ))}
           </div>
         )}
@@ -115,7 +190,13 @@ export const StudentCoursesPage = () => {
   );
 };
 
-function CourseCard({ course }: { course: StudentCourseDto }) {
+function CourseCard({
+  course,
+  isGuest,
+}: {
+  course: StudentCourseDto;
+  isGuest: boolean;
+}) {
   const { t } = useTranslation();
   const navigate = useNavigate();
 
@@ -164,21 +245,39 @@ function CourseCard({ course }: { course: StudentCourseDto }) {
     }
   };
 
+  const openCourse = () => {
+    if (!course.id) return;
+    if (isGuest) {
+      navigate("/sign-in-sign-up", {
+        state: { from: `/courses/${course.id}` },
+      });
+      return;
+    }
+    navigate(`/courses/${course.id}`);
+  };
+
   const handleViewCourseClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    if (course.id) {
-      navigate(`/courses/${course.id}`);
-    }
+    openCourse();
   };
 
   const gridPattern = genRandomPattern(50);
 
   return (
     <motion.div
-      className="relative w-full max-w-sm mx-auto overflow-hidden transition-all duration-300 border shadow-lg group border-border/50 bg-card hover:shadow-2xl rounded-xl hover:-translate-y-1 sm:max-w-none"
+      className="relative w-full max-w-sm mx-auto overflow-hidden transition-all duration-300 border shadow-lg cursor-pointer group border-border/50 bg-card hover:shadow-2xl rounded-xl hover:-translate-y-1 sm:max-w-none"
       whileHover="hover"
       initial="initial"
+      onClick={openCourse}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          openCourse();
+        }
+      }}
     >
       <Card className="flex flex-col h-full bg-transparent border-0 shadow-none">
         <div className="flex-1">
@@ -192,9 +291,11 @@ function CourseCard({ course }: { course: StudentCourseDto }) {
               />
             </div>
 
-            <div className="absolute top-5 right-5 sm:top-6 sm:right-6">
-              {getEnrollmentBadge(course.enrollment)}
-            </div>
+            {!isGuest && (
+              <div className="absolute top-5 right-5 sm:top-6 sm:right-6">
+                {getEnrollmentBadge(course.enrollment)}
+              </div>
+            )}
           </div>
 
           <div className="relative flex flex-col flex-1">
@@ -292,7 +393,9 @@ function CourseCard({ course }: { course: StudentCourseDto }) {
             className="flex items-center justify-center w-full gap-2 px-4 py-2 font-semibold transition-all duration-200 border-2 rounded-lg hover:bg-primary/10 hover:border-primary"
           >
             <BookOpen className="w-4 h-4" />
-            {t("courses.buttons.viewCourse")}
+            {isGuest
+              ? t("courses.buttons.signInToView")
+              : t("courses.buttons.viewCourse")}
           </Button>
         </div>
       </Card>

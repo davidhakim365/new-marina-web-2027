@@ -53,7 +53,7 @@ const NavBar: React.FC<NavBarProps> = ({
     !!profile?.data && profile.data.$type === "GetStudentProfileResult";
 
   const coursesHref = (() => {
-    if (!isStudent) return "/sign-in-sign-up";
+    if (!isStudent) return "/courses";
     const level = (profile!.data as GetStudentProfileResult).level;
     if (level) {
       const match = /Level(\d+)/.exec(level);

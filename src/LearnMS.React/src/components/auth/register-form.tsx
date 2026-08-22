@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -11,7 +11,7 @@ import {
 } from "@/api/auth-api";
 import { toast } from "@/components/ui/use-toast";
 import { UserPlus, Loader2, ChevronLeft, ChevronRight, Check } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, getSafeInternalPath } from "@/lib/utils";
 import InputField from "./input-field";
 import { useTranslation } from "react-i18next";
 import {
@@ -67,6 +67,7 @@ const RegisterForm = ({ setIsLoginView }: RegisterFormProps) => {
   const { t, i18n } = useTranslation();
   const isRTL = i18n.language === "ar";
   const navigate = useNavigate();
+  const location = useLocation();
 
   const registerForm = useForm<RegisterRequest>({
     resolver: zodResolver(RegisterRequest),
@@ -237,7 +238,11 @@ const RegisterForm = ({ setIsLoginView }: RegisterFormProps) => {
           title: t("auth.forms.errors.accountCreated"),
           description: t("auth.forms.errors.welcomeBack"),
         });
-        navigate("/");
+        navigate(
+          getSafeInternalPath(
+            (location.state as { from?: unknown } | null)?.from
+          ) ?? "/"
+        );
       } else {
         toast({
           title: t("auth.forms.success.registrationTitle"),
