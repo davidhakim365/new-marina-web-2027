@@ -475,6 +475,9 @@ namespace LearnMS.API.Migrations
                     b.Property<DateTime?>("ExpirationDate")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<DateTime?>("StartedAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.HasKey("LessonId", "StudentId");
 
                     b.ToTable("LessonAttendance");

@@ -10,7 +10,7 @@ public sealed class StudentLectureConfigurations : IEntityTypeConfiguration<Lect
     {
         builder.HasKey(x => new { x.StudentId, x.LectureId });
 
-        builder.HasOne<Lecture>().WithOne().HasForeignKey<LectureEnrollment>(x => x.LectureId);
-        builder.HasOne<Student>().WithOne().HasForeignKey<LectureEnrollment>(x => x.StudentId);
+        // Many students can buy the same lecture; one student can buy many lectures.
+        // The previous WithOne mapping hid existing enrollments and caused re-billing.
     }
 }

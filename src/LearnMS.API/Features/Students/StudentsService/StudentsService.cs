@@ -348,7 +348,7 @@ public async Task ExecuteAsync(DeleteStudentCommand command)
             || l.Lessons.Any(lesson => lesson.AttendedStudents.Any(s => s.Id == query.StudentId)), // Attendance status
         EnrollmentStatus = l.LectureEnrollments
             .Where(e => e.StudentId == query.StudentId)
-            .Select(e => e.ExpiresAt >= DateTime.UtcNow ? "Active" : "Expired")
+            .Select(e => l.ExpirationDays <= 0 || e.ExpiresAt >= DateTime.UtcNow ? "Active" : "Expired")
             .FirstOrDefault() ?? "NotEnrolled",
         ExpiresAt = l.LectureEnrollments
             .Where(e => e.StudentId == query.StudentId)

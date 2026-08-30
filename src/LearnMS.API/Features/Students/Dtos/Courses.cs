@@ -20,9 +20,7 @@ public sealed record StudentCourseDto(
 )
 {
     [Required]
-    public Enrollment Enrollment =>
-        ExpiresAt == null ? Enrollment.NotEnrolled :
-        ExpiresAt >= DateTime.UtcNow ? Enrollment.Active : Enrollment.Expired;
+    public Enrollment Enrollment => EnrollmentRules.ToStatus(ExpiresAt, ExpirationDays);
 }
 
 public sealed record StudentCourseDetailsDto
@@ -40,9 +38,7 @@ public sealed record StudentCourseDetailsDto
     public required DateTime? ExpiresAt { get; init; }
 
     [Required]
-    public Enrollment Enrollment =>
-        ExpiresAt == null ? Enrollment.NotEnrolled :
-        ExpiresAt >= DateTime.UtcNow ? Enrollment.Active : Enrollment.Expired;
+    public Enrollment Enrollment => EnrollmentRules.ToStatus(ExpiresAt, ExpirationDays);
 }
 
 [JsonDerivedType(typeof(StudentLectureDto), nameof(StudentLectureDto))]
@@ -68,9 +64,7 @@ public sealed record StudentLectureDto : StudentCourseItemDto
     public required DateTime? ExpiresAt { get; init; }
 
     [Required]
-    public Enrollment Enrollment =>
-        ExpiresAt == null ? Enrollment.NotEnrolled :
-        ExpiresAt >= DateTime.UtcNow ? Enrollment.Active : Enrollment.Expired;
+    public Enrollment Enrollment => EnrollmentRules.ToStatus(ExpiresAt, ExpirationDays);
 }
 
 public sealed record StudentAssetDto

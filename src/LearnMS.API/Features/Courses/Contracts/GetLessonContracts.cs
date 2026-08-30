@@ -59,7 +59,7 @@ public record GetStudentLessonResult : GetLessonResult
         get
         {
             if (VideoOTP != null) return "Active";
-            if (ExpiresAt < DateTime.Now) return "Expired";
+            if (ExpiresAt < DateTime.UtcNow) return "Expired";
             return "NotEnrolled";
         }
     }

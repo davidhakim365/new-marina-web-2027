@@ -75,8 +75,15 @@ public sealed class ParentService(AppDbContext db, IOptions<JwtBearerConfig> jwt
                     .Where(a => a.StudentId == studentId && a.AttendedAt != null)
                     .Select(a => (DateTime?)a.AttendedAt)
                     .FirstOrDefault(),
+                LessonWatchedAt = l.Lessons
+                    .SelectMany(lesson => lesson.LessonAttendances)
+                    .Where(a => a.StudentId == studentId && a.StartedAt != null)
+                    .Select(a => a.StartedAt)
+                    .OrderBy(d => d)
+                    .FirstOrDefault(),
                 LessonAttended = l.Lessons.Any(lesson =>
-                    lesson.AttendedStudents.Any(s => s.Id == studentId)),
+                    lesson.AttendedStudents.Any(s => s.Id == studentId)
+                    || lesson.LessonAttendances.Any(a => a.StudentId == studentId)),
                 HomeworkScore = l.LectureHomeworks
                     .Where(h => h.StudentId == studentId)
                     .Select(h => (decimal?)h.Score)
@@ -128,8 +135,8 @@ public sealed class ParentService(AppDbContext db, IOptions<JwtBearerConfig> jwt
             LectureId = l.Id,
             LectureTitle = l.Title,
             CourseTitle = l.CourseTitle,
-            Attended = l.AttendedAt != null || l.LessonAttended,
-            AttendedAt = l.AttendedAt
+            Attended = l.AttendedAt != null || l.LessonAttended || l.LessonWatchedAt != null,
+            AttendedAt = l.AttendedAt ?? l.LessonWatchedAt
         }).ToList();
 
         var quizGrades = lectures

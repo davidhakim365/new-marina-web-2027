@@ -293,6 +293,9 @@ public sealed class CoursesService : ICoursesService
         if (course.Lectures.FirstOrDefault() is not { } lecture)
             throw new ApiException(LecturesErrors.NotFound);
 
+        // Billing must use the enrollment rows in the database, not an unloaded navigation.
+        await EnsureStudentEnrollmentsLoadedAsync(course, lecture, command.StudentId);
+
         var purchasedOrRenewed = student.BuyOrRenewLecture(course, lecture);
 
         // Only reset attendance when a real purchase/renewal happened.
@@ -389,14 +392,13 @@ public sealed class CoursesService : ICoursesService
             throw new ApiException(LessonsErrors.NotFound);
 
         if (
-            course.CourseEnrollments.Any(x =>
-                    x.StudentId == command.StudentId && x.ExpiresAt > DateTime.UtcNow
-                )
-                is false
-            && lecture.LectureEnrollments.Any(x =>
-                    x.StudentId == command.StudentId && x.ExpiresAt > DateTime.UtcNow
-                )
-                is false
+            !await HasActiveLectureAccessAsync(
+                command.StudentId,
+                command.CourseId,
+                command.LectureId,
+                course.ExpirationDays,
+                lecture.ExpirationDays
+            )
         )
             throw new ApiException(LessonsErrors.NotAccessible);
 
@@ -432,14 +434,13 @@ public sealed class CoursesService : ICoursesService
             throw new ApiException(LessonsErrors.NotFound);
 
         if (
-            course.CourseEnrollments.Any(x =>
-                    x.StudentId == command.StudentId && x.ExpiresAt > DateTime.UtcNow
-                )
-                is false
-            && lecture.LectureEnrollments.Any(x =>
-                    x.StudentId == command.StudentId && x.ExpiresAt > DateTime.UtcNow
-                )
-                is false
+            !await HasActiveLectureAccessAsync(
+                command.StudentId,
+                command.CourseId,
+                command.LectureId,
+                course.ExpirationDays,
+                lecture.ExpirationDays
+            )
         )
             throw new ApiException(LessonsErrors.NotAccessible);
 
@@ -450,10 +451,12 @@ public sealed class CoursesService : ICoursesService
                 throw new ApiException(LessonsErrors.Blocked);
         }
 
-        if (
-            lesson.LessonAttendances.FirstOrDefault(x => x.StudentId == command.StudentId)
-            is not null
-        )
+        var existingAttendance = await _context
+            .Set<LessonAttendance>()
+            .FirstOrDefaultAsync(x =>
+                x.StudentId == command.StudentId && x.LessonId == command.LessonId
+            );
+        if (existingAttendance is not null)
             throw new ApiException(LessonsErrors.AlreadyAcceptedExpirationRule);
 
         lesson.LessonAttendances.Add(
@@ -463,6 +466,7 @@ public sealed class CoursesService : ICoursesService
                     lesson.ExpirationHours == 0
                         ? null
                         : DateTime.UtcNow.AddHours(lesson.ExpirationHours),
+                StartedAt = DateTime.UtcNow,
                 StudentId = command.StudentId
             }
         );
@@ -707,14 +711,13 @@ public sealed class CoursesService : ICoursesService
             throw new ApiException(QuizzesErrors.NotFound);
 
         if (
-            course.CourseEnrollments.Any(x =>
-                    x.StudentId == command.StudentId && x.ExpiresAt > DateTime.UtcNow
-                )
-                is false
-            && lecture.LectureEnrollments.Any(x =>
-                    x.StudentId == command.StudentId && x.ExpiresAt > DateTime.UtcNow
-                )
-                is false
+            !await HasActiveLectureAccessAsync(
+                command.StudentId,
+                command.CourseId,
+                command.LectureId,
+                course.ExpirationDays,
+                lecture.ExpirationDays
+            )
         )
             throw new ApiException(QuizzesErrors.NotAccessible);
 
@@ -1068,11 +1071,11 @@ public sealed class CoursesService : ICoursesService
                 new LectureEnrollment
                 {
                     StudentId = command.StudentId,
-                    ExpiresAt = DateTime.UtcNow.AddDays(lecture.ExpirationDays!.Value)
+                    ExpiresAt = EnrollmentRules.ComputeExpiresAt(lecture.ExpirationDays)
                 }
             );
         else
-            enrollment.ExpiresAt = DateTime.UtcNow.AddDays(lecture.ExpirationDays!.Value);
+            enrollment.ExpiresAt = EnrollmentRules.ComputeExpiresAt(lecture.ExpirationDays);
 
         _context.Update(lecture);
         await _context.SaveChangesAsync();
@@ -1156,10 +1159,13 @@ public sealed class CoursesService : ICoursesService
             throw new ApiException(QuizzesErrors.NotFound);
 
         if (
-            course.CourseEnrollments.Any(x => x.StudentId == command.StudentId && x.ExpiresAt > DateTime.UtcNow)
-                is false
-            && lecture.LectureEnrollments.Any(x => x.StudentId == command.StudentId && x.ExpiresAt > DateTime.UtcNow)
-                is false
+            !await HasActiveLectureAccessAsync(
+                command.StudentId,
+                command.CourseId,
+                command.LectureId,
+                course.ExpirationDays,
+                lecture.ExpirationDays
+            )
         )
             throw new ApiException(QuizzesErrors.NotAccessible);
 
@@ -1461,9 +1467,9 @@ public sealed class CoursesService : ICoursesService
         var course =
             await _context
                 .Set<Course>()
-                .Include(x => x.EnrolledStudents.Where(x => x.Id == query.StudentId))
+                .Include(x => x.CourseEnrollments.Where(e => e.StudentId == query.StudentId))
                 .Include(x => x.Lectures)
-                .ThenInclude(x => x.EnrolledStudents)
+                .ThenInclude(x => x.LectureEnrollments.Where(e => e.StudentId == query.StudentId))
                 .Include(x => x.Exams)
                 .FirstOrDefaultAsync(x =>
                     x.Id == query.Id && x.IsPublished && x.Level == student.Level
@@ -1471,9 +1477,10 @@ public sealed class CoursesService : ICoursesService
 
         var lectures = course.Lectures.Select(l => new SingleStudentCourseItem
         {
-            ExpiresAt = l
-                .LectureEnrollments.FirstOrDefault(x => x.StudentId == query.StudentId)
-                ?.ExpiresAt,
+            ExpiresAt = EffectiveExpiresAt(
+                l.LectureEnrollments.FirstOrDefault(x => x.StudentId == query.StudentId)?.ExpiresAt,
+                l.ExpirationDays
+            ),
             Id = l.Id,
             ImageUrl = l.ImageUrl,
             Order = l.Order,
@@ -1505,9 +1512,10 @@ public sealed class CoursesService : ICoursesService
             ImageUrl = course.ImageUrl!,
             Price = course.Price!.Value,
             RenewalPrice = course.RenewalPrice!.Value,
-            ExpiresAt = course
-                .CourseEnrollments.FirstOrDefault(x => x.StudentId == query.StudentId)
-                ?.ExpiresAt,
+            ExpiresAt = EffectiveExpiresAt(
+                course.CourseEnrollments.FirstOrDefault(x => x.StudentId == query.StudentId)?.ExpiresAt,
+                course.ExpirationDays
+            ),
             Items = items
         };
     }
@@ -1584,8 +1592,9 @@ public sealed class CoursesService : ICoursesService
         var course =
             await _context
                 .Set<Course>()
+                .Include(x => x.CourseEnrollments.Where(e => e.StudentId == query.StudentId))
                 .Include(x => x.Lectures.Where(x => x.Id == query.LectureId))
-                .ThenInclude(x => x.EnrolledStudents.Where(x => x.Id == query.StudentId))
+                .ThenInclude(x => x.LectureEnrollments.Where(e => e.StudentId == query.StudentId))
                 // added
                 .Include(x => x.Lectures.Where(x => x.Id == query.LectureId))
                 // added
@@ -1665,9 +1674,25 @@ public sealed class CoursesService : ICoursesService
             };
         });
 
-        var expiresAt = lecture
-            .LectureEnrollments.FirstOrDefault(x => x.StudentId == query.StudentId)
-            ?.ExpiresAt;
+        var lectureExpiresAt =
+            lecture.LectureEnrollments.FirstOrDefault(x => x.StudentId == query.StudentId)?.ExpiresAt
+            ?? await _context
+                .Set<LectureEnrollment>()
+                .Where(x => x.StudentId == query.StudentId && x.LectureId == query.LectureId)
+                .Select(x => (DateTime?)x.ExpiresAt)
+                .FirstOrDefaultAsync();
+        var courseExpiresAt =
+            course.CourseEnrollments.FirstOrDefault(x => x.StudentId == query.StudentId)?.ExpiresAt
+            ?? await _context
+                .Set<CourseEnrollment>()
+                .Where(x => x.StudentId == query.StudentId && x.CourseId == query.CourseId)
+                .Select(x => (DateTime?)x.ExpiresAt)
+                .FirstOrDefaultAsync();
+        var hasActiveCourse = EnrollmentRules.IsActive(courseExpiresAt, course.ExpirationDays);
+        var expiresAt = hasActiveCourse
+            ? EffectiveExpiresAt(courseExpiresAt, course.ExpirationDays)
+            : EffectiveExpiresAt(lectureExpiresAt, lecture.ExpirationDays)
+                ?? EffectiveExpiresAt(courseExpiresAt, course.ExpirationDays);
 
         // Assets: show only after all quizzes in this lecture are passed (or no quizzes / attended)
         var hasQuizzes = lecture.Quizzes.Any();
@@ -1725,14 +1750,13 @@ public sealed class CoursesService : ICoursesService
             throw new ApiException(LessonsErrors.NotFound);
 
         if (
-            course.CourseEnrollments.Any(x =>
-                    x.StudentId == query.StudentId && x.ExpiresAt > DateTime.UtcNow
-                )
-                is false
-            && lecture.LectureEnrollments.Any(x =>
-                    x.StudentId == query.StudentId && x.ExpiresAt > DateTime.UtcNow
-                )
-                is false
+            !await HasActiveLectureAccessAsync(
+                query.StudentId,
+                query.CourseId,
+                query.LectureId,
+                course.ExpirationDays,
+                lecture.ExpirationDays
+            )
         )
             throw new ApiException(LessonsErrors.NotAccessible);
 
@@ -1744,9 +1768,26 @@ public sealed class CoursesService : ICoursesService
             )
                 throw new ApiException(LessonsErrors.Blocked);
 
-        var attendance = lesson
-            .LessonAttendances
-            .FirstOrDefault(x => x.StudentId == query.StudentId);
+        var attendance = await _context
+            .Set<LessonAttendance>()
+            .FirstOrDefaultAsync(x =>
+                x.StudentId == query.StudentId && x.LessonId == query.LessonId
+            );
+
+        // Lessons with no watch window play immediately and never hit /start, so record
+        // the first play here so parent follow-up can show that the student watched.
+        if (attendance is null && lesson.ExpirationHours == 0)
+        {
+            attendance = new LessonAttendance
+            {
+                StudentId = query.StudentId,
+                LessonId = query.LessonId,
+                StartedAt = DateTime.UtcNow,
+                ExpirationDate = null
+            };
+            _context.Set<LessonAttendance>().Add(attendance);
+            await _context.SaveChangesAsync();
+        }
 
         return new GetStudentLessonResult()
         {
@@ -1761,7 +1802,6 @@ public sealed class CoursesService : ICoursesService
             ExpiresAt = attendance?.ExpirationDate,
             RenewalPrice = lesson.RenewalPrice
         };
-        ;
     }
 
     public async Task<GetDashboardLessonResult> QueryAsync(GetLessonQuery query)
@@ -1975,14 +2015,13 @@ public sealed class CoursesService : ICoursesService
             throw new ApiException(QuizzesErrors.NotFound);
 
         if (
-            course.CourseEnrollments.Any(x =>
-                    x.StudentId == query.StudentId && x.ExpiresAt > DateTime.UtcNow
-                )
-                is false
-            && lecture.LectureEnrollments.Any(x =>
-                    x.StudentId == query.StudentId && x.ExpiresAt > DateTime.UtcNow
-                )
-                is false
+            !await HasActiveLectureAccessAsync(
+                query.StudentId,
+                query.CourseId,
+                query.LectureId,
+                course.ExpirationDays,
+                lecture.ExpirationDays
+            )
         )
             throw new ApiException(QuizzesErrors.NotAccessible);
 
@@ -2345,5 +2384,61 @@ public sealed class CoursesService : ICoursesService
 
             yield return result;
         }
+    }
+
+    private async Task EnsureStudentEnrollmentsLoadedAsync(Course course, Lecture lecture, Guid studentId)
+    {
+        var courseEnrollment = await _context
+            .Set<CourseEnrollment>()
+            .FirstOrDefaultAsync(x => x.StudentId == studentId && x.CourseId == course.Id);
+        if (
+            courseEnrollment != null
+            && course.CourseEnrollments.All(x => x.StudentId != studentId)
+        )
+            course.CourseEnrollments.Add(courseEnrollment);
+
+        var lectureEnrollment = await _context
+            .Set<LectureEnrollment>()
+            .FirstOrDefaultAsync(x => x.StudentId == studentId && x.LectureId == lecture.Id);
+        if (
+            lectureEnrollment != null
+            && lecture.LectureEnrollments.All(x => x.StudentId != studentId)
+        )
+            lecture.LectureEnrollments.Add(lectureEnrollment);
+    }
+
+    private async Task<bool> HasActiveLectureAccessAsync(
+        Guid studentId,
+        Guid courseId,
+        Guid lectureId,
+        int? courseExpirationDays,
+        int? lectureExpirationDays
+    )
+    {
+        var courseExpiresAt = await _context
+            .Set<CourseEnrollment>()
+            .Where(x => x.StudentId == studentId && x.CourseId == courseId)
+            .Select(x => (DateTime?)x.ExpiresAt)
+            .FirstOrDefaultAsync();
+        if (EnrollmentRules.IsActive(courseExpiresAt, courseExpirationDays))
+            return true;
+
+        var lectureExpiresAt = await _context
+            .Set<LectureEnrollment>()
+            .Where(x => x.StudentId == studentId && x.LectureId == lectureId)
+            .Select(x => (DateTime?)x.ExpiresAt)
+            .FirstOrDefaultAsync();
+        return EnrollmentRules.IsActive(lectureExpiresAt, lectureExpirationDays);
+    }
+
+    private static DateTime? EffectiveExpiresAt(DateTime? expiresAt, int? expirationDays)
+    {
+        if (expiresAt is null)
+            return null;
+
+        if (expirationDays is <= 0)
+            return DateTime.UtcNow.AddYears(50);
+
+        return expiresAt;
     }
 }

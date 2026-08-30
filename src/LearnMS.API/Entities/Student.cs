@@ -110,7 +110,7 @@ public class Student : User
     {
         var courseEnrollment = course.CourseEnrollments.FirstOrDefault(x => x.StudentId == Id);
 
-        if (courseEnrollment?.ExpiresAt > DateTime.UtcNow)
+        if (EnrollmentRules.IsActive(courseEnrollment?.ExpiresAt, course.ExpirationDays))
             throw new ApiException(CoursesErrors.AlreadyPurchased);
 
         if (courseEnrollment != null)
@@ -118,7 +118,7 @@ public class Student : User
             if (_credit < course.RenewalPrice)
                 throw new ApiException(ProfileErrors.InsufficientCredits);
             _credit -= course.RenewalPrice ?? 0;
-            courseEnrollment.ExpiresAt = DateTime.UtcNow.AddDays(course.ExpirationDays ?? 0);
+            courseEnrollment.ExpiresAt = EnrollmentRules.ComputeExpiresAt(course.ExpirationDays);
             Events.Add(
                 new StudentEvent()
                 {
@@ -134,7 +134,7 @@ public class Student : User
             course.CourseEnrollments.Add(
                 new CourseEnrollment
                 {
-                    ExpiresAt = DateTime.UtcNow.AddDays(course.ExpirationDays ?? 0),
+                    ExpiresAt = EnrollmentRules.ComputeExpiresAt(course.ExpirationDays),
                     StudentId = Id
                 }
             );
@@ -151,13 +151,17 @@ public class Student : User
     public bool BuyOrRenewLecture(Course course, Lecture lecture)
     {
         // Already unlocked via active course enrollment — treat as success (no charge).
-        if (course.CourseEnrollments.Any(x => x.StudentId == Id && x.ExpiresAt > DateTime.UtcNow))
+        if (
+            course.CourseEnrollments.Any(x =>
+                x.StudentId == Id && EnrollmentRules.IsActive(x.ExpiresAt, course.ExpirationDays)
+            )
+        )
             return false;
 
         var lectureEnrollment = lecture.LectureEnrollments.FirstOrDefault(x => x.StudentId == Id);
 
         // Already unlocked via active lecture enrollment — treat as success (no charge).
-        if (lectureEnrollment?.ExpiresAt > DateTime.UtcNow)
+        if (EnrollmentRules.IsActive(lectureEnrollment?.ExpiresAt, lecture.ExpirationDays))
             return false;
 
         if (lectureEnrollment != null)
@@ -165,7 +169,7 @@ public class Student : User
             if (_credit < lecture.RenewalPrice)
                 throw new ApiException(ProfileErrors.InsufficientCredits);
             _credit -= lecture.RenewalPrice ?? 0;
-            lectureEnrollment.ExpiresAt = DateTime.UtcNow.AddDays(lecture.ExpirationDays ?? 0);
+            lectureEnrollment.ExpiresAt = EnrollmentRules.ComputeExpiresAt(lecture.ExpirationDays);
             Events.Add(
                 new StudentEvent()
                 {
@@ -181,7 +185,7 @@ public class Student : User
             lecture.LectureEnrollments.Add(
                 new LectureEnrollment
                 {
-                    ExpiresAt = DateTime.UtcNow.AddDays(lecture.ExpirationDays ?? 0),
+                    ExpiresAt = EnrollmentRules.ComputeExpiresAt(lecture.ExpirationDays),
                     StudentId = Id
                 }
             );

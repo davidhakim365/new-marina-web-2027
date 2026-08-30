@@ -113,11 +113,6 @@ public sealed record GetStudentLectureResult : GetLectureResult
     [Required]
     public Enrollment Enrollment
     {
-        get
-        {
-            if (ExpiresAt is null) return Enrollment.NotEnrolled;
-            if (DateTime.Now > ExpiresAt) return Enrollment.Expired;
-            return Enrollment.Active;
-        }
+        get => EnrollmentRules.ToStatus(ExpiresAt, ExpirationDays);
     }
 }

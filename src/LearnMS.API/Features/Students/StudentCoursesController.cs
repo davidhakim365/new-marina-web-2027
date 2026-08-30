@@ -194,7 +194,7 @@ public class StudentCoursesController(ICurrentUserService currentUserService, Ap
 
         DateTime? courseExpires = course.Enrollment?.ExpiresAt;
         var hasActiveCourseEnrollment =
-            courseExpires.HasValue && courseExpires.Value > DateTime.UtcNow;
+            EnrollmentRules.IsActive(courseExpires, course.ExpirationDays);
 
         List<StudentLectureDto> lectures = course.Lectures.Select(l => new StudentLectureDto()
         {
@@ -213,7 +213,9 @@ public class StudentCoursesController(ICurrentUserService currentUserService, Ap
             // Do not let an expired course enrollment hide an active lecture purchase.
             ExpiresAt = hasActiveCourseEnrollment
                 ? courseExpires
-                : l.Enrollment?.ExpiresAt ?? courseExpires,
+                : EnrollmentRules.IsActive(l.Enrollment?.ExpiresAt, l.ExpirationDays)
+                    ? (l.ExpirationDays is <= 0 ? DateTime.UtcNow.AddYears(50) : l.Enrollment?.ExpiresAt)
+                    : l.Enrollment?.ExpiresAt ?? courseExpires,
         }).ToList();
 
         var courseDto = new StudentCourseDetailsDto()
