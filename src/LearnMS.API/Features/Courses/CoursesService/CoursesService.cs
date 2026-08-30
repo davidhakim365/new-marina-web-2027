@@ -311,10 +311,7 @@ public sealed class CoursesService : ICoursesService
             _context.Update(course);
             _context.RemoveRange(lessonAttendances);
             await _context.SaveChangesAsync();
-            return;
         }
-
-        await _context.SaveChangesAsync();
     }
 
     public async Task ExecuteAsync(DeleteCourseCommand command)
@@ -451,11 +448,21 @@ public sealed class CoursesService : ICoursesService
                 throw new ApiException(LessonsErrors.Blocked);
         }
 
-        var existingAttendance = await _context
-            .Set<LessonAttendance>()
-            .FirstOrDefaultAsync(x =>
-                x.StudentId == command.StudentId && x.LessonId == command.LessonId
+        LessonAttendance? existingAttendance = null;
+        try
+        {
+            existingAttendance = await _context
+                .Set<LessonAttendance>()
+                .FirstOrDefaultAsync(x =>
+                    x.StudentId == command.StudentId && x.LessonId == command.LessonId
+                );
+        }
+        catch
+        {
+            existingAttendance = lesson.LessonAttendances.FirstOrDefault(x =>
+                x.StudentId == command.StudentId
             );
+        }
         if (existingAttendance is not null)
             throw new ApiException(LessonsErrors.AlreadyAcceptedExpirationRule);
 
@@ -1504,14 +1511,14 @@ public sealed class CoursesService : ICoursesService
 
         return new GetStudentCourseResult
         {
-            ExpirationDays = course.ExpirationDays!.Value,
+            ExpirationDays = course.ExpirationDays ?? 0,
             Id = course.Id,
-            Level = course.Level!.Value,
+            Level = course.Level ?? student.Level,
             Title = course.Title,
             Description = course.Description!,
             ImageUrl = course.ImageUrl!,
-            Price = course.Price!.Value,
-            RenewalPrice = course.RenewalPrice!.Value,
+            Price = course.Price ?? 0,
+            RenewalPrice = course.RenewalPrice ?? 0,
             ExpiresAt = EffectiveExpiresAt(
                 course.CourseEnrollments.FirstOrDefault(x => x.StudentId == query.StudentId)?.ExpiresAt,
                 course.ExpirationDays
@@ -1629,8 +1636,10 @@ public sealed class CoursesService : ICoursesService
             throw new ApiException(LecturesErrors.NotAccessible);
 
         var quizSubmissionsByQuizId = lecture.Quizzes
-            .SelectMany(q => q.QuizSubmissions.Select(s => (q.Id, s)))
-            .ToDictionary(x => x.Id, x => x.s);
+            .Select(q => (q.Id, Submission: q.QuizSubmissions.FirstOrDefault()))
+            .Where(x => x.Submission is not null)
+            .GroupBy(x => x.Id)
+            .ToDictionary(g => g.Key, g => g.First().Submission!);
 
         bool IsQuizPassed(Quiz quiz)
         {
@@ -1715,9 +1724,9 @@ public sealed class CoursesService : ICoursesService
             ExpiresAt = expiresAt,
             ImageUrl = lecture.ImageUrl!,
             HomeworkVideoUrl = lecture.HomeworkVideoUrl,
-            Price = lecture.Price!.Value,
-            ExpirationDays = lecture.ExpirationDays!.Value,
-            RenewalPrice = lecture.RenewalPrice!.Value,
+            Price = lecture.Price ?? 0,
+            ExpirationDays = lecture.ExpirationDays ?? 0,
+            RenewalPrice = lecture.RenewalPrice ?? 0,
             IsPublished = lecture!.IsPublished,
             // added
             Assets = assets,
@@ -1768,26 +1777,11 @@ public sealed class CoursesService : ICoursesService
             )
                 throw new ApiException(LessonsErrors.Blocked);
 
-        var attendance = await _context
-            .Set<LessonAttendance>()
-            .FirstOrDefaultAsync(x =>
-                x.StudentId == query.StudentId && x.LessonId == query.LessonId
-            );
-
-        // Lessons with no watch window play immediately and never hit /start, so record
-        // the first play here so parent follow-up can show that the student watched.
-        if (attendance is null && lesson.ExpirationHours == 0)
-        {
-            attendance = new LessonAttendance
-            {
-                StudentId = query.StudentId,
-                LessonId = query.LessonId,
-                StartedAt = DateTime.UtcNow,
-                ExpirationDate = null
-            };
-            _context.Set<LessonAttendance>().Add(attendance);
-            await _context.SaveChangesAsync();
-        }
+        var attendance = await TryGetOrRecordLessonWatchAsync(
+            query.StudentId,
+            query.LessonId,
+            lesson.ExpirationHours
+        );
 
         return new GetStudentLessonResult()
         {
@@ -1796,7 +1790,7 @@ public sealed class CoursesService : ICoursesService
             Description = lesson.Description,
             VideoOTP =
                 lesson.ExpirationHours == 0 || attendance?.ExpirationDate > DateTime.UtcNow
-                    ? await _vdoService.GetVideoOTPAsync(lesson.VideoId!)
+                    ? await TryGetVideoOtpAsync(lesson.VideoId)
                     : null,
             ExpirationHours = lesson.ExpirationHours,
             ExpiresAt = attendance?.ExpirationDate,
@@ -2440,5 +2434,53 @@ public sealed class CoursesService : ICoursesService
             return DateTime.UtcNow.AddYears(50);
 
         return expiresAt;
+    }
+
+    private async Task<LessonAttendance?> TryGetOrRecordLessonWatchAsync(
+        Guid studentId,
+        Guid lessonId,
+        int expirationHours
+    )
+    {
+        try
+        {
+            var attendance = await _context
+                .Set<LessonAttendance>()
+                .FirstOrDefaultAsync(x => x.StudentId == studentId && x.LessonId == lessonId);
+
+            if (attendance is not null || expirationHours != 0)
+                return attendance;
+
+            attendance = new LessonAttendance
+            {
+                StudentId = studentId,
+                LessonId = lessonId,
+                StartedAt = DateTime.UtcNow,
+                ExpirationDate = null
+            };
+            _context.Set<LessonAttendance>().Add(attendance);
+            await _context.SaveChangesAsync();
+            return attendance;
+        }
+        catch
+        {
+            // Watch date is best-effort. Never fail the lesson page because of it.
+            return null;
+        }
+    }
+
+    private async Task<VideoOTP?> TryGetVideoOtpAsync(string? videoId)
+    {
+        if (string.IsNullOrWhiteSpace(videoId))
+            return null;
+
+        try
+        {
+            return await _vdoService.GetVideoOTPAsync(videoId);
+        }
+        catch
+        {
+            return null;
+        }
     }
 }

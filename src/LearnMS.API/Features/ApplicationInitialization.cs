@@ -1,6 +1,8 @@
 using LearnMS.API.Common;
+using LearnMS.API.Data;
 using LearnMS.API.Features.Administration;
 using LearnMS.API.Features.Administration.Contracts;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
 namespace LearnMS.API.Features;
@@ -10,6 +12,21 @@ public static class ApplicationInitialization
     public static async Task InitializeAsync(this WebApplication app)
     {
         var scope = app.Services.CreateAsyncScope();
+
+        try
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            await db.Database.ExecuteSqlRawAsync(
+                """
+                ALTER TABLE "LessonAttendance"
+                ADD COLUMN IF NOT EXISTS "StartedAt" timestamp with time zone NULL;
+                """
+            );
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex);
+        }
 
         var administrationService = scope.ServiceProvider.GetRequiredService<IAdministrationService>();
         var administrationConfig = scope.ServiceProvider.GetRequiredService<IOptions<AdministrationConfig>>();

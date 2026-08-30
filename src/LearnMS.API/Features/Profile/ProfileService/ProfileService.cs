@@ -77,7 +77,8 @@ public sealed class ProfileService : IProfileService
             .FirstOrDefaultAsync(x => x.Id == query.Id) ??
             throw new ApiException(ProfileErrors.NotFound);
 
-
+        if (account.User is null)
+            throw new ApiException(ProfileErrors.NotFound);
 
         return account.User switch
         {

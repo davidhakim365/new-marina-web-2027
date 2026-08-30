@@ -88,15 +88,7 @@ public sealed record GetStudentCourseResult : GetCourseResult
     [Required]
     public required decimal Price { get; init; }
     [Required]
-    public Enrollment Enrollment
-    {
-        get
-        {
-            if (ExpiresAt is null) return Enrollment.NotEnrolled;
-            if (ExpiresAt < DateTime.UtcNow) return Enrollment.Expired;
-            return Enrollment.Active;
-        }
-    }
+    public Enrollment Enrollment => EnrollmentRules.ToStatus(ExpiresAt, ExpirationDays);
     [Required]
     public required decimal RenewalPrice { get; init; }
     [Required]

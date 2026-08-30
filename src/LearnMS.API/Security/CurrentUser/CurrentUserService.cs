@@ -33,7 +33,7 @@ public sealed class CurrentUserService(IServiceProvider _serviceProvider,
 
         var account = await _dbContext.Accounts.Include(x => x.User).FirstOrDefaultAsync(a => a.Id == Guid.Parse(userId));
 
-        if (account is null)
+        if (account?.User is null)
         {
             return null;
         }
