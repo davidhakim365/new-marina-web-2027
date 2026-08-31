@@ -11,7 +11,7 @@ import {
 } from "@/generated/api";
 import { playScanSuccessVoice } from "@/lib/scan-feedback";
 import { toast } from "@/lib/utils";
-import Quagga, { QuaggaJSResultObject } from "@ericblade/quagga2";
+import { startBarcodeScanner } from "@/lib/start-barcode-scanner";
 import { useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, CheckCircle, Loader2, ScanLine, XCircle } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -32,6 +32,7 @@ const LectureBarcodeScannerPage = () => {
     "initializing" | "scanning" | "processing" | "success" | "error"
   >("initializing");
   const [feedback, setFeedback] = useState("");
+  const [cameraRetry, setCameraRetry] = useState(0);
   const centerId = readSelectedCenterId();
   const { data: centersData } = useGetCenters();
   const centerName =
@@ -119,70 +120,41 @@ const LectureBarcodeScannerPage = () => {
   );
 
   useEffect(() => {
-    if (!scannerRef.current) return;
+    const target = scannerRef.current;
+    if (!target) return;
 
     let mounted = true;
+    let stop: (() => void) | undefined;
 
-    Quagga.init(
-      {
-        inputStream: {
-          type: "LiveStream",
-          target: scannerRef.current,
-          constraints: {
-            width: { min: 640, ideal: 1280, max: 1920 },
-            height: { min: 480, ideal: 720, max: 1080 },
-            facingMode: "environment",
-          },
-        },
-        locator: {
-          patchSize: "medium",
-          halfSample: true,
-        },
-        numOfWorkers: Math.min(navigator.hardwareConcurrency || 2, 4),
-        decoder: {
-          readers: [
-            "code_128_reader",
-            "ean_reader",
-            "ean_8_reader",
-            "code_39_reader",
-            "codabar_reader",
-            "upc_reader",
-          ],
-        },
-        locate: true,
-        frequency: 10,
-      },
-      (err) => {
-        if (!mounted) return;
-        if (err) {
-          setStatus("error");
-          setFeedback("Could not access camera. Allow camera permission and retry.");
-          toast({
-            title: "Camera error",
-            description: String(err),
-            variant: "destructive",
-          });
+    setStatus("initializing");
+    setFeedback("Starting camera...");
+
+    startBarcodeScanner(target, (code) => handleScan(code))
+      .then((cleanup) => {
+        if (!mounted) {
+          cleanup();
           return;
         }
-        Quagga.start();
+        stop = cleanup;
         setStatus("scanning");
         setFeedback("Point camera at student barcode");
-      }
-    );
-
-    const onDetected = (result: QuaggaJSResultObject) => {
-      const code = result?.codeResult?.code;
-      if (code) handleScan(code);
-    };
-
-    Quagga.onDetected(onDetected);
+      })
+      .catch((err) => {
+        if (!mounted) return;
+        setStatus("error");
+        setFeedback("Could not access camera. Allow camera permission and retry.");
+        toast({
+          title: "Camera error",
+          description: String(err),
+          variant: "destructive",
+        });
+      });
 
     return () => {
       mounted = false;
-      Quagga.offDetected(onDetected);
-      Quagga.stop();
+      stop?.();
     };
-  }, [handleScan]);
+  }, [handleScan, cameraRetry]);
 
   return (
     <div className="fixed inset-0 z-[100] flex flex-col bg-black text-white">
@@ -241,6 +213,18 @@ const LectureBarcodeScannerPage = () => {
             <span className="text-white/70">{feedback}</span>
           )}
         </div>
+        {status === "error" && (
+          <Button
+            className="w-full bg-color2 text-black hover:bg-color2/90"
+            onClick={() => {
+              setStatus("initializing");
+              setFeedback("Starting camera...");
+              setCameraRetry((n) => n + 1);
+            }}
+          >
+            Retry camera
+          </Button>
+        )}
         <Button
           variant="outline"
           className="w-full border-white/20 bg-transparent text-white hover:bg-white/10"

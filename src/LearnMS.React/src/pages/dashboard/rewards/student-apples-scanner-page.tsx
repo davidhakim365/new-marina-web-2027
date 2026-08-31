@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/lib/utils";
-import Quagga, { QuaggaJSResultObject } from "@ericblade/quagga2";
+import { startBarcodeScanner } from "@/lib/start-barcode-scanner";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Apple, ArrowLeft, CheckCircle, Loader2, ScanLine, XCircle } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -155,68 +155,36 @@ const StudentApplesScannerPage = () => {
   };
 
   useEffect(() => {
-    if (!scannerRef.current) return;
+    const target = scannerRef.current;
+    if (!target) return;
 
     let mounted = true;
+    let stop: (() => void) | undefined;
 
-    Quagga.init(
-      {
-        inputStream: {
-          type: "LiveStream",
-          target: scannerRef.current,
-          constraints: {
-            width: { min: 640, ideal: 1280, max: 1920 },
-            height: { min: 480, ideal: 720, max: 1080 },
-            facingMode: "environment",
-          },
-        },
-        locator: {
-          patchSize: "medium",
-          halfSample: true,
-        },
-        numOfWorkers: Math.min(navigator.hardwareConcurrency || 2, 4),
-        decoder: {
-          readers: [
-            "code_128_reader",
-            "ean_reader",
-            "ean_8_reader",
-            "code_39_reader",
-            "codabar_reader",
-            "upc_reader",
-          ],
-        },
-        locate: true,
-        frequency: 10,
-      },
-      (err) => {
-        if (!mounted) return;
-        if (err) {
-          setStatus("error");
-          setFeedback("Could not access camera. You can still type the student code below.");
-          toast({
-            title: "Camera error",
-            description: String(err),
-            variant: "destructive",
-          });
+    startBarcodeScanner(target, (code) => lookupCode(code))
+      .then((cleanup) => {
+        if (!mounted) {
+          cleanup();
           return;
         }
-        Quagga.start();
+        stop = cleanup;
         setStatus("scanning");
         setFeedback("Point camera at student barcode, or type code below");
-      }
-    );
-
-    const onDetected = (result: QuaggaJSResultObject) => {
-      const code = result?.codeResult?.code;
-      if (code) lookupCode(code);
-    };
-
-    Quagga.onDetected(onDetected);
+      })
+      .catch((err) => {
+        if (!mounted) return;
+        setStatus("error");
+        setFeedback("Could not access camera. You can still type the student code below.");
+        toast({
+          title: "Camera error",
+          description: String(err),
+          variant: "destructive",
+        });
+      });
 
     return () => {
       mounted = false;
-      Quagga.offDetected(onDetected);
-      Quagga.stop();
+      stop?.();
     };
   }, [lookupCode]);
 

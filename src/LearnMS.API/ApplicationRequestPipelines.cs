@@ -34,7 +34,12 @@ public static class ApplicationRequestPipelines
             headers["X-Content-Type-Options"] = "nosniff";
             headers["X-Frame-Options"] = "DENY";
             headers["Referrer-Policy"] = "strict-origin-when-cross-origin";
-            headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()";
+            // camera=(self) is required for center/barcode scanners. camera=() is a
+            // hard deny: Chrome on Android then fails getUserMedia with a permission
+            // error and never shows the prompt. Safari on iPhone often ignores this
+            // header, which is why iOS still asked and worked.
+            headers["Permissions-Policy"] = "camera=(self), microphone=(), geolocation=()";
+            headers["Feature-Policy"] = "camera 'self'; microphone 'none'; geolocation 'none'";
             headers["Cross-Origin-Opener-Policy"] = "same-origin";
 
             // Baseline CSP — keep in sync with SPA embeds (YouTube, VdoCipher, imgbb, fonts).
