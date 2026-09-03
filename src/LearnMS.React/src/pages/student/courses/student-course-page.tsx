@@ -65,7 +65,7 @@ import {
 import { MarkdownWrapper } from "@/components/ui/markdown-wrapper";
 import { SpotlightCard } from "@/components/ui/spotlight-card";
 import { cn } from "@/lib/utils";
-import { BookOpen, Coins, AlertTriangle, ArrowLeft } from "lucide-react";
+import { isEnrollmentActive, isEnrollmentExpired } from "@/lib/enrollment";
 
 export const StudentCoursePage = () => {
   const { courseId } = useParams();
@@ -385,43 +385,44 @@ function LectureAccordionHeader({
 }) {
   const { t, i18n } = useTranslation();
   const isRTL = i18n.language === "ar";
+  const enrolled = isEnrollmentActive(lecture.enrollment, lecture.expiresAt);
+  const expired = isEnrollmentExpired(lecture.enrollment, lecture.expiresAt);
 
-  const getEnrollmentBadge = (enrollment?: string) => {
-    switch (enrollment) {
-      case "Active":
-        return (
-          <Badge className="px-2 py-1 text-xs transition-colors sm:px-3 sm:text-sm bg-chart-2/10 text-chart-2 border-chart-2/30 hover:bg-chart-2/20 dark:bg-chart-2/15 dark:hover:bg-chart-2/25">
-            <FaCheckCircle
-              className={`w-3 h-3 ${
-                isRTL ? "ml-1 sm:ml-2" : "mr-1 sm:mr-2"
-              } sm:w-4 sm:h-4`}
-            />
-            {t("courses.status.active")}
-          </Badge>
-        );
-      case "Expired":
-        return (
-          <Badge className="px-2 py-1 text-xs transition-colors sm:px-3 sm:text-sm bg-destructive/10 text-destructive border-destructive/30 hover:bg-destructive/20 dark:bg-destructive/15 dark:hover:bg-destructive/25">
-            <FaClock
-              className={`w-3 h-3 ${
-                isRTL ? "ml-1 sm:ml-2" : "mr-1 sm:mr-2"
-              } sm:w-4 sm:h-4`}
-            />
-            {t("courses.status.expired")}
-          </Badge>
-        );
-      default:
-        return (
-          <Badge className="px-2 py-1 text-xs transition-colors sm:px-3 sm:text-sm bg-muted/50 text-muted-foreground border-muted-foreground/30 hover:bg-muted/70 dark:bg-muted/40 dark:hover:bg-muted/60">
-            <FaClock
-              className={`w-3 h-3 ${
-                isRTL ? "ml-1 sm:ml-2" : "mr-1 sm:mr-2"
-              } sm:w-4 sm:h-4`}
-            />
-            {t("courses.status.available")}
-          </Badge>
-        );
+  const getEnrollmentBadge = () => {
+    if (enrolled) {
+      return (
+        <Badge className="px-2 py-1 text-xs transition-colors sm:px-3 sm:text-sm bg-chart-2/10 text-chart-2 border-chart-2/30 hover:bg-chart-2/20 dark:bg-chart-2/15 dark:hover:bg-chart-2/25">
+          <FaCheckCircle
+            className={`w-3 h-3 ${
+              isRTL ? "ml-1 sm:ml-2" : "mr-1 sm:mr-2"
+            } sm:w-4 sm:h-4`}
+          />
+          {t("courses.status.active")}
+        </Badge>
+      );
     }
+    if (expired) {
+      return (
+        <Badge className="px-2 py-1 text-xs transition-colors sm:px-3 sm:text-sm bg-destructive/10 text-destructive border-destructive/30 hover:bg-destructive/20 dark:bg-destructive/15 dark:hover:bg-destructive/25">
+          <FaClock
+            className={`w-3 h-3 ${
+              isRTL ? "ml-1 sm:ml-2" : "mr-1 sm:mr-2"
+            } sm:w-4 sm:h-4`}
+          />
+          {t("courses.status.expired")}
+        </Badge>
+      );
+    }
+    return (
+      <Badge className="px-2 py-1 text-xs transition-colors sm:px-3 sm:text-sm bg-muted/50 text-muted-foreground border-muted-foreground/30 hover:bg-muted/70 dark:bg-muted/40 dark:hover:bg-muted/60">
+        <FaClock
+          className={`w-3 h-3 ${
+            isRTL ? "ml-1 sm:ml-2" : "mr-1 sm:mr-2"
+          } sm:w-4 sm:h-4`}
+        />
+        {t("courses.status.available")}
+      </Badge>
+    );
   };
 
   return (
@@ -489,17 +490,17 @@ function LectureAccordionHeader({
           </div>
           <div className="flex items-center justify-between gap-3">
             <div className="flex-shrink-0">
-              {getEnrollmentBadge(lecture.enrollment)}
+              {getEnrollmentBadge()}
             </div>
             {/* Price Info for Mobile */}
-            {(lecture.enrollment as string) !== "Active" && (
+            {!enrolled && (
               <div className="flex flex-col items-end gap-1 text-right">
                 <div className="flex items-center gap-1.5">
                   <div className="flex items-center justify-center w-4 h-4 bg-orange-100 rounded-full dark:bg-orange-900/30">
                     <Coins className="w-2 h-2 text-orange-600 dark:text-orange-400" />
                   </div>
                   <div className="text-sm font-bold break-words text-primary">
-                    {lecture.enrollment === "Expired"
+                    {expired
                       ? `${lecture.renewalPrice || 0} ${t("common.currency")}`
                       : `${lecture.price || 0} ${t("common.currency")}`}
                   </div>
@@ -548,18 +549,18 @@ function LectureAccordionHeader({
         <div className="hidden sm:flex sm:flex-col sm:gap-2 md:flex-row md:items-center md:justify-between md:gap-4">
           {/* Badge for desktop - positioned at end */}
           <div className="flex items-center justify-start md:justify-end md:flex-shrink-0">
-            {getEnrollmentBadge(lecture.enrollment)}
+            {getEnrollmentBadge()}
           </div>
 
           {/* Price Info for Desktop */}
-          {(lecture.enrollment as string) !== "Active" && (
+          {!enrolled && (
             <div className="flex flex-col items-start gap-0.5 md:items-end md:text-right md:ml-4">
               <div className="flex items-center gap-2">
                 <div className="flex items-center justify-center w-5 h-5 bg-orange-100 rounded-full dark:bg-orange-900/30">
                   <Coins className="w-2.5 h-2.5 text-orange-600 dark:text-orange-400" />
                 </div>
                 <div className="text-sm font-bold break-words sm:text-base lg:text-lg text-primary">
-                  {lecture.enrollment === "Expired"
+                  {expired
                     ? `${lecture.renewalPrice || 0} ${t("common.currency")}`
                     : `${lecture.price || 0} ${t("common.currency")}`}
                 </div>
@@ -585,15 +586,21 @@ function LectureAccordionContent({ lecture }: { lecture: StudentLectureDto }) {
   const { data: profile } = useGetProfile();
 
   const isRTL = i18n.language === "ar";
+  const enrolled = isEnrollmentActive(lecture.enrollment, lecture.expiresAt);
+  const expired = isEnrollmentExpired(lecture.enrollment, lecture.expiresAt);
+  const enrollmentStatus = enrolled
+    ? "Active"
+    : expired
+      ? "Expired"
+      : "NotEnrolled";
 
   const onBuyClick = () => {
-    if (lecture.enrollment === "Active") {
-      // Navigate to lecture if already enrolled
+    if (isEnrollmentActive(lecture.enrollment, lecture.expiresAt)) {
       navigate(`/courses/${courseId}/lectures/${lecture.id}`);
-    } else {
-      // Check insufficient balance before making the purchase
-      const requiredAmount =
-        lecture.enrollment === "Expired" ? lecture.renewalPrice : lecture.price;
+      return;
+    }
+
+    const requiredAmount = expired ? lecture.renewalPrice : lecture.price;
       const userCredits =
         profile?.data?.$type === "GetStudentProfileResult"
           ? profile.data.credits
@@ -634,7 +641,6 @@ function LectureAccordionContent({ lecture }: { lecture: StudentLectureDto }) {
           },
         }
       );
-    }
   };
 
   const handleButtonClick = () => {
@@ -644,8 +650,7 @@ function LectureAccordionContent({ lecture }: { lecture: StudentLectureDto }) {
       return;
     }
 
-    const requiredAmount =
-      lecture.enrollment === "Expired" ? lecture.renewalPrice : lecture.price;
+    const requiredAmount = expired ? lecture.renewalPrice : lecture.price;
     const userCredits = profile.data.credits || 0;
 
     if (userCredits < (requiredAmount || 0)) {
@@ -669,12 +674,11 @@ function LectureAccordionContent({ lecture }: { lecture: StudentLectureDto }) {
       };
     }
 
-    const requiredAmount =
-      lecture.enrollment === "Expired" ? lecture.renewalPrice : lecture.price;
+    const requiredAmount = expired ? lecture.renewalPrice : lecture.price;
     const userCredits = profile.data.credits || 0;
     const hasInsufficientBalance = userCredits < (requiredAmount || 0);
 
-    if (lecture.enrollment === "Active") {
+    if (isEnrollmentActive(lecture.enrollment, lecture.expiresAt)) {
       return {
         text: t("courses.buttons.continue"),
         icon: FaPlay,
@@ -691,7 +695,7 @@ function LectureAccordionContent({ lecture }: { lecture: StudentLectureDto }) {
         className: "transition-all duration-200",
         isInsufficientBalance: true,
       };
-    } else if (lecture.enrollment === "Expired") {
+    } else if (isEnrollmentExpired(lecture.enrollment, lecture.expiresAt)) {
       return {
         text: t("courses.buttons.renew"),
         icon: FaRedo,
@@ -721,7 +725,7 @@ function LectureAccordionContent({ lecture }: { lecture: StudentLectureDto }) {
       dir={isRTL ? "rtl" : "ltr"}
     >
       {/* Action Button Section - Only for Non-Active Lectures */}
-      {(lecture.enrollment as string) !== "Active" && (
+      {!enrolled && (
         <div className="space-y-3 sm:space-y-4">
           <PlasticButton
             onClick={handleButtonClick}
@@ -746,7 +750,7 @@ function LectureAccordionContent({ lecture }: { lecture: StudentLectureDto }) {
           </PlasticButton>
 
           {/* Price Info for Non-Active Lectures */}
-          {(lecture.enrollment as string) !== "Active" && (
+          {!enrolled && (
             <div className="relative p-4 overflow-hidden transition-all duration-300 border-2 shadow-lg rounded-xl sm:p-6 bg-gradient-to-br from-muted/20 to-muted/40 border-border/30 hover:border-border/50 hover:shadow-xl group">
               <div className="absolute inset-0 transition-opacity duration-500 opacity-0 bg-gradient-to-r from-transparent via-foreground/5 to-transparent group-hover:opacity-100" />
               <div className="relative flex items-center justify-between">
@@ -754,7 +758,7 @@ function LectureAccordionContent({ lecture }: { lecture: StudentLectureDto }) {
                   <div className="flex items-center gap-2">
                     <div className="w-2 h-2 bg-current rounded-full animate-pulse" />
                     <p className="text-sm font-semibold tracking-wide uppercase text-muted-foreground">
-                      {lecture.enrollment === "Expired"
+                      {expired
                         ? t("courses.renewal")
                         : t("courses.enrollNow")}
                     </p>
@@ -764,7 +768,7 @@ function LectureAccordionContent({ lecture }: { lecture: StudentLectureDto }) {
                       <Coins className="w-4 h-4 text-amber-600 dark:text-amber-400" />
                     </div>
                     <span className="text-lg font-bold text-transparent bg-gradient-to-r from-amber-600 to-amber-700 bg-clip-text dark:from-amber-400 dark:to-amber-500 sm:text-xl">
-                      {lecture.enrollment === "Expired"
+                      {expired
                         ? `${lecture.renewalPrice || 0} ${t("common.currency")}`
                         : `${lecture.price || 0} ${t("common.currency")}`}
                     </span>
@@ -788,7 +792,7 @@ function LectureAccordionContent({ lecture }: { lecture: StudentLectureDto }) {
       )}
 
       {/* Active Enrollment Status */}
-      {lecture.enrollment === "Active" &&
+      {enrolled &&
         lecture.expiresAt &&
         (() => {
           const expiresAt = new Date(lecture.expiresAt);
@@ -862,8 +866,7 @@ function LectureAccordionContent({ lecture }: { lecture: StudentLectureDto }) {
       <LectureItemsAccordions lecture={lecture} courseId={courseId!} />
 
       {/* Additional Info for Non-Active Lectures */}
-      {(lecture.enrollment as string) !== "Active" &&
-        lecture.enrollment === "Expired" && (
+      {!enrolled && expired && (
           <div className="p-3 border rounded-lg sm:p-4 bg-muted/20 border-border/30">
             <div className="flex items-start gap-3">
               <div className="flex-1">
@@ -1258,7 +1261,7 @@ function LectureItemsAccordions({
                     lesson={item}
                     courseId={courseId}
                     lectureId={lecture.id}
-                    lectureEnrollment={lecture.enrollment}
+                    lectureEnrollment={enrollmentStatus}
                   />
                 ) : (
                   <QuizAccordionItem
@@ -1266,7 +1269,7 @@ function LectureItemsAccordions({
                     quiz={item}
                     courseId={courseId}
                     lectureId={lecture.id}
-                    lectureEnrollment={lecture.enrollment}
+                    lectureEnrollment={enrollmentStatus}
                   />
                 )
               )}

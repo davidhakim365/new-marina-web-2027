@@ -46,19 +46,19 @@ export function DashboardPageShell({
         )}
       >
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-          <div className="space-y-2">
-            <div className="flex items-center gap-3">
+          <div className="min-w-0 flex-1 space-y-2">
+            <div className="flex min-w-0 items-start gap-3">
               {Icon && (
-                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-color1 to-color2 text-white shadow-lg shadow-color2/20">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-color1 to-color2 text-white shadow-lg shadow-color2/20">
                   <Icon className="h-5 w-5" />
                 </div>
               )}
-              <div>
-                <h1 className="font-heading text-xl font-bold tracking-tight text-foreground sm:text-2xl md:text-3xl">
+              <div className="min-w-0">
+                <h1 className="break-words font-heading text-xl font-bold tracking-tight text-foreground sm:text-2xl md:text-3xl">
                   {title}
                 </h1>
                 {description && (
-                  <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
+                  <p className="mt-1 max-w-2xl break-words text-sm text-muted-foreground">
                     {description}
                   </p>
                 )}
@@ -66,7 +66,9 @@ export function DashboardPageShell({
             </div>
           </div>
           {actions && (
-            <div className="flex flex-wrap items-center gap-2">{actions}</div>
+            <div className="flex w-full shrink-0 flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center">
+              {actions}
+            </div>
           )}
         </div>
 

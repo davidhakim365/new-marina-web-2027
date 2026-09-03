@@ -77,6 +77,7 @@ public class StudentCoursesController(ICurrentUserService currentUserService, Ap
         CurrentUser? user = await currentUserService.GetUserAsync();
 
         var course = await context.Courses
+            .AsNoTracking()
             .Where(c => c.IsPublished && c.Id == courseId)
             .Select(c => new
                 {
@@ -88,12 +89,6 @@ public class StudentCoursesController(ICurrentUserService currentUserService, Ap
                     c.RenewalPrice,
                     c.Level,
                     c.ExpirationDays,
-                    Enrollment = user == null
-                        ? null
-                        : c.CourseEnrollments
-                            .Where(es => es.StudentId == user.Id)
-                            .OrderByDescending(es => es.ExpiresAt)
-                            .FirstOrDefault(),
                     Lectures = c.Lectures
                         .Where(l => l.IsPublished)
                         .Select(l => new
@@ -107,12 +102,6 @@ public class StudentCoursesController(ICurrentUserService currentUserService, Ap
                             l.RenewalPrice,
                             l.ImageUrl,
                             l.HomeworkVideoUrl,
-                            Enrollment = user == null
-                                ? null
-                                : l.LectureEnrollments
-                                    .Where(es => es.StudentId == user.Id)
-                                    .OrderByDescending(es => es.ExpiresAt)
-                                    .FirstOrDefault(),
                             Assets = l.Assets.Select(a => new StudentAssetDto()
                             {
                                 Id = a.Id,
@@ -192,30 +181,59 @@ public class StudentCoursesController(ICurrentUserService currentUserService, Ap
             throw new ApiException(CoursesErrors.NotFound);
         }
 
-        DateTime? courseExpires = course.Enrollment?.ExpiresAt;
+        DateTime? courseExpires = null;
+        Dictionary<Guid, DateTime?> lectureExpiresById = new();
+        if (user != null)
+        {
+            courseExpires = await context.Set<CourseEnrollment>()
+                .AsNoTracking()
+                .Where(e => e.StudentId == user.Id && e.CourseId == courseId)
+                .Select(e => (DateTime?)e.ExpiresAt)
+                .FirstOrDefaultAsync();
+
+            var lectureIds = course.Lectures.Select(l => l.Id).ToList();
+            var lectureEnrollmentRows = await context.Set<LectureEnrollment>()
+                .AsNoTracking()
+                .Where(e => e.StudentId == user.Id && lectureIds.Contains(e.LectureId))
+                .Select(e => new { e.LectureId, e.ExpiresAt })
+                .ToListAsync();
+            lectureExpiresById = lectureEnrollmentRows
+                .GroupBy(e => e.LectureId)
+                .ToDictionary(
+                    g => g.Key,
+                    g => (DateTime?)g.OrderByDescending(e => e.ExpiresAt).First().ExpiresAt
+                );
+        }
+
         var hasActiveCourseEnrollment =
             EnrollmentRules.IsActive(courseExpires, course.ExpirationDays);
 
-        List<StudentLectureDto> lectures = course.Lectures.Select(l => new StudentLectureDto()
+        List<StudentLectureDto> lectures = course.Lectures.Select(l =>
         {
-            Id = l.Id,
-            Title = l.Title,
-            Description = l.Description,
-            Price = l.Price ?? 0,
-            RenewalPrice = l.RenewalPrice ?? 0,
-            Order = l.Order,
-            ImageUrl = l.ImageUrl,
-            HomeworkVideoUrl = l.HomeworkVideoUrl,
-            Assets = l.Assets,
-            ExpirationDays = l.ExpirationDays,
-            Items = l.Lessons.Cast<StudentLectureItemDto>().Union(l.Quizzes).OrderBy(i => i.Order).ToList(),
-            // Active course enrollment unlocks all lectures; otherwise use lecture enrollment.
-            // Do not let an expired course enrollment hide an active lecture purchase.
-            ExpiresAt = hasActiveCourseEnrollment
-                ? courseExpires
-                : EnrollmentRules.IsActive(l.Enrollment?.ExpiresAt, l.ExpirationDays)
-                    ? (l.ExpirationDays is <= 0 ? DateTime.UtcNow.AddYears(50) : l.Enrollment?.ExpiresAt)
-                    : l.Enrollment?.ExpiresAt ?? courseExpires,
+            lectureExpiresById.TryGetValue(l.Id, out var lectureExpires);
+            DateTime? expiresAt;
+            if (hasActiveCourseEnrollment)
+                expiresAt = EnrollmentRules.EffectiveExpiresAt(courseExpires, course.ExpirationDays);
+            else if (lectureExpires != null)
+                expiresAt = EnrollmentRules.EffectiveExpiresAt(lectureExpires, l.ExpirationDays);
+            else
+                expiresAt = EnrollmentRules.EffectiveExpiresAt(courseExpires, course.ExpirationDays);
+
+            return new StudentLectureDto()
+            {
+                Id = l.Id,
+                Title = l.Title,
+                Description = l.Description,
+                Price = l.Price ?? 0,
+                RenewalPrice = l.RenewalPrice ?? 0,
+                Order = l.Order,
+                ImageUrl = l.ImageUrl,
+                HomeworkVideoUrl = l.HomeworkVideoUrl,
+                Assets = l.Assets,
+                ExpirationDays = l.ExpirationDays,
+                Items = l.Lessons.Cast<StudentLectureItemDto>().Union(l.Quizzes).OrderBy(i => i.Order).ToList(),
+                ExpiresAt = expiresAt,
+            };
         }).ToList();
 
         var courseDto = new StudentCourseDetailsDto()
@@ -227,7 +245,7 @@ public class StudentCoursesController(ICurrentUserService currentUserService, Ap
             Price = course.Price ?? 0,
             RenewalPrice = course.RenewalPrice ?? 0,
             Level = course.Level ?? StudentLevel.Level0,
-            ExpiresAt = course.Enrollment?.ExpiresAt,
+            ExpiresAt = courseExpires,
             ExpirationDays = course.ExpirationDays,
             Items = lectures
                 .Cast<StudentCourseItemDto>()

@@ -50,10 +50,11 @@ export function ImageUploadField({
 
   return (
     <div className={cn("space-y-3", className)}>
-      <div className="flex flex-wrap items-center gap-3">
+      <div className="flex min-w-0 max-w-full flex-wrap items-center gap-3">
         <Input
           type="file"
           accept="image/*"
+          className="min-w-0 max-w-full"
           disabled={disabled || uploading}
           onChange={(e) => {
             const f = e.target.files?.[0];

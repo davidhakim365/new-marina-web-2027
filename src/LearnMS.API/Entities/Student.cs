@@ -148,9 +148,41 @@ public class Student : User
     }
 
     /// <returns>True when a purchase or renewal was applied; false when access was already active.</returns>
+    public bool ApplyLecturePurchase(Lecture lecture, LectureEnrollment? existingEnrollment)
+    {
+        if (EnrollmentRules.IsActive(existingEnrollment?.ExpiresAt, lecture.ExpirationDays))
+            return false;
+
+        if (existingEnrollment != null)
+        {
+            if (_credit < lecture.RenewalPrice)
+                throw new ApiException(ProfileErrors.InsufficientCredits);
+            _credit -= lecture.RenewalPrice ?? 0;
+            existingEnrollment.ExpiresAt = EnrollmentRules.ComputeExpiresAt(lecture.ExpirationDays);
+            Events.Add(
+                new StudentEvent()
+                {
+                    Message = $"Lecture {lecture.Title} renewed for  {lecture.RenewalPrice} LE"
+                }
+            );
+            return true;
+        }
+
+        if (_credit < lecture.Price)
+            throw new ApiException(ProfileErrors.InsufficientCredits);
+        _credit -= lecture.Price ?? 0;
+        Events.Add(
+            new StudentEvent()
+            {
+                Message = $"Lecture {lecture.Title} purchased for  {lecture.Price} LE"
+            }
+        );
+        return true;
+    }
+
+    /// <returns>True when a purchase or renewal was applied; false when access was already active.</returns>
     public bool BuyOrRenewLecture(Course course, Lecture lecture)
     {
-        // Already unlocked via active course enrollment — treat as success (no charge).
         if (
             course.CourseEnrollments.Any(x =>
                 x.StudentId == Id && EnrollmentRules.IsActive(x.ExpiresAt, course.ExpirationDays)
@@ -159,45 +191,21 @@ public class Student : User
             return false;
 
         var lectureEnrollment = lecture.LectureEnrollments.FirstOrDefault(x => x.StudentId == Id);
-
-        // Already unlocked via active lecture enrollment — treat as success (no charge).
-        if (EnrollmentRules.IsActive(lectureEnrollment?.ExpiresAt, lecture.ExpirationDays))
-            return false;
-
-        if (lectureEnrollment != null)
+        var charged = ApplyLecturePurchase(lecture, lectureEnrollment);
+        if (charged && lectureEnrollment is null)
         {
-            if (_credit < lecture.RenewalPrice)
-                throw new ApiException(ProfileErrors.InsufficientCredits);
-            _credit -= lecture.RenewalPrice ?? 0;
-            lectureEnrollment.ExpiresAt = EnrollmentRules.ComputeExpiresAt(lecture.ExpirationDays);
-            Events.Add(
-                new StudentEvent()
-                {
-                    Message = $"Lecture {lecture.Title} renewed for  {lecture.RenewalPrice} LE"
-                }
-            );
-        }
-        else
-        {
-            if (_credit < lecture.Price)
-                throw new ApiException(ProfileErrors.InsufficientCredits);
-            _credit -= lecture.Price ?? 0;
             lecture.LectureEnrollments.Add(
                 new LectureEnrollment
                 {
+                    StudentId = Id,
+                    LectureId = lecture.Id,
                     ExpiresAt = EnrollmentRules.ComputeExpiresAt(lecture.ExpirationDays),
-                    StudentId = Id
-                }
-            );
-            Events.Add(
-                new StudentEvent()
-                {
-                    Message = $"Lecture {lecture.Title} purchased for  {lecture.Price} LE"
+                    EnrolledAt = DateTime.UtcNow
                 }
             );
         }
 
-        return true;
+        return charged;
     }
 
     public void BuyOrRetakeExam(Exam exam)

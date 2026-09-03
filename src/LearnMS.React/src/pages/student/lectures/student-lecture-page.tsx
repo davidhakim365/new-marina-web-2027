@@ -26,7 +26,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { FaClock, FaPlay, FaQuestionCircle, FaLock } from "react-icons/fa";
 import { AlertTriangle } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { MarkdownWrapper } from "@/components/ui/markdown-wrapper";
+import { isEnrollmentActive, isEnrollmentExpired } from "@/lib/enrollment";
 
 const StudentLecturePage = () => {
   const { lectureId, courseId } = useParams();
@@ -91,8 +91,8 @@ const StudentLecturePage = () => {
           <div className="space-y-4">
             {lecture.items.map((item) => {
               const enrollmentLocked =
-                course.enrollment !== "Active" &&
-                lecture.enrollment !== "Active";
+                !isEnrollmentActive(course.enrollment, course.expiresAt) &&
+                !isEnrollmentActive(lecture.enrollment, lecture.expiresAt);
               const quizLocked = !!(item as any).isLockedByQuiz;
               return (
               <LectureItem
@@ -130,11 +130,14 @@ function LectureHeader({
   const { openModal } = useModalStore();
   const qc = useQueryClient();
   const { data: profile } = useGetProfile();
+  const enrolled =
+    isEnrollmentActive(lecture.enrollment, lecture.expiresAt) ||
+    isEnrollmentActive(course.enrollment, course.expiresAt);
+  const expired = isEnrollmentExpired(lecture.enrollment, lecture.expiresAt);
 
   const onBuying = () => {
-    // Check insufficient balance before making the purchase
-    const requiredAmount =
-      lecture.enrollment === "Expired" ? lecture.renewalPrice : lecture.price;
+    if (enrolled) return;
+    const requiredAmount = expired ? lecture.renewalPrice : lecture.price;
     const userCredits =
       profile?.data?.$type === "GetStudentProfileResult"
         ? profile.data.credits
@@ -182,13 +185,11 @@ function LectureHeader({
             </div>{" "}
             <div className="flex flex-col gap-4 pt-4">
               {lecture.isPublished &&
-                lecture.enrollment !== "Active" &&
-                course.enrollment !== "Active" &&
+                !enrolled &&
                 (() => {
-                  const requiredAmount =
-                    lecture.enrollment === "Expired"
-                      ? lecture.renewalPrice
-                      : lecture.price;
+                  const requiredAmount = expired
+                    ? lecture.renewalPrice
+                    : lecture.price;
                   const userCredits =
                     profile?.data?.$type === "GetStudentProfileResult"
                       ? profile.data.credits
@@ -216,7 +217,7 @@ function LectureHeader({
                           size="lg"
                           className="w-full font-semibold transition-all border shadow-lg bg-background text-primary hover:bg-background/90 border-primary/20 hover:shadow-xl sm:w-fit"
                         >
-                          {lecture.enrollment === "Expired"
+                          {expired
                             ? t("lectures.renewFor", {
                                 price: lecture.renewalPrice,
                                 days: lecture.expirationDays,
@@ -236,7 +237,7 @@ function LectureHeader({
                 })()}
 
               <div className="flex flex-col gap-2">
-                {lecture.enrollment === "Active" && (
+                {isEnrollmentActive(lecture.enrollment, lecture.expiresAt) && (
                   <div className="flex items-center w-full gap-2 px-3 py-2 rounded-lg sm:px-4 bg-white/20 dark:bg-black/20 backdrop-blur-sm sm:w-fit">
                     <FaClock className="flex-shrink-0 text-green-400" />
                     <span className="text-xs font-medium sm:text-sm">
@@ -245,7 +246,7 @@ function LectureHeader({
                     </span>
                   </div>
                 )}
-                {course.enrollment === "Active" && (
+                {isEnrollmentActive(course.enrollment, course.expiresAt) && (
                   <div className="flex items-center w-full gap-2 px-3 py-2 rounded-lg sm:px-4 bg-white/20 dark:bg-black/20 backdrop-blur-sm sm:w-fit">
                     <FaClock className="flex-shrink-0 text-green-400" />
                     <span className="text-xs font-medium sm:text-sm">

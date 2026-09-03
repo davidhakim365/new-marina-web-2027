@@ -281,37 +281,72 @@ public sealed class CoursesService : ICoursesService
             await _context.Students.FirstOrDefaultAsync(x => x.Id == command.StudentId)
             ?? throw new ApiException(ProfileErrors.NoStudentFound);
 
-        var course =
+        var lecture =
             await _context
-                .Set<Course>()
-                .Include(x => x.CourseEnrollments.Where(x => x.StudentId == command.StudentId))
-                .Include(x => x.Lectures.Where(x => x.Id == command.LectureId).Take(1))
-                .ThenInclude(x => x.LectureEnrollments.Where(x => x.StudentId == command.StudentId))
-                .FirstOrDefaultAsync(x => x.Id == command.CourseId && x.IsPublished)
-            ?? throw new ApiException(CoursesErrors.NotFound);
+                .Set<Lecture>()
+                .FirstOrDefaultAsync(x =>
+                    x.Id == command.LectureId && x.CourseId == command.CourseId
+                ) ?? throw new ApiException(LecturesErrors.NotFound);
 
-        if (course.Lectures.FirstOrDefault() is not { } lecture)
-            throw new ApiException(LecturesErrors.NotFound);
+        var coursePublished = await _context
+            .Set<Course>()
+            .AnyAsync(x => x.Id == command.CourseId && x.IsPublished);
+        if (!coursePublished)
+            throw new ApiException(CoursesErrors.NotFound);
 
-        // Billing must use the enrollment rows in the database, not an unloaded navigation.
-        await EnsureStudentEnrollmentsLoadedAsync(course, lecture, command.StudentId);
+        var courseExpirationDays = await _context
+            .Set<Course>()
+            .Where(x => x.Id == command.CourseId)
+            .Select(x => x.ExpirationDays)
+            .FirstOrDefaultAsync();
 
-        var purchasedOrRenewed = student.BuyOrRenewLecture(course, lecture);
+        var courseEnrollment = await _context
+            .Set<CourseEnrollment>()
+            .FirstOrDefaultAsync(x =>
+                x.StudentId == command.StudentId && x.CourseId == command.CourseId
+            );
 
-        // Only reset attendance when a real purchase/renewal happened.
-        if (purchasedOrRenewed)
+        // Read the enrollment row itself. Do not trust lecture.LectureEnrollments —
+        // that navigation has been unreliable and caused repeat full-price charges.
+        var lectureEnrollment = await _context
+            .Set<LectureEnrollment>()
+            .FirstOrDefaultAsync(x =>
+                x.StudentId == command.StudentId && x.LectureId == command.LectureId
+            );
+
+        if (EnrollmentRules.IsActive(courseEnrollment?.ExpiresAt, courseExpirationDays))
+            return;
+
+        if (EnrollmentRules.IsActive(lectureEnrollment?.ExpiresAt, lecture.ExpirationDays))
+            return;
+
+        var purchasedOrRenewed = student.ApplyLecturePurchase(lecture, lectureEnrollment);
+
+        if (!purchasedOrRenewed)
+            return;
+
+        if (lectureEnrollment is null)
         {
-            var lessonAttendances = await _context
-                .Set<LessonAttendance>()
-                .Where(x =>
-                    x.StudentId == command.StudentId && x.Lesson.LectureId == command.LectureId
-                )
-                .ToListAsync();
-
-            _context.Update(course);
-            _context.RemoveRange(lessonAttendances);
-            await _context.SaveChangesAsync();
+            _context.Set<LectureEnrollment>().Add(
+                new LectureEnrollment
+                {
+                    StudentId = command.StudentId,
+                    LectureId = command.LectureId,
+                    ExpiresAt = EnrollmentRules.ComputeExpiresAt(lecture.ExpirationDays),
+                    EnrolledAt = DateTime.UtcNow
+                }
+            );
         }
+
+        var lessonAttendances = await _context
+            .Set<LessonAttendance>()
+            .Where(x =>
+                x.StudentId == command.StudentId && x.Lesson.LectureId == command.LectureId
+            )
+            .ToListAsync();
+
+        _context.RemoveRange(lessonAttendances);
+        await _context.SaveChangesAsync();
     }
 
     public async Task ExecuteAsync(DeleteCourseCommand command)

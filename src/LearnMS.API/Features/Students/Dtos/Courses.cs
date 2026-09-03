@@ -64,6 +64,7 @@ public sealed record StudentLectureDto : StudentCourseItemDto
     public required DateTime? ExpiresAt { get; init; }
 
     [Required]
+    [JsonInclude]
     public Enrollment Enrollment => EnrollmentRules.ToStatus(ExpiresAt, ExpirationDays);
 }
 

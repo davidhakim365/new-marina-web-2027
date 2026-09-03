@@ -1,5 +1,6 @@
 import { AddLectureRequest } from "@/api/lectures-api";
 import Confirmation from "@/components/confirmation";
+import { DashboardCard } from "@/components/dashboard/dashboard-card";
 import { DashboardPageShell } from "@/components/dashboard/dashboard-page-shell";
 import Loading from "@/components/loading/loading";
 import { Badge } from "@/components/ui/badge";
@@ -129,21 +130,25 @@ const DashboardCoursePage = () => {
       fullWidth
       actions={
         canManageCourses ? (
-          <div className="flex gap-2">
+          <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
             <Confirmation
               disabled={deleteCourseMutation.isPending}
               description={t("admin.courses.deleteConfirm")}
               title={t("admin.courses.deleteTitle")}
               onConfirm={onDeleting}
               button={
-                <Button variant="destructive" disabled={deleteCourseMutation.isPending}>
+                <Button
+                  variant="destructive"
+                  className="w-full sm:w-auto"
+                  disabled={deleteCourseMutation.isPending}
+                >
                   {t("admin.common.delete")}
                 </Button>
               }
             />
             <Button
               onClick={onPublishing}
-              className="border border-color2/40 bg-gradient-to-r from-color1 to-color2 text-white shadow-md shadow-color2/20 hover:opacity-90"
+              className="w-full border border-color2/40 bg-gradient-to-r from-color1 to-color2 text-white shadow-md shadow-color2/20 hover:opacity-90 sm:w-auto"
             >
               {course.isPublished
                 ? t("admin.courses.unpublish")
@@ -153,13 +158,19 @@ const DashboardCoursePage = () => {
         ) : undefined
       }
     >
-      <div className="grid w-full grid-cols-1 gap-6 lg:grid-cols-2">
-        {canManageCourses && <CourseDetailsForm {...course} />}
-        <CourseContentForm
-          {...course}
-          canManageCourses={canManageCourses}
-          canManageLectures={canManageLectures}
-        />
+      <div className="grid w-full grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-2">
+        {canManageCourses && (
+          <DashboardCard padding="sm" className="min-w-0">
+            <CourseDetailsForm {...course} />
+          </DashboardCard>
+        )}
+        <DashboardCard padding="sm" className="min-w-0">
+          <CourseContentForm
+            {...course}
+            canManageCourses={canManageCourses}
+            canManageLectures={canManageLectures}
+          />
+        </DashboardCard>
       </div>
     </DashboardPageShell>
   );
@@ -229,23 +240,25 @@ function CourseDetailsForm({
   };
 
   return (
-    <div className='px-2'>
+    <div className="w-full min-w-0">
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(onSubmit)}
-          className='flex flex-col gap-2 p-2'>
+          className="flex flex-col gap-2">
           <fieldset
-            className='flex items-center gap-2 p-2 text-xl'
+            className="flex flex-col gap-3 p-1 sm:flex-row sm:items-center sm:gap-2"
             disabled={updateCourseMutation.isPending}>
-            <Settings2 className='text-color2 bg-color2/15 rounded-[50%] w-10 h-10 p-1' />
-            Course Details
+            <div className="flex min-w-0 items-center gap-2 text-lg sm:text-xl">
+              <Settings2 className="h-9 w-9 shrink-0 rounded-full bg-color2/15 p-1 text-color2" />
+              <span className="truncate">Course Details</span>
+            </div>
             {form.formState.isDirty && (
-              <div className='space-x-1 ms-auto'>
-                <Button className='bg-color2/50'>Save</Button>
+              <div className="flex flex-wrap gap-2 sm:ms-auto">
+                <Button className="flex-1 bg-color2/50 sm:flex-none">Save</Button>
                 <Button
-                  variant='outline'
-                  type='button'
-                  className='border-color2/20'
+                  variant="outline"
+                  type="button"
+                  className="flex-1 border-color2/20 sm:flex-none"
                   onClick={() => form.reset()}>
                   Reset
                 </Button>
@@ -355,23 +368,23 @@ function CourseContentForm({
   const canAddContent = canManageLectures || canManageCourses;
 
   return (
-    <div className='flex flex-col gap-4 p-4'>
-      <div className='flex items-center justify-between text-xl'>
-        <div className='flex items-center gap-2'>
-          <ListCollapse className='text-color2 bg-color2/15 rounded-[50%] w-10 h-10 p-1' />
-          {t("admin.courses.content")}
+    <div className="flex min-w-0 flex-col gap-4">
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex min-w-0 items-center gap-2 text-lg sm:text-xl">
+          <ListCollapse className="h-9 w-9 shrink-0 rounded-full bg-color2/15 p-1 text-color2" />
+          <span className="truncate">{t("admin.courses.content")}</span>
         </div>
-        <div className='flex items-center justify-center gap-2'>
+        <div className="flex shrink-0 items-center gap-2">
           {canAddContent && !isAddingLecture ? (
             <>
               <DropdownMenu>
-                <DropdownMenuTrigger>
-                  <Menu />
+                <DropdownMenuTrigger className="rounded-md p-1.5 hover:bg-muted">
+                  <Menu className="h-5 w-5" />
                 </DropdownMenuTrigger>
-                <DropdownMenuContent>
+                <DropdownMenuContent align="end">
                   {canManageLectures && (
                     <DropdownMenuItem
-                      className='hover:bg-color2 hover:text-white hover:cursor-pointer'
+                      className="hover:cursor-pointer hover:bg-color2 hover:text-white"
                       onClick={() => setIsAddingLecture(true)}>
                       {t("admin.courses.addLecture")}
                     </DropdownMenuItem>
@@ -384,7 +397,7 @@ function CourseContentForm({
                       onClick={() =>
                         navigate(`/dashboard/courses/${id}/exams/add`)
                       }
-                      className='hover:bg-color2 hover:text-white hover:cursor-pointer'>
+                      className="hover:cursor-pointer hover:bg-color2 hover:text-white">
                       {t("admin.courses.addExam")}
                     </DropdownMenuItem>
                   )}
@@ -393,7 +406,8 @@ function CourseContentForm({
             </>
           ) : isAddingLecture ? (
             <Button
-              variant='destructive'
+              variant="destructive"
+              size="sm"
               onClick={() => {
                 setIsAddingLecture(false);
               }}>
@@ -440,20 +454,19 @@ function CourseItem({
   const canOpen = isExam ? canManageCourses : canManageLectures;
 
   return (
-    <div className='flex items-center justify-between w-full gap-2 text-color2 bg-color2/10 border border-color2/25 rounded'>
-      <div className='flex gap-2'>
-
-        <div className='p-2'>{item.title}</div>
+    <div className="flex w-full min-w-0 items-center justify-between gap-2 rounded border border-color2/25 bg-color2/10 text-color2">
+      <div className="min-w-0 flex-1 p-2">
+        <p className="truncate">{item.title}</p>
       </div>
-      <div className='flex items-center gap-2'>
-        <Badge className='h-5'>{item.type}</Badge>
+      <div className="flex shrink-0 items-center gap-2 pe-2">
+        <Badge className="h-5">{item.type}</Badge>
         {canOpen && (
           <Link
-            className='me-2'
             to={`/dashboard/courses/${courseId}/${
               isExam ? "exams" : "lectures"
-            }/${item.id}`}>
-            <Edit2 className='w-4 h-4' />
+            }/${item.id}`}
+          >
+            <Edit2 className="h-4 w-4" />
           </Link>
         )}
       </div>

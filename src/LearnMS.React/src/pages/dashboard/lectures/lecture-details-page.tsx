@@ -6,6 +6,8 @@ import {
 } from "@/api/centers-api";
 import { CenterSelector } from "@/components/dashboard/center-selector";
 import Confirmation from "@/components/confirmation";
+import { DashboardCard } from "@/components/dashboard/dashboard-card";
+import { DashboardPageShell } from "@/components/dashboard/dashboard-page-shell";
 import Loading from "@/components/loading/loading";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -31,6 +33,7 @@ import { Lesson } from "@/types/lessons";
 import { Quiz } from "@/types/quiz";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
+  BookOpen,
   Delete,
   Edit2,
   ListCollapse,
@@ -95,6 +98,14 @@ const LectureDetailsPage = () => {
 
   const { data, isLoading, isError } = useGetLecture(courseId!, lectureId!);
 
+  if (isLoading) {
+    return (
+      <div className="flex h-full w-full items-center justify-center">
+        <Loading />
+      </div>
+    );
+  }
+
   if (isError) {
     return;
   }
@@ -104,24 +115,36 @@ const LectureDetailsPage = () => {
   if (lecture?.$type !== "GetLectureDashboardResult") return;
 
   return (
-    <Tabs
-      className='w-full h-full '
-      defaultValue='details'
-      onValueChange={(value) => {
-        setSearchParams({ view: value });
-      }}
-      value={searchParams.get("view") ?? "details"}>
-      <TabsList className="h-auto w-full justify-start overflow-x-auto">
-        <TabsTrigger value='details' className="shrink-0">Details</TabsTrigger>
-        <TabsTrigger value='students' className="shrink-0">Students</TabsTrigger>
-      </TabsList>
-      <TabsContent value='details'>
-        <LectureDetailsTab lecture={lecture} courseId={courseId!} />
-      </TabsContent>
-      <TabsContent value='students' className='p-2'>
-        <LectureStudentTab lecture={lecture} courseId={courseId!} />
-      </TabsContent>
-    </Tabs>
+    <DashboardPageShell
+      title={lecture.title}
+      description="Manage lecture details, content, PDFs, and students."
+      icon={BookOpen}
+      fullWidth
+    >
+      <Tabs
+        className="w-full min-w-0"
+        defaultValue="details"
+        onValueChange={(value) => {
+          setSearchParams({ view: value });
+        }}
+        value={searchParams.get("view") ?? "details"}
+      >
+        <TabsList className="mb-2 h-auto w-full justify-start overflow-x-auto bg-color2/5">
+          <TabsTrigger value="details" className="shrink-0">
+            Details
+          </TabsTrigger>
+          <TabsTrigger value="students" className="shrink-0">
+            Students
+          </TabsTrigger>
+        </TabsList>
+        <TabsContent value="details" className="mt-0 min-w-0">
+          <LectureDetailsTab lecture={lecture} courseId={courseId!} />
+        </TabsContent>
+        <TabsContent value="students" className="mt-0 min-w-0">
+          <LectureStudentTab lecture={lecture} courseId={courseId!} />
+        </TabsContent>
+      </Tabs>
+    </DashboardPageShell>
   );
 };
 
@@ -301,7 +324,7 @@ const LectureStudentTab: React.FC<TabProps> = ({ lecture, courseId }) => {
   };
 
   return (
-    <div className="flex w-full flex-col gap-4 p-3 sm:p-4">
+    <div className="flex w-full min-w-0 flex-col gap-4">
       <LectureStudentStats
         stats={lectureStatistics?.data}
         isLoading={lectureStatisticsLoading}
@@ -585,36 +608,43 @@ const LectureDetailsTab: React.FC<TabProps> = ({ lecture }) => {
   };
 
   return (
-    <div className='w-full h-full p-4'>
-      <div className='flex w-full'>
-        <div className='flex gap-2 ms-auto item-center'>
-          <Confirmation
-            button={<Button variant='destructive'>Delete</Button>}
-            title='Are you sure you want to delete this lecture?'
-            description='This action cannot be undone.'
-            onConfirm={() => {
-              deleteLecture({
-                courseId: lecture.courseId!,
-                lectureId: lecture.id,
-              });
-            }}
-          />
+    <div className="w-full min-w-0">
+      <div className="flex w-full flex-col gap-2 sm:flex-row sm:justify-end">
+        <Confirmation
+          button={
+            <Button variant="destructive" className="w-full sm:w-auto">
+              Delete
+            </Button>
+          }
+          title="Are you sure you want to delete this lecture?"
+          description="This action cannot be undone."
+          onConfirm={() => {
+            deleteLecture({
+              courseId: lecture.courseId!,
+              lectureId: lecture.id,
+            });
+          }}
+        />
 
-          <Button
-            disabled={isLoading}
-            onClick={onPublish}
-            className='bg-card border rounded text-primary border-primary hover:bg-primary hover:text-primary-foreground'>
-            {lecture.isPublished ? "UnPublish" : "Publish"}
-          </Button>
-        </div>
+        <Button
+          disabled={isLoading}
+          onClick={onPublish}
+          className="w-full border border-primary bg-card text-primary hover:bg-primary hover:text-primary-foreground sm:w-auto"
+        >
+          {lecture.isPublished ? "UnPublish" : "Publish"}
+        </Button>
       </div>
 
-      <div className='grid w-full grid-cols-1 gap-6 mt-6 sm:mt-24 lg:mt-10 lg:grid-cols-2'>
-        <LectureDetailsForm {...lecture} />
-        <LectureContentForm {...lecture} />
-        <div className='col-span-1 p-4 lg:col-span-2'>
+      <div className="mt-4 grid w-full grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-2">
+        <DashboardCard padding="sm" className="min-w-0">
+          <LectureDetailsForm {...lecture} />
+        </DashboardCard>
+        <DashboardCard padding="sm" className="min-w-0">
+          <LectureContentForm {...lecture} />
+        </DashboardCard>
+        <DashboardCard padding="sm" className="min-w-0 lg:col-span-2">
           <LectureAssetsFrom {...lecture} />
-        </div>
+        </DashboardCard>
       </div>
     </div>
   );
@@ -702,23 +732,25 @@ function LectureDetailsForm({
   };
 
   return (
-    <div className='px-2'>
+    <div className="w-full min-w-0">
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(onSubmit)}
-          className='flex flex-col gap-2 p-2'>
+          className="flex flex-col gap-2">
           <fieldset
-            className='flex items-center gap-2 p-2 text-xl'
+            className="flex flex-col gap-3 p-1 sm:flex-row sm:items-center sm:gap-2"
             disabled={isPending}>
-            <Settings2 className='text-color2 bg-color2/15 rounded-[50%] w-10 h-10 p-1' />
-            Session Details
+            <div className="flex min-w-0 items-center gap-2 text-lg sm:text-xl">
+              <Settings2 className="h-9 w-9 shrink-0 rounded-full bg-color2/15 p-1 text-color2" />
+              <span className="truncate">Session Details</span>
+            </div>
             {form.formState.isDirty && (
-              <div className='space-x-1 ms-auto'>
-                <Button className='bg-primary'>Save</Button>
+              <div className="flex flex-wrap gap-2 sm:ms-auto">
+                <Button className="flex-1 bg-primary sm:flex-none">Save</Button>
                 <Button
-                  variant='outline'
-                  type='button'
-                  className='border-color2/20'
+                  variant="outline"
+                  type="button"
+                  className="flex-1 border-color2/20 sm:flex-none"
                   onClick={() => form.reset()}>
                   Reset
                 </Button>
@@ -851,22 +883,22 @@ function LectureContentForm({
 }: GetLectureDashboardResult) {
   const [isAddingLesson, setIsAddingLecture] = useState(false);
   return (
-    <div className='flex flex-col gap-4 p-4'>
-      <div className='flex items-center justify-between text-xl'>
-        <div className='flex items-center gap-2'>
-          <ListCollapse className='text-color2 bg-color2/15 rounded-[50%] w-10 h-10 p-1' />
-          Session Content
+    <div className="flex min-w-0 flex-col gap-4">
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex min-w-0 items-center gap-2 text-lg sm:text-xl">
+          <ListCollapse className="h-9 w-9 shrink-0 rounded-full bg-color2/15 p-1 text-color2" />
+          <span className="truncate">Session Content</span>
         </div>
-        <div className='flex items-center justify-center gap-2'>
+        <div className="flex shrink-0 items-center gap-2">
           {!isAddingLesson ? (
             <>
               <DropdownMenu>
-                <DropdownMenuTrigger>
-                  <Menu />
+                <DropdownMenuTrigger className="rounded-md p-1.5 hover:bg-muted">
+                  <Menu className="h-5 w-5" />
                 </DropdownMenuTrigger>
-                <DropdownMenuContent>
+                <DropdownMenuContent align="end">
                   <DropdownMenuItem
-                    className='hover:bg-color2 hover:text-primary-foreground hover:cursor-pointer'
+                    className="hover:cursor-pointer hover:bg-color2 hover:text-primary-foreground"
                     onClick={() => setIsAddingLecture(true)}>
                     Add Lesson
                   </DropdownMenuItem>
@@ -880,7 +912,8 @@ function LectureContentForm({
             </>
           ) : (
             <Button
-              variant='destructive'
+              variant="destructive"
+              size="sm"
               onClick={() => {
                 setIsAddingLecture(false);
               }}>
@@ -945,30 +978,31 @@ function LectureItem({
   };
 
   return (
-    <div className='flex items-center justify-between w-full gap-2 bg-color2/10 border border-color2/25 rounded text-primary'>
-      <div className='flex gap-2'>
-        <div className='p-2'>{item.title}</div>
+    <div className="flex w-full min-w-0 items-center justify-between gap-2 rounded border border-color2/25 bg-color2/10 text-primary">
+      <div className="min-w-0 flex-1 p-2">
+        <p className="truncate">{item.title}</p>
       </div>
-      <div className='flex items-center gap-2'>
+      <div className="flex shrink-0 items-center gap-2 pe-2">
         {item.type === "Lesson" && (
           <Confirmation
-            title='Delete Lesson'
-            description='Are you sure you want to delete this lesson?'
+            title="Delete Lesson"
+            description="Are you sure you want to delete this lesson?"
             onConfirm={onDelete}
             button={
               <Trash
-                className='w-4 h-4 hover:cursor-pointer hover:scale-105'
-                color='red'
+                className="h-4 w-4 hover:scale-105 hover:cursor-pointer"
+                color="red"
               />
-            }></Confirmation>
+            }
+          />
         )}
-        <Badge className='h-5'>{item.type}</Badge>
+        <Badge className="h-5">{item.type}</Badge>
         <Link
-          className='me-2'
           to={`/dashboard/courses/${courseId}/lectures/${lectureId}/${
             item.type === "Lesson" ? "lessons" : "quizzes"
-          }/${item.id}`}>
-          <Edit2 className='w-4 h-4' />
+          }/${item.id}`}
+        >
+          <Edit2 className="h-4 w-4" />
         </Link>
       </div>
     </div>
@@ -1133,23 +1167,29 @@ function LectureAssetsFrom({
     asset.url || `/api/assets/${asset.id}`;
 
   return (
-    <div className='w-full h-full'>
-      <div className='flex items-center justify-between m-4 text-2xl'>
-        <div className='flex items-center gap-2'>
-          <div className='p-3 bg-primary/30 border-primary/40 rounded-[50%]'>
-            <FaFile className='text-primary' />
+    <div className="h-full w-full min-w-0">
+      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-2 text-xl sm:text-2xl">
+          <div className="rounded-full border-primary/40 bg-primary/30 p-2.5 sm:p-3">
+            <FaFile className="text-primary" />
           </div>
           PDF
         </div>
-        <div className='flex gap-2'>
-          {isDirty && <Button onClick={onUpdate}>Update</Button>}
+        <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+          {isDirty && (
+            <Button className="w-full sm:w-auto" onClick={onUpdate}>
+              Update
+            </Button>
+          )}
           <Button
-            variant='outline'
+            variant="outline"
+            className="w-full sm:w-auto"
             onClick={() => openModal("select-assets-modal")}
           >
             From Files
           </Button>
           <Button
+            className="w-full sm:w-auto"
             onClick={() =>
               openModal("add-pdf-links-modal", {
                 courseId,
@@ -1161,39 +1201,43 @@ function LectureAssetsFrom({
           </Button>
         </div>
       </div>
-      <div className='p-10 border-[3px] bg-primary/30 border-primary/50 rounded flex flex-wrap  items-center gap-4'>
+      <div className="flex flex-wrap items-center gap-3 rounded border-[3px] border-primary/50 bg-primary/30 p-4 sm:gap-4 sm:p-6 md:p-10">
         {assets.length === 0 && (
-          <p className='self-center text-5xl text-primary/40'>NO PDFs</p>
+          <p className="self-center text-2xl text-primary/40 sm:text-4xl md:text-5xl">
+            NO PDFs
+          </p>
         )}
         {assets.map((asset) => (
           <div
             key={asset.id}
-            className='relative p-5 rounded-xl w-52 h-fit bg-card/85'>
+            className="relative h-fit w-full rounded-xl bg-card/85 p-4 sm:w-52 sm:p-5"
+          >
             <Button
-              className='absolute top-0 right-0'
-              size='icon'
+              className="absolute right-0 top-0"
+              size="icon"
               onClick={() => removeAsset(asset.id)}
-              variant='destructive'>
+              variant="destructive"
+            >
               <Delete />
             </Button>
             {asset.type === "Image" && (
-              <a href={assetHref(asset)} target='_blank' rel='noreferrer'>
-                <FaImage className='w-full h-full text-primary/40' />
+              <a href={assetHref(asset)} target="_blank" rel="noreferrer">
+                <FaImage className="h-16 w-full text-primary/40 sm:h-full" />
               </a>
             )}
             {asset.type === "Pdf" && (
-              <a href={assetHref(asset)} target='_blank' rel='noreferrer'>
-                <FaFilePdf className='w-full h-full text-primary/40' />
+              <a href={assetHref(asset)} target="_blank" rel="noreferrer">
+                <FaFilePdf className="h-16 w-full text-primary/40 sm:h-full" />
               </a>
             )}
             {asset.type === "Unknown" && (
-              <a href={assetHref(asset)} target='_blank' rel='noreferrer'>
-                <FaFile className='w-full h-full text-primary/40' />
+              <a href={assetHref(asset)} target="_blank" rel="noreferrer">
+                <FaFile className="h-16 w-full text-primary/40 sm:h-full" />
               </a>
             )}
-            <p className='mt-2 font-medium break-words'>{asset.name}</p>
+            <p className="mt-2 break-words font-medium">{asset.name}</p>
             {asset.lectureName && (
-              <p className='text-xs text-muted-foreground break-words'>
+              <p className="break-words text-xs text-muted-foreground">
                 {asset.lectureName}
               </p>
             )}

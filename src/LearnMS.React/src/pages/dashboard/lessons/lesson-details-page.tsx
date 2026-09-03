@@ -9,6 +9,8 @@ import
     waitForVideoReady,
   } from "@/api/lessons-api";
 import Confirmation from "@/components/confirmation";
+import { DashboardCard } from "@/components/dashboard/dashboard-card";
+import { DashboardPageShell } from "@/components/dashboard/dashboard-page-shell";
 import Loading from "@/components/loading/loading";
 import { Button } from "@/components/ui/button";
 import
@@ -90,33 +92,42 @@ const LessonDetailsPage = () => {
   }
 
   return (
-    <div className='w-full h-full p-4'>
-      <div className='flex justify-between w-full'>
-        <h1 className='text-3xl'>Lesson Setup</h1>
-        <div className='flex gap-2 item-center'>
-          <Confirmation
-            button={<Button variant='destructive'>Delete</Button>}
-            title='Are you sure you want to delete this lesson?'
-            description='This action cannot be undone.'
-            onConfirm={onDeleting}
+    <DashboardPageShell
+      title="Lesson Setup"
+      description={lesson?.data?.title}
+      icon={Video}
+      fullWidth
+      actions={
+        <Confirmation
+          button={
+            <Button variant="destructive" className="w-full sm:w-auto">
+              Delete
+            </Button>
+          }
+          title="Are you sure you want to delete this lesson?"
+          description="This action cannot be undone."
+          onConfirm={onDeleting}
+        />
+      }
+    >
+      <div className="grid w-full grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-2">
+        <DashboardCard padding="sm" className="min-w-0">
+          <LessonDetailsContent
+            {...lesson?.data!}
+            courseId={courseId!}
+            lectureId={lectureId!}
           />
-        </div>
+        </DashboardCard>
+        <DashboardCard padding="sm" className="min-w-0">
+          <LessonVideo
+            lesson={lesson?.data!}
+            lessonId={lessonId!}
+            lectureId={lectureId!}
+            courseId={courseId!}
+          />
+        </DashboardCard>
       </div>
-
-      <div className='grid w-full grid-cols-1 gap-6 mt-10 lg:grid-cols-2'>
-        <LessonDetailsContent
-          {...lesson?.data!}
-          courseId={courseId!}
-          lectureId={lectureId!}
-        />
-        <LessonVideo
-          lesson={lesson?.data!}
-          lessonId={lessonId!}
-          lectureId={lectureId!}
-          courseId={courseId!}
-        />
-      </div>
-    </div>
+    </DashboardPageShell>
   );
 };
 
@@ -165,23 +176,25 @@ function LessonDetailsContent({
   };
 
   return (
-    <div className='px-2'>
+    <div className="w-full min-w-0">
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(onSubmit)}
-          className='flex flex-col gap-2 p-2'>
+          className="flex flex-col gap-2">
           <fieldset
-            className='flex items-center gap-2 p-2 text-xl'
+            className="flex flex-col gap-3 p-1 sm:flex-row sm:items-center sm:gap-2"
             disabled={updateLessonMutation.isPending}>
-            <Settings2 className='text-color2 bg-color2/15 rounded-[50%] w-10 h-10 p-1' />
-            Lesson Details
+            <div className="flex min-w-0 items-center gap-2 text-lg sm:text-xl">
+              <Settings2 className="h-9 w-9 shrink-0 rounded-full bg-color2/15 p-1 text-color2" />
+              <span className="truncate">Lesson Details</span>
+            </div>
             {form.formState.isDirty && (
-              <div className='space-x-1 ms-auto'>
-                <Button className='bg-color2/50'>Save</Button>
+              <div className="flex flex-wrap gap-2 sm:ms-auto">
+                <Button className="flex-1 bg-color2/50 sm:flex-none">Save</Button>
                 <Button
-                  variant='outline'
-                  type='button'
-                  className='border-color2/20'
+                  variant="outline"
+                  type="button"
+                  className="flex-1 border-color2/20 sm:flex-none"
                   onClick={() => form.reset()}>
                   Reset
                 </Button>
@@ -403,53 +416,51 @@ function LessonVideo({
     uploadPhase === "processing";
 
   return (
-    <div className='flex flex-col gap-4 p-4'>
-      <div className='flex items-center justify-between text-xl'>
-        <div className='flex items-center gap-2'>
-          <ListCollapse className='text-primary bg-color2/15 rounded-[50%] w-10 h-10 p-1' />
-          Lesson Content
-        </div>
+    <div className="flex min-w-0 flex-col gap-4">
+      <div className="flex items-center gap-2 text-lg sm:text-xl">
+        <ListCollapse className="h-9 w-9 shrink-0 rounded-full bg-color2/15 p-1 text-primary" />
+        <span className="truncate">Lesson Content</span>
       </div>
 
-      <div className='p-4 bg-color2/10 border-2 border-color2/20 rounded-xl space-y-4'>
-        <p className='text-sm text-color2/80'>
+      <div className="space-y-4 rounded-xl border-2 border-color2/20 bg-color2/10 p-3 sm:p-4">
+        <p className="text-sm text-color2/80">
           Upload a video directly to VdoCipher, or paste a video ID in the
           form on the left.
         </p>
 
         <div
           {...getRootProps()}
-          className={`flex flex-col items-center justify-center gap-3 p-8 border-2 border-dashed rounded-xl cursor-pointer transition-colors ${
+          className={`flex cursor-pointer flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed p-4 transition-colors sm:p-8 ${
             isDragActive
               ? "border-color2 bg-color2/20"
               : "border-color2/40 hover:border-color2/70 hover:bg-color2/10"
-          } ${isUploading ? "opacity-60 cursor-not-allowed" : ""}`}>
+          } ${isUploading ? "cursor-not-allowed opacity-60" : ""}`}>
           <input {...getInputProps()} />
-          <Video className='w-10 h-10 text-color2/60' />
+          <Video className="h-10 w-10 text-color2/60" />
           {selectedFile ? (
-            <div className='text-center'>
-              <p className='font-medium text-color2'>{selectedFile.name}</p>
-              <p className='text-sm text-color2/60'>
+            <div className="w-full min-w-0 text-center">
+              <p className="break-all font-medium text-color2">{selectedFile.name}</p>
+              <p className="text-sm text-color2/60">
                 {(selectedFile.size / (1024 * 1024)).toFixed(2)} MB
               </p>
             </div>
           ) : (
-            <div className='text-center'>
-              <p className='font-medium text-color2'>
+            <div className="text-center">
+              <p className="font-medium text-color2">
                 {isDragActive
                   ? "Drop the video here"
                   : "Drag & drop a video, or click to browse"}
               </p>
-              <p className='text-sm text-color2/60'>MP4, MOV, AVI and other video formats</p>
+              <p className="text-sm text-color2/60">MP4, MOV, AVI and other video formats</p>
             </div>
           )}
         </div>
 
         {showProgress && (
-          <div className='space-y-2'>
-            <div className='flex justify-between text-sm text-color2'>
-              <span>{statusMessage}</span>
-              {uploadPhase === "uploading" && <span>{uploadProgress}%</span>}
+          <div className="space-y-2">
+            <div className="flex flex-col gap-1 text-sm text-color2 sm:flex-row sm:justify-between">
+              <span className="break-words">{statusMessage}</span>
+              {uploadPhase === "uploading" && <span className="shrink-0">{uploadProgress}%</span>}
             </div>
             <Progress
               value={
@@ -461,10 +472,10 @@ function LessonVideo({
                       ? 5
                       : 0
               }
-              className='h-2'
+              className="h-2"
             />
             {uploadPhase === "processing" && (
-              <p className='text-xs text-color2/60 animate-pulse'>
+              <p className="animate-pulse text-xs text-color2/60">
                 VdoCipher is encoding your video. This may take a few minutes...
               </p>
             )}
@@ -472,25 +483,26 @@ function LessonVideo({
         )}
 
         {uploadPhase === "error" && (
-          <p className='text-sm text-destructive'>{statusMessage}</p>
+          <p className="break-words text-sm text-destructive">{statusMessage}</p>
         )}
 
         {uploadPhase === "complete" && (
-          <p className='text-sm text-green-600'>{statusMessage}</p>
+          <p className="text-sm text-green-600">{statusMessage}</p>
         )}
 
-        <div className='flex gap-2'>
+        <div className="flex flex-col gap-2 sm:flex-row">
           <Button
             onClick={handleUpload}
             disabled={!selectedFile || isUploading}
-            className='bg-color2/80 hover:bg-color2'>
-            <Upload className='w-4 h-4 mr-2' />
+            className="w-full whitespace-normal bg-color2/80 hover:bg-color2 sm:w-auto sm:whitespace-nowrap">
+            <Upload className="mr-2 h-4 w-4" />
             {isUploading ? "Uploading..." : "Upload to VdoCipher"}
           </Button>
           {selectedFile && !isUploading && (
             <Button
-              variant='outline'
-              type='button'
+              variant="outline"
+              type="button"
+              className="w-full sm:w-auto"
               onClick={() => {
                 setSelectedFile(null);
                 setUploadPhase("idle");
@@ -504,14 +516,14 @@ function LessonVideo({
       </div>
 
       {lesson.videoOTP?.playbackInfo && (
-        <div className='w-full rounded-xl aspect-video overflow-clip'>
+        <div className="aspect-video w-full overflow-clip rounded-xl">
           <iframe
             src={`https://player.vdocipher.com/v2/?otp=${
               lesson.videoOTP!.otp
             }&playbackInfo=${lesson.videoOTP.playbackInfo}`}
             allowFullScreen
-            className='object-cover w-full h-full'
-            allow='encrypted-media'></iframe>
+            className="h-full w-full object-cover"
+            allow="encrypted-media"></iframe>
         </div>
       )}
     </div>

@@ -35,4 +35,15 @@ public static class EnrollmentRules
 
         return Enrollment.Expired;
     }
+
+    public static DateTime? EffectiveExpiresAt(DateTime? expiresAt, int? expirationDays)
+    {
+        if (expiresAt is null)
+            return null;
+
+        if (expirationDays is <= 0)
+            return DateTime.UtcNow.AddYears(50);
+
+        return expiresAt;
+    }
 }
