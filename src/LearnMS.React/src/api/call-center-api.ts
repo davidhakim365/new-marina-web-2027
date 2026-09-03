@@ -7,6 +7,7 @@ export type CallCenterStudent = {
   fullName: string;
   parentPhoneNumber: string;
   attended: boolean;
+  watchedOnline: boolean;
   isOnline: boolean;
   quizScore?: number | null;
   quizFullMark?: number | null;
@@ -150,6 +151,7 @@ export type CallCenterStudentLecture = {
   order: number;
   isCurrent: boolean;
   attended: boolean;
+  watchedOnline: boolean;
   quizScore?: number | null;
   quizFullMark?: number | null;
   onlineQuizCorrect?: number | null;
@@ -333,7 +335,11 @@ export function buildCallCenterWhatsAppMessage(student: CallCenterStudent, opts:
   lectureTitle?: string;
   courseTitle?: string;
 }) {
-  const attended = student.attended ? "حاضر" : "غائب";
+  const attended = student.attended
+    ? "حاضر"
+    : student.watchedOnline
+      ? "شاهد أونلاين"
+      : "غائب";
   const studentType = student.isOnline ? "أونلاين" : "أوفلاين";
   const quiz = formatCallCenterQuizScore(student);
   const homework =

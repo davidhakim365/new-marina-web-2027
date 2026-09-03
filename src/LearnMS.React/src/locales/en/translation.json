@@ -1009,6 +1009,7 @@
       "filterNotCalled": "Not called",
       "export": "Export Excel",
       "present": "Present",
+      "watchedOnline": "Watched online",
       "absent": "Absent",
       "attendance": "Attendance",
       "called": "Called",

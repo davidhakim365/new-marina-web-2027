@@ -48,6 +48,7 @@ import {
   Loader2,
   MessageCircle,
   Phone,
+  PlayCircle,
   Search,
   BookOpen,
   Wallet,
@@ -78,6 +79,41 @@ function QuizScoreText({ student }: { student: CallCenterStudent }) {
   if (value === "—")
     return <span className="text-muted-foreground">—</span>;
   return <span className="font-medium tabular-nums">{value}</span>;
+}
+
+function AttendanceBadge({
+  attended,
+  watchedOnline,
+}: {
+  attended: boolean;
+  watchedOnline?: boolean;
+}) {
+  const { t } = useTranslation();
+
+  if (attended) {
+    return (
+      <Badge className="gap-1 bg-emerald-500/15 text-emerald-700 hover:bg-emerald-500/20">
+        <CheckCircle2 className="h-3.5 w-3.5" />
+        {t("admin.callCenter.present")}
+      </Badge>
+    );
+  }
+
+  if (watchedOnline) {
+    return (
+      <Badge className="gap-1 bg-sky-500/15 text-sky-700 hover:bg-sky-500/20">
+        <PlayCircle className="h-3.5 w-3.5" />
+        {t("admin.callCenter.watchedOnline")}
+      </Badge>
+    );
+  }
+
+  return (
+    <Badge className="gap-1 bg-rose-500/15 text-rose-700 hover:bg-rose-500/20">
+      <XCircle className="h-3.5 w-3.5" />
+      {t("admin.callCenter.absent")}
+    </Badge>
+  );
 }
 
 function historyActionLabel(
@@ -221,15 +257,10 @@ function StudentLectureHistory({
                               </div>
                             </td>
                             <td className="py-2 pe-3">
-                              {item.attended ? (
-                                <Badge className="gap-1 bg-emerald-500/15 text-emerald-700 hover:bg-emerald-500/20">
-                                  {t("admin.callCenter.present")}
-                                </Badge>
-                              ) : (
-                                <Badge className="gap-1 bg-rose-500/15 text-rose-700 hover:bg-rose-500/20">
-                                  {t("admin.callCenter.absent")}
-                                </Badge>
-                              )}
+                              <AttendanceBadge
+                                attended={item.attended}
+                                watchedOnline={item.watchedOnline}
+                              />
                             </td>
                             <td className="py-2 pe-3 tabular-nums">
                               {formatCallCenterQuizScore(item) === "—" ? (
@@ -465,17 +496,10 @@ function StudentCallCard({
             <Badge variant="secondary" className="tabular-nums">
               {student.studentCode}
             </Badge>
-            {student.attended ? (
-              <Badge className="gap-1 bg-emerald-500/15 text-emerald-700 hover:bg-emerald-500/20">
-                <CheckCircle2 className="h-3.5 w-3.5" />
-                {t("admin.callCenter.present")}
-              </Badge>
-            ) : (
-              <Badge className="gap-1 bg-rose-500/15 text-rose-700 hover:bg-rose-500/20">
-                <XCircle className="h-3.5 w-3.5" />
-                {t("admin.callCenter.absent")}
-              </Badge>
-            )}
+            <AttendanceBadge
+              attended={student.attended}
+              watchedOnline={student.watchedOnline}
+            />
             {student.isOnline ? (
               <Badge className="gap-1 bg-sky-500/15 text-sky-700 hover:bg-sky-500/20">
                 <Globe className="h-3.5 w-3.5" />
