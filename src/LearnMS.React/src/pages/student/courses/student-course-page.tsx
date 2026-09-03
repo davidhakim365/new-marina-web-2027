@@ -66,6 +66,7 @@ import { MarkdownWrapper } from "@/components/ui/markdown-wrapper";
 import { SpotlightCard } from "@/components/ui/spotlight-card";
 import { cn } from "@/lib/utils";
 import { isEnrollmentActive, isEnrollmentExpired } from "@/lib/enrollment";
+import { BookOpen, Coins, AlertTriangle, ArrowLeft } from "lucide-react";
 
 export const StudentCoursePage = () => {
   const { courseId } = useParams();
