@@ -73,8 +73,6 @@ export const StudentCoursePage = () => {
   const { isLoading, data } = useGetStudentCourseDetails(courseId!);
   const accordionRef = useRef<HTMLDivElement>(null);
 
-  console.log({ data });
-
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background">

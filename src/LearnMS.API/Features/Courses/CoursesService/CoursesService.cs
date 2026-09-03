@@ -317,7 +317,14 @@ public sealed class CoursesService : ICoursesService
         if (EnrollmentRules.IsActive(courseEnrollment?.ExpiresAt, courseExpirationDays))
             return;
 
-        if (EnrollmentRules.IsActive(lectureEnrollment?.ExpiresAt, lecture.ExpirationDays))
+        var historicalAccess = await ResolveAndRepairLectureAccessAsync(
+            command.StudentId,
+            command.LectureId,
+            lecture.Title,
+            lecture.ExpirationDays,
+            lectureEnrollment?.ExpiresAt
+        );
+        if (historicalAccess.IsActive)
             return;
 
         var purchasedOrRenewed = student.ApplyLecturePurchase(lecture, lectureEnrollment);
@@ -1733,9 +1740,16 @@ public sealed class CoursesService : ICoursesService
                 .Select(x => (DateTime?)x.ExpiresAt)
                 .FirstOrDefaultAsync();
         var hasActiveCourse = EnrollmentRules.IsActive(courseExpiresAt, course.ExpirationDays);
+        var lectureAccess = await ResolveAndRepairLectureAccessAsync(
+            query.StudentId,
+            query.LectureId,
+            lecture.Title,
+            lecture.ExpirationDays,
+            lectureExpiresAt
+        );
         var expiresAt = hasActiveCourse
             ? EffectiveExpiresAt(courseExpiresAt, course.ExpirationDays)
-            : EffectiveExpiresAt(lectureExpiresAt, lecture.ExpirationDays)
+            : lectureAccess.ExpiresAt
                 ?? EffectiveExpiresAt(courseExpiresAt, course.ExpirationDays);
 
         // Assets: show only after all quizzes in this lecture are passed (or no quizzes / attended)
@@ -1757,6 +1771,9 @@ public sealed class CoursesService : ICoursesService
             Description = lecture.Description,
             CourseId = lecture.CourseId,
             ExpiresAt = expiresAt,
+            Enrollment = hasActiveCourse || lectureAccess.IsActive
+                ? Enrollment.Active
+                : EnrollmentRules.ToStatus(expiresAt, lecture.ExpirationDays),
             ImageUrl = lecture.ImageUrl!,
             HomeworkVideoUrl = lecture.HomeworkVideoUrl,
             Price = lecture.Price ?? 0,
@@ -2452,12 +2469,110 @@ public sealed class CoursesService : ICoursesService
         if (EnrollmentRules.IsActive(courseExpiresAt, courseExpirationDays))
             return true;
 
+        var lecture = await _context
+            .Set<Lecture>()
+            .AsNoTracking()
+            .Where(x => x.Id == lectureId)
+            .Select(x => new { x.Title, x.ExpirationDays })
+            .FirstOrDefaultAsync();
+
         var lectureExpiresAt = await _context
             .Set<LectureEnrollment>()
             .Where(x => x.StudentId == studentId && x.LectureId == lectureId)
             .Select(x => (DateTime?)x.ExpiresAt)
             .FirstOrDefaultAsync();
-        return EnrollmentRules.IsActive(lectureExpiresAt, lectureExpirationDays);
+
+        var access = await ResolveAndRepairLectureAccessAsync(
+            studentId,
+            lectureId,
+            lecture?.Title ?? string.Empty,
+            lectureExpirationDays ?? lecture?.ExpirationDays,
+            lectureExpiresAt
+        );
+        return access.IsActive;
+    }
+
+    private sealed record LectureAccessResolution(bool IsActive, DateTime? ExpiresAt);
+
+    /// <summary>
+    /// If the student already paid or watched this lecture but the enrollment row is missing,
+    /// recreate the row so they stay enrolled and are not charged again.
+    /// </summary>
+    private async Task<LectureAccessResolution> ResolveAndRepairLectureAccessAsync(
+        Guid studentId,
+        Guid lectureId,
+        string lectureTitle,
+        int? lectureExpirationDays,
+        DateTime? lectureExpiresAt
+    )
+    {
+        if (EnrollmentRules.IsActive(lectureExpiresAt, lectureExpirationDays))
+        {
+            return new LectureAccessResolution(
+                true,
+                EffectiveExpiresAt(lectureExpiresAt, lectureExpirationDays)
+            );
+        }
+
+        if (lectureExpiresAt is not null)
+        {
+            return new LectureAccessResolution(
+                false,
+                EffectiveExpiresAt(lectureExpiresAt, lectureExpirationDays)
+            );
+        }
+
+        var lectureLessonIds = await _context
+            .Set<Lesson>()
+            .Where(l => l.LectureId == lectureId)
+            .Select(l => l.Id)
+            .ToListAsync();
+        var watched = lectureLessonIds.Count > 0
+            && await _context
+                .Set<LessonAttendance>()
+                .AnyAsync(a => a.StudentId == studentId && lectureLessonIds.Contains(a.LessonId));
+
+        var purchased = false;
+        if (!watched && !string.IsNullOrWhiteSpace(lectureTitle))
+        {
+            var events = await _context
+                .Set<StudentEvent>()
+                .AsNoTracking()
+                .Where(e => e.StudentId == studentId)
+                .Select(e => e.Message)
+                .ToListAsync();
+            purchased = events.Any(m => EnrollmentRules.IndicatesLecturePurchase(m, lectureTitle));
+        }
+
+        if (!watched && !purchased)
+            return new LectureAccessResolution(false, null);
+
+        var lifetime = DateTime.UtcNow.AddYears(50);
+        var existing = await _context
+            .Set<LectureEnrollment>()
+            .FirstOrDefaultAsync(e => e.StudentId == studentId && e.LectureId == lectureId);
+        if (existing is null)
+        {
+            _context.Set<LectureEnrollment>().Add(
+                new LectureEnrollment
+                {
+                    StudentId = studentId,
+                    LectureId = lectureId,
+                    ExpiresAt = lifetime,
+                    EnrolledAt = DateTime.UtcNow
+                }
+            );
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch
+            {
+                // Another request may have already written the missing row.
+            }
+        }
+
+        return new LectureAccessResolution(true, lifetime);
     }
 
     private static DateTime? EffectiveExpiresAt(DateTime? expiresAt, int? expirationDays)

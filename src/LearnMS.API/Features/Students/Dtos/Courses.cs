@@ -65,7 +65,7 @@ public sealed record StudentLectureDto : StudentCourseItemDto
 
     [Required]
     [JsonInclude]
-    public Enrollment Enrollment => EnrollmentRules.ToStatus(ExpiresAt, ExpirationDays);
+    public required Enrollment Enrollment { get; init; }
 }
 
 public sealed record StudentAssetDto

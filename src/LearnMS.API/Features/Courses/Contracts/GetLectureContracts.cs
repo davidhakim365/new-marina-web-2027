@@ -112,5 +112,5 @@ public sealed record GetStudentLectureResult : GetLectureResult
     public required DateTime? ExpiresAt { get; set; }
     [Required]
     [JsonInclude]
-    public Enrollment Enrollment => EnrollmentRules.ToStatus(ExpiresAt, ExpirationDays);
+    public required Enrollment Enrollment { get; set; }
 }

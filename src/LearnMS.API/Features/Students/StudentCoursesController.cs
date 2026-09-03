@@ -183,18 +183,27 @@ public class StudentCoursesController(ICurrentUserService currentUserService, Ap
 
         DateTime? courseExpires = null;
         Dictionary<Guid, DateTime?> lectureExpiresById = new();
+        HashSet<Guid> paidLectureIds = [];
         if (user != null)
         {
+            var studentId = await context.Students
+                .AsNoTracking()
+                .Where(s => s.Id == user.Id || s.Accounts.Any(a => a.Id == user.Id))
+                .Select(s => (Guid?)s.Id)
+                .FirstOrDefaultAsync() ?? user.Id;
+
             courseExpires = await context.Set<CourseEnrollment>()
                 .AsNoTracking()
-                .Where(e => e.StudentId == user.Id && e.CourseId == courseId)
+                .Where(e => (e.StudentId == studentId || e.StudentId == user.Id) && e.CourseId == courseId)
                 .Select(e => (DateTime?)e.ExpiresAt)
                 .FirstOrDefaultAsync();
 
             var lectureIds = course.Lectures.Select(l => l.Id).ToList();
             var lectureEnrollmentRows = await context.Set<LectureEnrollment>()
                 .AsNoTracking()
-                .Where(e => e.StudentId == user.Id && lectureIds.Contains(e.LectureId))
+                .Where(e =>
+                    (e.StudentId == studentId || e.StudentId == user.Id)
+                    && lectureIds.Contains(e.LectureId))
                 .Select(e => new { e.LectureId, e.ExpiresAt })
                 .ToListAsync();
             lectureExpiresById = lectureEnrollmentRows
@@ -203,6 +212,66 @@ public class StudentCoursesController(ICurrentUserService currentUserService, Ap
                     g => g.Key,
                     g => (DateTime?)g.OrderByDescending(e => e.ExpiresAt).First().ExpiresAt
                 );
+
+            foreach (var id in lectureExpiresById.Keys)
+                paidLectureIds.Add(id);
+
+            var lessonIdToLectureId = course.Lectures
+                .SelectMany(l => l.Lessons.Select(ls => (LessonId: ls.Id, LectureId: l.Id)))
+                .ToDictionary(x => x.LessonId, x => x.LectureId);
+            var lessonIds = lessonIdToLectureId.Keys.ToList();
+            if (lessonIds.Count > 0)
+            {
+                var watchedLessonIds = await context.Set<LessonAttendance>()
+                    .AsNoTracking()
+                    .Where(a =>
+                        (a.StudentId == studentId || a.StudentId == user.Id)
+                        && lessonIds.Contains(a.LessonId))
+                    .Select(a => a.LessonId)
+                    .ToListAsync();
+                foreach (var lessonId in watchedLessonIds)
+                {
+                    if (lessonIdToLectureId.TryGetValue(lessonId, out var watchedLectureId))
+                        paidLectureIds.Add(watchedLectureId);
+                }
+            }
+
+            var purchaseMessages = await context.Set<StudentEvent>()
+                .AsNoTracking()
+                .Where(e => e.StudentId == studentId || e.StudentId == user.Id)
+                .Select(e => e.Message)
+                .ToListAsync();
+            foreach (var lecture in course.Lectures)
+            {
+                if (purchaseMessages.Any(m => EnrollmentRules.IndicatesLecturePurchase(m, lecture.Title)))
+                    paidLectureIds.Add(lecture.Id);
+            }
+
+            var missingIds = paidLectureIds.Where(id => !lectureExpiresById.ContainsKey(id)).ToList();
+            if (missingIds.Count > 0)
+            {
+                var lifetime = DateTime.UtcNow.AddYears(50);
+                foreach (var lectureId in missingIds)
+                {
+                    context.Set<LectureEnrollment>().Add(new LectureEnrollment
+                    {
+                        StudentId = studentId,
+                        LectureId = lectureId,
+                        ExpiresAt = lifetime,
+                        EnrolledAt = DateTime.UtcNow
+                    });
+                    lectureExpiresById[lectureId] = lifetime;
+                }
+
+                try
+                {
+                    await context.SaveChangesAsync();
+                }
+                catch
+                {
+                    // Another request may have already written the missing rows.
+                }
+            }
         }
 
         var hasActiveCourseEnrollment =
@@ -211,11 +280,13 @@ public class StudentCoursesController(ICurrentUserService currentUserService, Ap
         List<StudentLectureDto> lectures = course.Lectures.Select(l =>
         {
             lectureExpiresById.TryGetValue(l.Id, out var lectureExpires);
+            var alreadyPaid = paidLectureIds.Contains(l.Id);
             DateTime? expiresAt;
             if (hasActiveCourseEnrollment)
                 expiresAt = EnrollmentRules.EffectiveExpiresAt(courseExpires, course.ExpirationDays);
-            else if (lectureExpires != null)
-                expiresAt = EnrollmentRules.EffectiveExpiresAt(lectureExpires, l.ExpirationDays);
+            else if (alreadyPaid)
+                expiresAt = EnrollmentRules.EffectiveExpiresAt(lectureExpires, l.ExpirationDays)
+                    ?? DateTime.UtcNow.AddYears(50);
             else
                 expiresAt = EnrollmentRules.EffectiveExpiresAt(courseExpires, course.ExpirationDays);
 
@@ -233,6 +304,9 @@ public class StudentCoursesController(ICurrentUserService currentUserService, Ap
                 ExpirationDays = l.ExpirationDays,
                 Items = l.Lessons.Cast<StudentLectureItemDto>().Union(l.Quizzes).OrderBy(i => i.Order).ToList(),
                 ExpiresAt = expiresAt,
+                Enrollment = alreadyPaid || hasActiveCourseEnrollment
+                    ? Enrollment.Active
+                    : EnrollmentRules.ToStatus(expiresAt, l.ExpirationDays),
             };
         }).ToList();
 

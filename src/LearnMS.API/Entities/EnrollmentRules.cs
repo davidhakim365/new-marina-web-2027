@@ -46,4 +46,13 @@ public static class EnrollmentRules
 
         return expiresAt;
     }
+
+    public static bool IndicatesLecturePurchase(string? message, string lectureTitle)
+    {
+        if (string.IsNullOrWhiteSpace(message) || string.IsNullOrWhiteSpace(lectureTitle))
+            return false;
+
+        return message.Contains($"Lecture {lectureTitle} purchased", StringComparison.OrdinalIgnoreCase)
+            || message.Contains($"Lecture {lectureTitle} renewed", StringComparison.OrdinalIgnoreCase);
+    }
 }

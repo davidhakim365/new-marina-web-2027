@@ -27,6 +27,7 @@ import { FaClock, FaPlay, FaQuestionCircle, FaLock } from "react-icons/fa";
 import { AlertTriangle } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { isEnrollmentActive, isEnrollmentExpired } from "@/lib/enrollment";
+import { MarkdownWrapper } from "@/components/ui/markdown-wrapper";
 
 const StudentLecturePage = () => {
   const { lectureId, courseId } = useParams();
