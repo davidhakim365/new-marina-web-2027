@@ -1211,6 +1211,13 @@ function LectureItemsAccordions({
   courseId: string;
 }) {
   const { t } = useTranslation();
+  const enrolled = isEnrollmentActive(lecture.enrollment, lecture.expiresAt);
+  const expired = isEnrollmentExpired(lecture.enrollment, lecture.expiresAt);
+  const enrollmentStatus = enrolled
+    ? "Active"
+    : expired
+      ? "Expired"
+      : "NotEnrolled";
 
   // Combine and sort all items by order
   const sortedItems = (lecture.items || [])
