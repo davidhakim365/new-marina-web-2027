@@ -36,22 +36,38 @@ public sealed class CustomJwtBearerHandler : JwtBearerHandler
 
     protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
     {
+        var allowAnonymous = Context.GetEndpoint()?.Metadata.GetMetadata<IAllowAnonymous>() != null;
+        var hasAuthorization = Request.Headers.TryGetValue("Authorization", out var headerValue)
+            && !string.IsNullOrWhiteSpace(headerValue.FirstOrDefault());
 
-        if (Context.GetEndpoint()?.Metadata.GetMetadata<IAllowAnonymous>() != null)
-        {
+        // Guests can still open public pages. If a token is sent, use it so
+        // enrollment/purchase state is not returned as "NotEnrolled".
+        if (allowAnonymous && !hasAuthorization)
             return AuthenticateResult.NoResult();
-        }
 
-        if (!Request.Headers.TryGetValue("Authorization", out var headerValue))
+        try
         {
-            return AuthenticateResult.Fail("Authorization header was not found.");
+            var result = await AuthenticateTokenAsync(headerValue.FirstOrDefault());
+            if (allowAnonymous && !result.Succeeded)
+                return AuthenticateResult.NoResult();
+            return result;
         }
+        catch
+        {
+            if (allowAnonymous)
+                return AuthenticateResult.NoResult();
+            throw;
+        }
+    }
 
-        var authorizationHeader = headerValue.FirstOrDefault() ??
-            throw new ApiException(AuthErrors.Unauthorized);
+    private async Task<AuthenticateResult> AuthenticateTokenAsync(string? authorizationHeader)
+    {
+        if (string.IsNullOrWhiteSpace(authorizationHeader))
+            return AuthenticateResult.Fail("Authorization header was not found.");
 
         var token = authorizationHeader.Replace("Bearer ", "", StringComparison.OrdinalIgnoreCase);
-        if (string.IsNullOrEmpty(token)) return AuthenticateResult.Fail("Authorization header was not found.");
+        if (string.IsNullOrEmpty(token))
+            return AuthenticateResult.Fail("Authorization header was not found.");
 
         var validToken = await new JwtSecurityTokenHandler().ValidateTokenAsync(token, new TokenValidationParameters
         {

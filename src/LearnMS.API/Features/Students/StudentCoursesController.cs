@@ -21,7 +21,8 @@ public class StudentCoursesController(ICurrentUserService currentUserService, Ap
     public async Task<ApiWrapper.Success<List<StudentCourseDto>>> GetStudentCourses(
         StudentLevel? level)
     {
-        CurrentUser? user = await currentUserService.GetUserAsync();
+        CurrentUser? user = await currentUserService.GetUserAsync()
+            ?? HttpContext.CurrentUser();
         var result = await context.Courses
             .Where(c => c.IsPublished && (level == null || c.Level == level))
             .OrderBy(c => c.Level)
@@ -74,7 +75,8 @@ public class StudentCoursesController(ICurrentUserService currentUserService, Ap
     public async Task<ApiWrapper.Success<StudentCourseDetailsDto>> GetStudentCourseDetails(
         Guid courseId)
     {
-        CurrentUser? user = await currentUserService.GetUserAsync();
+        CurrentUser? user = await currentUserService.GetUserAsync()
+            ?? HttpContext.CurrentUser();
 
         var course = await context.Courses
             .AsNoTracking()
