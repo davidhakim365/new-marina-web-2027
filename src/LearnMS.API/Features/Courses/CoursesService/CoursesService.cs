@@ -1810,16 +1810,46 @@ public sealed class CoursesService : ICoursesService
         if (lecture.Lessons.FirstOrDefault(x => x.Id == query.LessonId) is not { } lesson)
             throw new ApiException(LessonsErrors.NotFound);
 
-        if (
-            !await HasActiveLectureAccessAsync(
-                query.StudentId,
-                query.CourseId,
-                query.LectureId,
-                course.ExpirationDays,
-                lecture.ExpirationDays
-            )
-        )
-            throw new ApiException(LessonsErrors.NotAccessible);
+        var courseExpiresAt = await _context
+            .Set<CourseEnrollment>()
+            .Where(x => x.StudentId == query.StudentId && x.CourseId == query.CourseId)
+            .Select(x => (DateTime?)x.ExpiresAt)
+            .FirstOrDefaultAsync();
+        var hasActiveCourse = EnrollmentRules.IsActive(courseExpiresAt, course.ExpirationDays);
+
+        var lectureExpiresAt = await _context
+            .Set<LectureEnrollment>()
+            .Where(x => x.StudentId == query.StudentId && x.LectureId == query.LectureId)
+            .Select(x => (DateTime?)x.ExpiresAt)
+            .FirstOrDefaultAsync();
+        var lectureAccess = await ResolveAndRepairLectureAccessAsync(
+            query.StudentId,
+            query.LectureId,
+            lecture.Title,
+            lecture.ExpirationDays,
+            lectureExpiresAt
+        );
+
+        if (!hasActiveCourse && !lectureAccess.IsActive)
+        {
+            var lectureWasEnrolled = lectureExpiresAt is not null || lectureAccess.ExpiresAt is not null;
+            if (!lectureWasEnrolled)
+                throw new ApiException(LessonsErrors.NotAccessible);
+
+            return new GetStudentLessonResult()
+            {
+                Id = lesson.Id,
+                Title = lesson.Title,
+                Description = lesson.Description,
+                VideoOTP = null,
+                ExpirationHours = lesson.ExpirationHours,
+                ExpiresAt = lectureAccess.ExpiresAt ?? lectureExpiresAt,
+                RenewalPrice = lecture.RenewalPrice ?? 0,
+                RequiresLectureRenewal = true,
+                LectureRenewalPrice = lecture.RenewalPrice ?? 0,
+                LectureExpirationDays = lecture.ExpirationDays ?? 0,
+            };
+        }
 
         foreach (var quiz in lecture.Quizzes.Where(x => x.Order < lesson.Order))
             if (
@@ -1846,7 +1876,10 @@ public sealed class CoursesService : ICoursesService
                     : null,
             ExpirationHours = lesson.ExpirationHours,
             ExpiresAt = attendance?.ExpirationDate,
-            RenewalPrice = lesson.RenewalPrice
+            RenewalPrice = lesson.RenewalPrice,
+            RequiresLectureRenewal = false,
+            LectureRenewalPrice = lecture.RenewalPrice ?? 0,
+            LectureExpirationDays = lecture.ExpirationDays ?? 0,
         };
     }
 

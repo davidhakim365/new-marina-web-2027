@@ -1023,19 +1023,58 @@ function LessonAccordionItem({
   courseId,
   lectureId,
   lectureEnrollment,
+  lectureRenewalPrice,
+  lectureExpirationDays,
 }: {
   lesson: StudentLectureDtoItemsItem;
   courseId: string;
   lectureId: string;
   lectureEnrollment?: string;
+  lectureRenewalPrice?: number;
+  lectureExpirationDays?: number | null;
 }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const buyLectureMutation = useBuyLectureMutation();
+  const { openModal } = useModalStore();
+  const { data: profile } = useGetProfile();
 
   if (lesson.$type !== "StudentLessonDto") return null;
 
   const handleLessonClick = () => {
     navigate(`/courses/${courseId}/lectures/${lectureId}/lessons/${lesson.id}`);
+  };
+
+  const handleRenewLecture = () => {
+    const requiredAmount = lectureRenewalPrice || 0;
+    const userCredits =
+      profile?.data?.$type === "GetStudentProfileResult"
+        ? profile.data.credits
+        : 0;
+
+    if (userCredits < requiredAmount) {
+      openModal("redeem-credit-modal");
+      return;
+    }
+
+    buyLectureMutation.mutate(
+      { courseId, lectureId },
+      {
+        onSuccess: () => {
+          toast({ title: t("lectures.purchaseSuccessful") });
+          queryClient.invalidateQueries({
+            queryKey: getGetStudentCourseDetailsQueryKey(courseId),
+          });
+          navigate(`/courses/${courseId}/lectures/${lectureId}/lessons/${lesson.id}`);
+        },
+        onError: (error) => {
+          if (isInsufficientBalanceError(error)) {
+            openModal("redeem-credit-modal");
+          }
+        },
+      }
+    );
   };
 
   return (
@@ -1075,6 +1114,23 @@ function LessonAccordionItem({
                 className="w-full font-medium transition-all duration-300 transform border-0 shadow-md sm:w-auto bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 hover:shadow-lg hover:scale-105"
               >
                 {t("lectures.startLesson")}
+              </PlasticButton>
+            </div>
+          )}
+          {lectureEnrollment === "Expired" && (
+            <div className="flex justify-end">
+              <PlasticButton
+                onClick={handleRenewLecture}
+                size="sm"
+                disabled={buyLectureMutation.isPending}
+                className="w-full font-medium text-white transition-all duration-300 transform border-0 shadow-md sm:w-auto bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 hover:shadow-lg hover:scale-105"
+              >
+                {buyLectureMutation.isPending
+                  ? t("courses.processing")
+                  : t("lectures.renewFor", {
+                      price: lectureRenewalPrice || 0,
+                      days: lectureExpirationDays || 0,
+                    })}
               </PlasticButton>
             </div>
           )}
@@ -1268,6 +1324,8 @@ function LectureItemsAccordions({
                     courseId={courseId}
                     lectureId={lecture.id}
                     lectureEnrollment={enrollmentStatus}
+                    lectureRenewalPrice={lecture.renewalPrice}
+                    lectureExpirationDays={lecture.expirationDays}
                   />
                 ) : (
                   <QuizAccordionItem

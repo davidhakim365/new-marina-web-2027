@@ -3,10 +3,16 @@ import {
   useRenewLessonMutation,
   useStartLessonMutation,
 } from "@/api/lessons-api";
+import { useBuyLectureMutation } from "@/api/lectures-api";
 import Confirmation from "@/components/confirmation";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { toast } from "@/components/ui/use-toast";
+import { useGetProfile } from "@/generated/api";
+import { isInsufficientBalanceError } from "@/lib/error-utils";
+import { useModalStore } from "@/store/use-modal-store";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   ArrowLeft,
   Coins,
@@ -30,6 +36,10 @@ const StudentLessonPage = () => {
 
   const startLessonMutation = useStartLessonMutation();
   const renewLessonMutation = useRenewLessonMutation();
+  const buyLectureMutation = useBuyLectureMutation();
+  const { openModal } = useModalStore();
+  const { data: profile } = useGetProfile();
+  const queryClient = useQueryClient();
 
   if (isLoading) {
     return (
@@ -98,6 +108,95 @@ const StudentLessonPage = () => {
       lessonId: lessonId!,
     });
   };
+
+  const onRenewingLecture = () => {
+    const requiredAmount =
+      data?.data.lectureRenewalPrice ?? data?.data.renewalPrice ?? 0;
+    const userCredits =
+      profile?.data?.$type === "GetStudentProfileResult"
+        ? profile.data.credits
+        : 0;
+
+    if (userCredits < requiredAmount) {
+      openModal("redeem-credit-modal");
+      return;
+    }
+
+    buyLectureMutation.mutate(
+      {
+        courseId: courseId!,
+        lectureId: lectureId!,
+      },
+      {
+        onSuccess: () => {
+          toast({ title: t("lectures.purchaseSuccessful") });
+          queryClient.invalidateQueries({
+            queryKey: ["lesson", { id: lessonId }],
+          });
+        },
+        onError: (error) => {
+          if (isInsufficientBalanceError(error)) {
+            openModal("redeem-credit-modal");
+          }
+        },
+      }
+    );
+  };
+
+  if (data?.data.requiresLectureRenewal) {
+    const lecturePrice =
+      data.data.lectureRenewalPrice ?? data.data.renewalPrice ?? 0;
+    return (
+      <div className="flex items-center justify-center min-h-screen px-4 pt-16 bg-gradient-to-br from-background via-background to-muted/10">
+        <Card className="w-full max-w-2xl border-amber-200 dark:border-amber-800 bg-amber-50/50 dark:bg-amber-900/10">
+          <CardContent className="p-8 space-y-8">
+            <div className="space-y-4 text-center">
+              <div className="flex items-center justify-center w-20 h-20 mx-auto rounded-full bg-amber-100 dark:bg-amber-900/30">
+                <Clock className="w-10 h-10 text-amber-600 dark:text-amber-400" />
+              </div>
+              <h1 className="text-2xl font-bold md:text-3xl text-foreground">
+                {t("lesson.lectureExpiredTitle")}
+              </h1>
+              <div className="max-w-xl mx-auto">
+                <p className="leading-relaxed text-muted-foreground">
+                  {t("lesson.lectureExpiredMessage")}
+                </p>
+                <div className="inline-flex items-center gap-2 px-4 py-2 mt-3 border rounded-full bg-amber-100 dark:bg-amber-900/30 border-amber-200 dark:border-amber-700">
+                  <Coins className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                  <span className="font-semibold text-amber-700 dark:text-amber-300">
+                    {lecturePrice} {t("common.currency")}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex justify-center">
+              <Confirmation
+                title={t("lesson.renewLectureConfirmationTitle")}
+                description={t("lesson.renewLectureConfirmationDescription", {
+                  price: `${lecturePrice} ${t("common.currency")}`,
+                })}
+                onConfirm={onRenewingLecture}
+                disabled={buyLectureMutation.isPending}
+                button={
+                  <Button
+                    size="lg"
+                    className="px-8 text-white transition-all shadow-lg bg-amber-600 hover:bg-amber-700 hover:scale-105"
+                  >
+                    <RotateCcw className="w-4 h-4 mr-2" />
+                    {t("lectures.renewFor", {
+                      price: lecturePrice,
+                      days: data.data.lectureExpirationDays || 0,
+                    })}
+                  </Button>
+                }
+              />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   if (data?.data.enrollment === "NotEnrolled") {
     return (

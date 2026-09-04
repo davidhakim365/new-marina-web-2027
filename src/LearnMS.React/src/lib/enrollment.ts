@@ -3,6 +3,10 @@ export function isEnrollmentActive(
   enrollment?: string | number | null,
   expiresAt?: string | null
 ): boolean {
+  if (expiresAt) {
+    const expires = new Date(expiresAt).getTime();
+    if (Number.isFinite(expires) && expires <= Date.now()) return false;
+  }
   if (enrollment === "Active" || enrollment === 0 || enrollment === "0")
     return true;
   if (!expiresAt) return false;

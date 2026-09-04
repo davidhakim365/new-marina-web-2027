@@ -618,6 +618,7 @@
     "lessons": "Lessons",
     "quizzes": "Quizzes",
     "startLesson": "Start Lesson",
+    "renewLecture": "Renew lecture",
     "noContentAvailable": "No content available",
     "purchaseSuccessful": "Purchase Successful",
     "description": "Description",
@@ -634,6 +635,10 @@
     "renewLessonConfirmationTitle": "Renewing the lesson Confirmation",
     "renewLessonConfirmationDescription": "Are you sure you want to renew the lesson for {{price}}?",
     "renew": "Renew",
+    "lectureExpiredTitle": "Lecture expired",
+    "lectureExpiredMessage": "This lecture has expired. Renew it to continue watching.",
+    "renewLectureConfirmationTitle": "Renew lecture",
+    "renewLectureConfirmationDescription": "Are you sure you want to renew this lecture for {{price}}?",
     "expiresAt": "expires at",
     "back": "Back"
   },

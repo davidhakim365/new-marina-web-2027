@@ -58,10 +58,18 @@ public record GetStudentLessonResult : GetLessonResult
     {
         get
         {
+            if (RequiresLectureRenewal) return "Expired";
             if (VideoOTP != null) return "Active";
             if (ExpiresAt < DateTime.UtcNow) return "Expired";
             return "NotEnrolled";
         }
     }
     public required VideoOTP? VideoOTP { get; init; }
+
+    /// <summary>
+    /// True when the lecture itself has expired and must be renewed at LectureRenewalPrice.
+    /// </summary>
+    public bool RequiresLectureRenewal { get; init; }
+    public decimal LectureRenewalPrice { get; init; }
+    public int LectureExpirationDays { get; init; }
 }

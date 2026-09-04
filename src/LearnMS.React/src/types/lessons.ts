@@ -26,6 +26,9 @@ export type LessonDetails = {
   renewalPrice: number;
   title: string;
   description: string;
+  requiresLectureRenewal?: boolean;
+  lectureRenewalPrice?: number;
+  lectureExpirationDays?: number;
 } & LessonEnrollment &
   (
     | {

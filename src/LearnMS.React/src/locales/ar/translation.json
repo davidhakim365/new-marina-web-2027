@@ -620,6 +620,7 @@
     "lessons": "الدروس",
     "quizzes": "الاختبارات",
     "startLesson": "ابدأ الدرس",
+    "renewLecture": "جدد المحاضرة",
     "noContentAvailable": "لا يوجد محتوى متاح",
     "purchaseSuccessful": "تم الشراء بنجاح",
     "description": "الوصف",
@@ -636,6 +637,10 @@
     "renewLessonConfirmationTitle": "تأكيد تجديد الدرس",
     "renewLessonConfirmationDescription": "هل أنت متأكد من أنك تريد تجديد الدرس مقابل {{price}}؟",
     "renew": "جدد",
+    "lectureExpiredTitle": "انتهت صلاحية المحاضرة",
+    "lectureExpiredMessage": "انتهت صلاحية المحاضرة. جددها عشان تكمل المشاهدة.",
+    "renewLectureConfirmationTitle": "تجديد المحاضرة",
+    "renewLectureConfirmationDescription": "هل أنت متأكد إنك عايز تجدد المحاضرة مقابل {{price}}؟",
     "expiresAt": "تنتهي في",
     "back": "العودة"
   },

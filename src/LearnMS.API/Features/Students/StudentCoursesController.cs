@@ -215,9 +215,6 @@ public class StudentCoursesController(ICurrentUserService currentUserService, Ap
                     g => (DateTime?)g.OrderByDescending(e => e.ExpiresAt).First().ExpiresAt
                 );
 
-            foreach (var id in lectureExpiresById.Keys)
-                paidLectureIds.Add(id);
-
             var lessonIdToLectureId = course.Lectures
                 .SelectMany(l => l.Lessons.Select(ls => (LessonId: ls.Id, LectureId: l.Id)))
                 .ToDictionary(x => x.LessonId, x => x.LectureId);
@@ -282,15 +279,17 @@ public class StudentCoursesController(ICurrentUserService currentUserService, Ap
         List<StudentLectureDto> lectures = course.Lectures.Select(l =>
         {
             lectureExpiresById.TryGetValue(l.Id, out var lectureExpires);
-            var alreadyPaid = paidLectureIds.Contains(l.Id);
+            var hasActiveLecture = EnrollmentRules.IsActive(lectureExpires, l.ExpirationDays);
+            var paidWithoutRow = paidLectureIds.Contains(l.Id) && lectureExpires is null;
+            var isActive = hasActiveCourseEnrollment || hasActiveLecture || paidWithoutRow;
             DateTime? expiresAt;
             if (hasActiveCourseEnrollment)
                 expiresAt = EnrollmentRules.EffectiveExpiresAt(courseExpires, course.ExpirationDays);
-            else if (alreadyPaid)
+            else if (hasActiveLecture || paidWithoutRow)
                 expiresAt = EnrollmentRules.EffectiveExpiresAt(lectureExpires, l.ExpirationDays)
                     ?? DateTime.UtcNow.AddYears(50);
             else
-                expiresAt = EnrollmentRules.EffectiveExpiresAt(courseExpires, course.ExpirationDays);
+                expiresAt = lectureExpires;
 
             return new StudentLectureDto()
             {
@@ -306,7 +305,7 @@ public class StudentCoursesController(ICurrentUserService currentUserService, Ap
                 ExpirationDays = l.ExpirationDays,
                 Items = l.Lessons.Cast<StudentLectureItemDto>().Union(l.Quizzes).OrderBy(i => i.Order).ToList(),
                 ExpiresAt = expiresAt,
-                Enrollment = alreadyPaid || hasActiveCourseEnrollment
+                Enrollment = isActive
                     ? Enrollment.Active
                     : EnrollmentRules.ToStatus(expiresAt, l.ExpirationDays),
             };
