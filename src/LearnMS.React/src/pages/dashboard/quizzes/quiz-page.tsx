@@ -5,6 +5,7 @@ import {
 } from "@/api/quizzes-api";
 import { InlineQuestionEditor } from "@/components/assessment/inline-question-editor";
 import Confirmation from "@/components/confirmation";
+import { PublicImage } from "@/components/public-image";
 import Loading from "@/components/loading/loading";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -365,7 +366,7 @@ function BankQuestionCard({
         <HoverCard>
           <HoverCardTrigger className="h-[160px] w-full sm:w-[200px] p-0 shrink-0">
             <CardHeader className="h-full p-0">
-              <img
+              <PublicImage
                 src={question.image}
                 className="object-cover object-center w-full h-full"
                 alt=""
@@ -376,7 +377,7 @@ function BankQuestionCard({
             side="left"
             className="p-0 w-[500px] rounded overflow-clip aspect-square shadow-primary shadow-md"
           >
-            <img src={question.image} className="w-full h-full" alt="" />
+            <PublicImage src={question.image} className="w-full h-full object-contain" alt="" />
           </HoverCardContent>
         </HoverCard>
       )}

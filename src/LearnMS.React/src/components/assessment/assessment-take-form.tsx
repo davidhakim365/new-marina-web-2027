@@ -1,3 +1,4 @@
+import { PublicImage } from "@/components/public-image";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -311,10 +312,10 @@ export function AssessmentTakeForm({
         <form onSubmit={submitAll} className="flex flex-1 flex-col gap-4">
           <div className="flex-1 rounded-2xl bg-card p-4 text-card-foreground shadow-sm ring-1 ring-border sm:p-6">
             {current.image && (
-              <img
+              <PublicImage
                 src={current.image}
                 alt=""
-                className="mb-4 max-h-64 w-full rounded-xl bg-muted object-contain"
+                className="mb-4 max-h-72 w-full rounded-xl bg-muted"
               />
             )}
             <h2 className="mb-1 font-heading text-lg font-medium text-foreground">
@@ -361,7 +362,7 @@ export function AssessmentTakeForm({
                                 )}
                               </span>
                               {c.imageUrl && (
-                                <img
+                                <PublicImage
                                   src={c.imageUrl}
                                   alt=""
                                   className="h-14 w-14 rounded-lg object-cover"

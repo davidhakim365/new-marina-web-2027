@@ -106,6 +106,14 @@ services.AddEndpointsApiExplorer();
         services.Configure<LearnMS.API.Common.ImgBb.ImgBbConfig>(
             cfg.GetSection(LearnMS.API.Common.ImgBb.ImgBbConfig.Section));
         services.AddHttpClient("ImgBb");
+        services.AddHttpClient("ImgBbProxy", client =>
+            {
+                client.Timeout = TimeSpan.FromSeconds(20);
+            })
+            .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
+            {
+                AllowAutoRedirect = false
+            });
         services.AddScoped<LearnMS.API.Common.ImgBb.IImgBbService, LearnMS.API.Common.ImgBb.ImgBbService>();
     }
 

@@ -1,4 +1,5 @@
 import Confirmation from "@/components/confirmation";
+import { PublicImage } from "@/components/public-image";
 import { Button } from "@/components/ui/button";
 import {
   HoverCard,
@@ -49,22 +50,26 @@ const SubmittedExam: React.FC<{
         key={q.id}
         className=" flex flex-col w-full border-border hover:scale-[102%] transition-all duration-300 hover:border-[2px] hover:shadow-lg shadow-color2/10 md:flex-row rounded-3xl   bg-card/85"
       >
-        <HoverCard>
-          <HoverCardTrigger className="hidden w-fit h-fit md:block rounded-l-3xl overflow-clip">
-            <div className=" h-[200px] object-fill">
-              <img className="w-full h-full" src={q.image} alt="" />
+        {q.image && (
+          <>
+            <HoverCard>
+              <HoverCardTrigger className="hidden w-fit h-fit md:block rounded-l-3xl overflow-clip">
+                <div className=" h-[200px] object-fill">
+                  <PublicImage className="w-full h-full object-cover" src={q.image} alt="" />
+                </div>
+              </HoverCardTrigger>
+              <HoverCardContent
+                side="left"
+                className="p-0 scale-[250%] rounded overflow-clip"
+              >
+                <PublicImage className="w-full h-full object-contain" src={q.image} alt="" />
+              </HoverCardContent>
+            </HoverCard>
+            <div className="object-cover w-full rounded-t-3xl overflow-clip md:hidden">
+              <PublicImage src={q.image} className="w-full max-h-72 object-contain" alt="" />
             </div>
-          </HoverCardTrigger>
-          <HoverCardContent
-            side="left"
-            className="p-0 scale-[250%] rounded overflow-clip"
-          >
-            <img className="w-full h-full" src={q.image} alt="" />
-          </HoverCardContent>
-        </HoverCard>
-        <div className="object-cover w-full rounded-t-3xl overflow-clip md:hidden aspect-video">
-          <img src={q.image} className="w-full h-full" alt="" />
-        </div>
+          </>
+        )}
         <div className="flex flex-col flex-grow w-full gap-2 md:rounded-bl-none rounded-b-3xl rounded-r-3xl rounded-br-3xl overflow-clip">
           <div className="flex flex-col w-full h-full gap-2 p-4 text-primary/90">
             <p className=" text-2xl">{q.text}</p>
@@ -99,7 +104,7 @@ const SubmittedExam: React.FC<{
                 )}
               >
                 {typeof option !== "string" && option.imageUrl ? (
-                  <img src={option.imageUrl} alt="" className="h-12 w-12 rounded object-cover" />
+                  <PublicImage src={option.imageUrl} alt="" className="h-12 w-12 rounded object-cover" />
                 ) : (
                   <h3>{label}</h3>
                 )}
@@ -118,22 +123,26 @@ const SubmittedExam: React.FC<{
         key={q.id}
         className=" flex flex-col w-full border-border hover:scale-[102%] transition-all duration-300 hover:border-[2px] hover:shadow-lg shadow-color2/10 md:flex-row rounded-3xl   bg-card/85"
       >
-        <HoverCard>
-          <HoverCardTrigger className="hidden w-fit h-fit md:block rounded-l-3xl overflow-clip">
-            <div className=" h-[200px] object-fill">
-              <img className="w-full h-full" src={q.image} alt="" />
+        {q.image && (
+          <>
+            <HoverCard>
+              <HoverCardTrigger className="hidden w-fit h-fit md:block rounded-l-3xl overflow-clip">
+                <div className=" h-[200px] object-fill">
+                  <PublicImage className="w-full h-full object-cover" src={q.image} alt="" />
+                </div>
+              </HoverCardTrigger>
+              <HoverCardContent
+                side="left"
+                className="p-0 scale-[250%] rounded overflow-clip"
+              >
+                <PublicImage className="w-full h-full object-contain" src={q.image} alt="" />
+              </HoverCardContent>
+            </HoverCard>
+            <div className="object-cover w-full rounded-t-3xl overflow-clip md:hidden">
+              <PublicImage src={q.image} className="w-full max-h-72 object-contain" alt="" />
             </div>
-          </HoverCardTrigger>
-          <HoverCardContent
-            side="left"
-            className="p-0 scale-[250%] rounded overflow-clip"
-          >
-            <img className="w-full h-full" src={q.image} alt="" />
-          </HoverCardContent>
-        </HoverCard>
-        <div className="object-cover w-full rounded-t-3xl overflow-clip md:hidden aspect-video">
-          <img src={q.image} className="w-full h-full" alt="" />
-        </div>
+          </>
+        )}
         <div className="flex flex-col flex-grow w-full gap-2 md:rounded-bl-none rounded-b-3xl rounded-r-3xl rounded-br-3xl overflow-clip">
           <div className="flex flex-col w-full h-full gap-2 p-4 text-primary/90">
             <p className=" text-2xl">{q.text}</p>
@@ -179,7 +188,7 @@ const SubmittedExam: React.FC<{
       <div key={q.id} className="w-full rounded-3xl bg-card/85 p-4 text-primary/90">
         <p className="text-2xl">{q.text}</p>
         {q.image && (
-          <img src={q.image} alt="" className="mt-2 max-h-40 rounded object-contain" />
+          <PublicImage src={q.image} alt="" className="mt-2 max-h-40 rounded" />
         )}
         <div className="mt-3 rounded-xl bg-primary/80 p-3 text-white">
           <p className="whitespace-pre-wrap">{q.studentAnswer}</p>

@@ -49,7 +49,7 @@ public static class ApplicationRequestPipelines
                 "object-src 'none'; " +
                 "frame-ancestors 'none'; " +
                 "form-action 'self'; " +
-                "img-src 'self' data: blob: https://i.ibb.co https://i.ytimg.com https://placehold.co https://*.googleusercontent.com; " +
+                "img-src 'self' data: blob: https://i.ibb.co https://ibb.co https://*.ibb.co https://i.ibb.co.com https://ibb.co.com https://*.ibb.co.com https://i.ytimg.com https://placehold.co https://*.googleusercontent.com; " +
                 "media-src 'self' blob:; " +
                 "font-src 'self' data: https://fonts.gstatic.com; " +
                 "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +

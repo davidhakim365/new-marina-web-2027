@@ -10,6 +10,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { PublicImage } from "@/components/public-image";
 import { uploadToImgBb } from "@/lib/imgbb-upload";
 import { toast } from "@/lib/utils";
 import { DraftQuestion, QuestionChoiceDraft } from "@/types/assessment";
@@ -116,10 +117,10 @@ export function InlineQuestionEditor({ draft, onChange, onRemove }: Props) {
             {uploading && <Loader2 className="h-4 w-4 animate-spin" />}
           </div>
           {draft.image && (
-            <img
+            <PublicImage
               src={draft.image}
               alt="Question"
-              className="max-h-48 rounded-lg object-contain border"
+              className="max-h-48 rounded-lg border"
             />
           )}
         </div>
@@ -145,10 +146,10 @@ export function InlineQuestionEditor({ draft, onChange, onRemove }: Props) {
             }}
           />
           {draft.image && (
-            <img
+            <PublicImage
               src={draft.image}
               alt="Question"
-              className="max-h-40 rounded-lg object-contain border"
+              className="max-h-40 rounded-lg border"
             />
           )}
         </div>
@@ -212,7 +213,7 @@ export function InlineQuestionEditor({ draft, onChange, onRemove }: Props) {
                     />
                   </div>
                   {c.imageUrl && (
-                    <img
+                    <PublicImage
                       src={c.imageUrl}
                       alt={`Choice ${idx + 1}`}
                       className="h-20 w-20 object-cover rounded border"
