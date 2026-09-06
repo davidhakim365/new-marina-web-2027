@@ -53,14 +53,15 @@ public record GetStudentLessonQuery
 public record GetStudentLessonResult : GetLessonResult
 {
     public DateTime? ExpiresAt { get; init; }
+    public bool HasAcceptedExpiration { get; init; }
     [Required]
     public string Enrollment
     {
         get
         {
             if (RequiresLectureRenewal) return "Expired";
-            if (VideoOTP != null) return "Active";
-            if (ExpiresAt < DateTime.UtcNow) return "Expired";
+            if (ExpiresAt is DateTime exp && exp < DateTime.UtcNow) return "Expired";
+            if (HasAcceptedExpiration || VideoOTP != null) return "Active";
             return "NotEnrolled";
         }
     }

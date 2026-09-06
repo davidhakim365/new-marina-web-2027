@@ -31,11 +31,14 @@ api.interceptors.response.use(
         localStorage.removeItem("token");
       }
 
-      toast({
-        title: "Error",
-        description: data.message,
-        variant: "destructive",
-      });
+      const code = typeof data?.code === "string" ? data.code.toLowerCase() : "";
+      if (code !== "lesson/already-accepted-expiration-rule") {
+        toast({
+          title: "Error",
+          description: data.message,
+          variant: "destructive",
+        });
+      }
 
       throw new ApiError(data.code, data.message);
     }

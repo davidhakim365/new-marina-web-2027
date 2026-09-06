@@ -32,7 +32,11 @@ AXIOS_INSTANCE.interceptors.response.use(
       }
 
       // Let signup / add-student UI show localized friendly guidance.
-      if (!ALREADY_REGISTERED_CODES.has(data?.code)) {
+      // Starting a lesson twice is a no-op, not a user-facing failure.
+      if (
+        !ALREADY_REGISTERED_CODES.has(data?.code) &&
+        data?.code !== "lesson/already-accepted-expiration-rule"
+      ) {
         toast({
           title: "Couldn't load, please try again",
           description: data.message,

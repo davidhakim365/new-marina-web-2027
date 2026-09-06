@@ -642,7 +642,9 @@
     "renewLectureConfirmationTitle": "تجديد المحاضرة",
     "renewLectureConfirmationDescription": "هل أنت متأكد إنك عايز تجدد المحاضرة مقابل {{price}}؟",
     "expiresAt": "تنتهي في",
-    "back": "العودة"
+    "back": "العودة",
+    "videoUnavailableTitle": "الفيديو غير متاح مؤقتًا",
+    "videoUnavailableMessage": "الدرس مفتوح، لكن تعذر تحميل المشغل. يرجى إعادة تحميل الصفحة."
   },
   "quiz": {
     "questions": "الأسئلة",

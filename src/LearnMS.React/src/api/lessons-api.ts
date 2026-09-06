@@ -1,5 +1,6 @@
 import { ApiResponse, api } from "@/api";
 import { getGetProfileQueryKey } from "@/generated/api";
+import { isAlreadyAcceptedExpirationError } from "@/lib/error-utils";
 import { LessonDetails } from "@/types/lessons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
@@ -15,6 +16,7 @@ export const useLessonsQuery = ({
 }) => {
   return useQuery<ApiResponse<LessonDetails>>({
     queryKey: ["lesson", { id: lessonId }],
+    throwOnError: false,
     queryFn: () => {
       return api
         .get(
@@ -101,6 +103,7 @@ export const useStartLessonMutation = () => {
     {},
     { courseId: string; lectureId: string; lessonId: string }
   >({
+    throwOnError: false,
     onSuccess: (_, { courseId, lectureId, lessonId }) => {
       qc.invalidateQueries({ queryKey: ["course", { id: courseId }] });
       qc.invalidateQueries({
@@ -111,12 +114,24 @@ export const useStartLessonMutation = () => {
       });
       qc.invalidateQueries({ queryKey: ["courses"] });
     },
-    mutationFn: ({ courseId, lectureId, lessonId }) =>
-      api
-        .post(
-          `/api/courses/${courseId}/lectures/${lectureId}/lessons/${lessonId}/start`
-        )
-        .then((res) => res.data),
+    mutationFn: async ({ courseId, lectureId, lessonId }) => {
+      try {
+        return await api
+          .post(
+            `/api/courses/${courseId}/lectures/${lectureId}/lessons/${lessonId}/start`
+          )
+          .then((res) => res.data);
+      } catch (error) {
+        if (isAlreadyAcceptedExpirationError(error)) {
+          return {
+            status: true as const,
+            message: "Accepted expiration rule successfully",
+            data: {},
+          };
+        }
+        throw error;
+      }
+    },
   });
 };
 
@@ -127,6 +142,7 @@ export const useRenewLessonMutation = () => {
     {},
     { courseId: string; lectureId: string; lessonId: string }
   >({
+    throwOnError: false,
     onSuccess: (_, { courseId, lectureId, lessonId }) => {
       qc.invalidateQueries({ queryKey: ["course", { id: courseId }] });
       qc.invalidateQueries({

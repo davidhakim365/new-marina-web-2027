@@ -116,6 +116,12 @@ function formatTime(ms: number) {
   return h > 0 ? `${h}:${mm}:${ss}` : `${mm}:${ss}`;
 }
 
+function isStillLive(value?: string | Date | null) {
+  if (!value) return false;
+  const t = new Date(value).getTime();
+  return Number.isFinite(t) && t > Date.now();
+}
+
 export function AssessmentTakeForm({
   title,
   description,
@@ -128,20 +134,30 @@ export function AssessmentTakeForm({
   onSubmit,
 }: Props) {
   const isTimed = expiryMinutes > 0 || !!expiresAtProp;
+  const initiallyLive = isStillLive(expiresAtProp);
   const [started, setStarted] = useState(
-    () => !requireStartConfirm || !isTimed || !!expiresAtProp
+    () => !requireStartConfirm || !isTimed || initiallyLive
+  );
+  const [timedOut, setTimedOut] = useState(
+    () => !!expiresAtProp && !initiallyLive
   );
   const [starting, setStarting] = useState(false);
   const [expiresAt, setExpiresAt] = useState<string | Date | null | undefined>(
-    expiresAtProp
+    initiallyLive ? expiresAtProp : null
   );
   const [index, setIndex] = useState(0);
   const [remainingMs, setRemainingMs] = useState<number | null>(null);
   const autoSubmitted = useRef(false);
 
   useEffect(() => {
-    setExpiresAt(expiresAtProp);
-    if (expiresAtProp) setStarted(true);
+    if (isStillLive(expiresAtProp)) {
+      setExpiresAt(expiresAtProp);
+      setStarted(true);
+      setTimedOut(false);
+      return;
+    }
+    setExpiresAt(expiresAtProp ?? null);
+    if (expiresAtProp) setTimedOut(true);
   }, [expiresAtProp]);
 
   const schema = useMemo(() => {
@@ -175,16 +191,26 @@ export function AssessmentTakeForm({
     const tick = () => {
       const left = end - Date.now();
       setRemainingMs(Math.max(0, left));
-      if (left <= 0 && !autoSubmitted.current) {
+      if (left > 0) return;
+      if (!autoSubmitted.current) {
         autoSubmitted.current = true;
-        form.handleSubmit((data) => {
+        const data = form.getValues();
+        const allAnswered = questions.every((q) => {
+          const v = data[q.id];
+          return v !== undefined && v !== null && String(v).trim() !== "";
+        });
+        if (allAnswered) {
           onSubmit(
             Object.entries(data).map(([questionId, answer]) => ({
               questionId,
               answer: String(answer ?? ""),
             }))
           );
-        })();
+        } else {
+          setTimedOut(true);
+        }
+      } else {
+        setTimedOut(true);
       }
     };
     tick();
@@ -213,15 +239,60 @@ export function AssessmentTakeForm({
     setStarting(true);
     try {
       const result = await onConfirmStart?.();
-      if (result) setExpiresAt(result);
-      else if (expiryMinutes > 0 && !expiresAt) {
-        setExpiresAt(new Date(Date.now() + expiryMinutes * 60_000).toISOString());
+      const nextExpiry =
+        result ||
+        (expiryMinutes > 0
+          ? new Date(Date.now() + expiryMinutes * 60_000).toISOString()
+          : null);
+      if (nextExpiry && !isStillLive(nextExpiry)) {
+        setTimedOut(true);
+        return;
       }
+      setExpiresAt(nextExpiry);
+      autoSubmitted.current = false;
+      setIndex(0);
+      form.reset();
+      setRemainingMs(null);
+      setTimedOut(false);
       setStarted(true);
     } finally {
       setStarting(false);
     }
   };
+
+  if (timedOut) {
+    const canRestart = expiryMinutes > 0;
+    return (
+      <div className="mx-auto flex min-h-[100dvh] w-full max-w-lg flex-col items-center justify-center bg-gradient-to-b from-red-50 to-background px-4 py-8 dark:from-red-950/40 dark:to-background">
+        <div className="w-full space-y-4 rounded-2xl border border-red-200 bg-card p-6 text-center text-card-foreground shadow-lg dark:border-red-500/30">
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-300">
+            <Clock className="h-7 w-7" />
+          </div>
+          <h1 className="font-heading text-2xl font-semibold text-foreground">{title}</h1>
+          <p className="text-muted-foreground">
+            {canRestart ? (
+              <>
+                Time is up. You cannot continue this attempt, but you can{" "}
+                <strong className="text-foreground">retake the quiz</strong>. A
+                new timer starts when you tap Retake.
+              </>
+            ) : (
+              <>This assessment time has expired. You cannot continue.</>
+            )}
+          </p>
+          {canRestart && (
+            <Button
+              className="h-12 w-full text-base"
+              disabled={starting}
+              onClick={handleStart}
+            >
+              {starting ? "Starting..." : "Retake quiz"}
+            </Button>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   if (!started && isTimed) {
     return (

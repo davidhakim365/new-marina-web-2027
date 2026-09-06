@@ -506,7 +506,7 @@ public sealed class CoursesService : ICoursesService
             );
         }
         if (existingAttendance is not null)
-            throw new ApiException(LessonsErrors.AlreadyAcceptedExpirationRule);
+            return;
 
         lesson.LessonAttendances.Add(
             new LessonAttendance
@@ -522,7 +522,20 @@ public sealed class CoursesService : ICoursesService
 
         _context.Update(course);
 
-        await _context.SaveChangesAsync();
+        try
+        {
+            await _context.SaveChangesAsync();
+        }
+        catch (DbUpdateException)
+        {
+            var alreadyRecorded = await _context
+                .Set<LessonAttendance>()
+                .AnyAsync(x =>
+                    x.StudentId == command.StudentId && x.LessonId == command.LessonId
+                );
+            if (!alreadyRecorded)
+                throw;
+        }
     }
 
     public async Task ExecuteAsync(UploadLessonVideoCommand command)
@@ -782,11 +795,11 @@ public sealed class CoursesService : ICoursesService
             if (attempt is null)
                 throw new ApiException(new ApiError("quizzes/not-started", "Start the quiz before submitting",
                     StatusCodes.Status400BadRequest));
-            if (attempt.ExpiresAt is { } expiresAt && expiresAt < DateTime.UtcNow)
+            if (attempt.ExpiresAt is { } expiresAt && expiresAt.AddSeconds(45) < DateTime.UtcNow)
                 throw new ApiException(new ApiError("quizzes/expired", "Quiz time has expired",
                     StatusCodes.Status400BadRequest));
         }
-        else if (attempt?.ExpiresAt is { } expiresAt && expiresAt < DateTime.UtcNow)
+        else if (attempt?.ExpiresAt is { } expiresAt && expiresAt.AddSeconds(45) < DateTime.UtcNow)
         {
             throw new ApiException(new ApiError("quizzes/expired", "Quiz time has expired",
                 StatusCodes.Status400BadRequest));
@@ -1222,18 +1235,29 @@ public sealed class CoursesService : ICoursesService
             throw new ApiException(QuizzesErrors.AlreadySubmitted);
 
         var attempt = quiz.QuizAttempts.FirstOrDefault(x => x.StudentId == command.StudentId);
+        var now = DateTime.UtcNow;
+        var attemptExpired = attempt?.ExpiresAt is { } existingExpiry && existingExpiry < now;
+
         if (attempt is null)
         {
             attempt = new QuizAttempt
             {
                 QuizId = quiz.Id,
                 StudentId = command.StudentId,
-                StartedAt = DateTime.UtcNow,
+                StartedAt = now,
                 ExpiresAt = quiz.ExpiryMinutes > 0
-                    ? DateTime.UtcNow.AddMinutes(quiz.ExpiryMinutes)
+                    ? now.AddMinutes(quiz.ExpiryMinutes)
                     : null
             };
             await _context.Set<QuizAttempt>().AddAsync(attempt);
+            await _context.SaveChangesAsync();
+        }
+        else if (attemptExpired)
+        {
+            attempt.StartedAt = now;
+            attempt.ExpiresAt = quiz.ExpiryMinutes > 0
+                ? now.AddMinutes(quiz.ExpiryMinutes)
+                : null;
             await _context.SaveChangesAsync();
         }
 
@@ -1865,17 +1889,20 @@ public sealed class CoursesService : ICoursesService
             lesson.ExpirationHours
         );
 
+        var attendanceExpired =
+            attendance?.ExpirationDate is DateTime expiration && expiration < DateTime.UtcNow;
+        var canWatch =
+            lesson.ExpirationHours == 0 || (attendance is not null && !attendanceExpired);
+
         return new GetStudentLessonResult()
         {
             Id = lesson.Id,
             Title = lesson.Title,
             Description = lesson.Description,
-            VideoOTP =
-                lesson.ExpirationHours == 0 || attendance?.ExpirationDate > DateTime.UtcNow
-                    ? await TryGetVideoOtpAsync(lesson.VideoId)
-                    : null,
+            VideoOTP = canWatch ? await TryGetVideoOtpAsync(lesson.VideoId) : null,
             ExpirationHours = lesson.ExpirationHours,
             ExpiresAt = attendance?.ExpirationDate,
+            HasAcceptedExpiration = attendance is not null,
             RenewalPrice = lesson.RenewalPrice,
             RequiresLectureRenewal = false,
             LectureRenewalPrice = lecture.RenewalPrice ?? 0,
@@ -2120,8 +2147,12 @@ public sealed class CoursesService : ICoursesService
                 EssayQuestions = AssessmentHelpers.MapEssayNotAnswered(quiz.Questions),
                 PassCount = quiz.PassCount,
                 ExpiryMinutes = quiz.ExpiryMinutes,
-                // Timer starts only after student confirms via StartQuiz
-                ExpiresAt = attempt?.ExpiresAt
+                // Only expose a live timer. An expired attempt is treated as
+                // "not started" so the student can start / retake instead of
+                // sitting on Time left 00:00.
+                ExpiresAt = attempt?.ExpiresAt is { } exp && exp > DateTime.UtcNow
+                    ? exp
+                    : null
             };
         }
 

@@ -230,9 +230,11 @@ const StudentLessonPage = () => {
                 title={t("lesson.startLessonConfirmationTitle")}
                 description={t("lesson.startLessonConfirmationDescription")}
                 onConfirm={onStarting}
+                disabled={startLessonMutation.isPending}
                 button={
                   <Button
                     size="lg"
+                    disabled={startLessonMutation.isPending}
                     className="px-8 transition-all shadow-lg bg-primary hover:bg-primary/90 text-primary-foreground hover:scale-105"
                   >
                     <Play className="w-4 h-4 mr-2" />
@@ -279,9 +281,11 @@ const StudentLessonPage = () => {
                   price: `${data.data.renewalPrice} ${t("common.currency")}`,
                 })}
                 onConfirm={onRenewing}
+                disabled={renewLessonMutation.isPending}
                 button={
                   <Button
                     size="lg"
+                    disabled={renewLessonMutation.isPending}
                     className="px-8 text-white transition-all shadow-lg bg-amber-600 hover:bg-amber-700 hover:scale-105"
                   >
                     <RotateCcw className="w-4 h-4 mr-2" />
@@ -296,8 +300,39 @@ const StudentLessonPage = () => {
     );
   }
 
-  data!.data.videoStatus = "Ready";
-  if (data?.data.videoStatus !== "Ready") return null;
+  const videoOtp = data?.data.videoOTP;
+  if (!videoOtp?.otp || !videoOtp?.playbackInfo) {
+    return (
+      <div className="flex items-center justify-center min-h-screen px-4 pt-16 bg-gradient-to-br from-background via-background to-muted/10">
+        <Card className="w-full max-w-md border-destructive/20 bg-destructive/5">
+          <CardContent className="p-8 space-y-6 text-center">
+            <div className="flex items-center justify-center w-16 h-16 mx-auto rounded-full bg-destructive/10">
+              <AlertTriangle className="w-8 h-8 text-destructive" />
+            </div>
+            <div className="space-y-2">
+              <h1 className="text-xl font-bold text-foreground">
+                {t("lesson.videoUnavailableTitle")}
+              </h1>
+              <p className="text-sm text-muted-foreground">
+                {t("lesson.videoUnavailableMessage")}
+              </p>
+            </div>
+            <Button
+              className="w-full"
+              onClick={() =>
+                queryClient.invalidateQueries({
+                  queryKey: ["lesson", { id: lessonId }],
+                })
+              }
+            >
+              <RotateCcw className="w-4 h-4 mr-2" />
+              {t("error.reloadPage")}
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen pt-16 bg-gradient-to-br from-background via-background to-muted/10">
@@ -329,7 +364,7 @@ const StudentLessonPage = () => {
           <Card className="overflow-hidden bg-black border-0 shadow-2xl">
             <div className="w-full aspect-video">
               <iframe
-                src={`https://player.vdocipher.com/v2/?otp=${data?.data.videoOTP.otp}&playbackInfo=${data?.data.videoOTP.playbackInfo}`}
+                src={`https://player.vdocipher.com/v2/?otp=${videoOtp.otp}&playbackInfo=${videoOtp.playbackInfo}`}
                 allowFullScreen
                 className="w-full h-full"
                 allow="encrypted-media"

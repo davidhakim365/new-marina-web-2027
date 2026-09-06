@@ -1,5 +1,23 @@
 import { ApiError } from "@/lib/axiosCustomInstant";
 
+export function isAlreadyAcceptedExpirationError(error: unknown): boolean {
+  if (error instanceof ApiError) {
+    const code = error.code?.toLowerCase() || "";
+    if (code.includes("already-accepted-expiration-rule")) return true;
+  }
+
+  if (
+    error &&
+    typeof error === "object" &&
+    "message" in error &&
+    typeof error.message === "string"
+  ) {
+    return error.message.toLowerCase().includes("already accepted");
+  }
+
+  return false;
+}
+
 export function isInsufficientBalanceError(error: unknown): boolean {
   if (!error) return false;
 

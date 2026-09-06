@@ -640,7 +640,9 @@
     "renewLectureConfirmationTitle": "Renew lecture",
     "renewLectureConfirmationDescription": "Are you sure you want to renew this lecture for {{price}}?",
     "expiresAt": "expires at",
-    "back": "Back"
+    "back": "Back",
+    "videoUnavailableTitle": "Video is temporarily unavailable",
+    "videoUnavailableMessage": "This lesson is unlocked, but the player could not load. Please reload the page."
   },
   "quiz": {
     "questions": "Questions",
