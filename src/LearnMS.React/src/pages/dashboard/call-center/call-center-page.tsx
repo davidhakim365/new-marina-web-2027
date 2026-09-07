@@ -39,13 +39,13 @@ import { cn, toast } from "@/lib/utils";
 import { PaginationState } from "@tanstack/react-table";
 import useDownloadFile from "@/hooks/useDownloadFile";
 import {
-  CheckCircle2,
   ChevronDown,
   ChevronUp,
   Download,
   Globe,
   History,
   Loader2,
+  MapPin,
   MessageCircle,
   Phone,
   PlayCircle,
@@ -84,17 +84,21 @@ function QuizScoreText({ student }: { student: CallCenterStudent }) {
 function AttendanceBadge({
   attended,
   watchedOnline,
+  centerName,
 }: {
   attended: boolean;
   watchedOnline?: boolean;
+  centerName?: string | null;
 }) {
   const { t } = useTranslation();
 
   if (attended) {
     return (
       <Badge className="gap-1 bg-emerald-500/15 text-emerald-700 hover:bg-emerald-500/20">
-        <CheckCircle2 className="h-3.5 w-3.5" />
-        {t("admin.callCenter.present")}
+        <MapPin className="h-3.5 w-3.5" />
+        {centerName
+          ? t("admin.callCenter.presentAtCenter", { center: centerName })
+          : t("admin.callCenter.present")}
       </Badge>
     );
   }
@@ -181,6 +185,15 @@ function StudentLectureHistory({
     return groups;
   }, [lecturesQuery.data]);
 
+  const summary = useMemo(() => {
+    const items = lecturesQuery.data?.data ?? [];
+    return {
+      present: items.filter((i) => i.attended).length,
+      online: items.filter((i) => !i.attended && i.watchedOnline).length,
+      absent: items.filter((i) => !i.attended && !i.watchedOnline).length,
+    };
+  }, [lecturesQuery.data]);
+
   return (
     <div className="mt-3 rounded-lg border border-color2/10 bg-muted/20">
       <button
@@ -209,6 +222,13 @@ function StudentLectureHistory({
             </p>
           ) : (
             <div className="space-y-4">
+              <p className="text-xs text-muted-foreground">
+                {t("admin.callCenter.lectureHistorySummary", {
+                  present: summary.present,
+                  online: summary.online,
+                  absent: summary.absent,
+                })}
+              </p>
               {grouped.map((group) => (
                 <div key={group.courseTitle} className="space-y-2">
                   <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
@@ -260,6 +280,7 @@ function StudentLectureHistory({
                               <AttendanceBadge
                                 attended={item.attended}
                                 watchedOnline={item.watchedOnline}
+                                centerName={item.centerName}
                               />
                             </td>
                             <td className="py-2 pe-3 tabular-nums">
@@ -499,6 +520,7 @@ function StudentCallCard({
             <AttendanceBadge
               attended={student.attended}
               watchedOnline={student.watchedOnline}
+              centerName={student.centerName}
             />
             {student.isOnline ? (
               <Badge className="gap-1 bg-sky-500/15 text-sky-700 hover:bg-sky-500/20">

@@ -1,4 +1,5 @@
 import { api } from "@/api";
+import { invalidateAllCallCenterQueries } from "@/api/call-center-api";
 import {
   getGetLectureStatisticsQueryKey,
   getGetLectureStudentsQueryKey,
@@ -111,6 +112,7 @@ export function useAttendLectureAtCenter() {
           getLectureStatisticsParams(vars.lectureId, vars.centerId)
         ),
       });
+      invalidateAllCallCenterQueries(qc);
     },
   });
 }
@@ -140,6 +142,7 @@ export function useToggleLectureAttendanceAtCenter() {
           getLectureStatisticsParams(vars.lectureId, vars.centerId)
         ),
       });
+      invalidateAllCallCenterQueries(qc);
     },
   });
 }

@@ -9,6 +9,8 @@ export type CallCenterStudent = {
   attended: boolean;
   watchedOnline: boolean;
   isOnline: boolean;
+  centerId?: string | null;
+  centerName?: string | null;
   quizScore?: number | null;
   quizFullMark?: number | null;
   onlineQuizCorrect?: number | null;
@@ -152,6 +154,8 @@ export type CallCenterStudentLecture = {
   isCurrent: boolean;
   attended: boolean;
   watchedOnline: boolean;
+  centerId?: string | null;
+  centerName?: string | null;
   quizScore?: number | null;
   quizFullMark?: number | null;
   onlineQuizCorrect?: number | null;
@@ -198,6 +202,7 @@ export function useCallCenterStudentsQuery(
     ),
     queryFn: () => getCallCenterStudents(courseId!, lectureId!, params),
     enabled: !!courseId && !!lectureId,
+    refetchOnMount: "always",
   });
 }
 
@@ -210,11 +215,21 @@ function invalidateCallCenter(
   qc.invalidateQueries({
     queryKey: ["/api/call-center/students", courseId, lectureId],
   });
+  qc.invalidateQueries({
+    queryKey: ["/api/call-center/student-lectures", courseId, lectureId],
+  });
   if (studentId) {
     qc.invalidateQueries({
       queryKey: ["/api/call-center/history", courseId, lectureId, studentId],
     });
   }
+}
+
+export function invalidateAllCallCenterQueries(
+  qc: ReturnType<typeof useQueryClient>
+) {
+  qc.invalidateQueries({ queryKey: ["/api/call-center/students"] });
+  qc.invalidateQueries({ queryKey: ["/api/call-center/student-lectures"] });
 }
 
 export function useUpdateCallCenterContact() {
@@ -336,7 +351,9 @@ export function buildCallCenterWhatsAppMessage(student: CallCenterStudent, opts:
   courseTitle?: string;
 }) {
   const attended = student.attended
-    ? "حاضر"
+    ? student.centerName
+      ? `حاضر (${student.centerName})`
+      : "حاضر"
     : student.watchedOnline
       ? "شاهد أونلاين"
       : "غائب";

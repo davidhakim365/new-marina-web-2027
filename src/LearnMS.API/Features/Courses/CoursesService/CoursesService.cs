@@ -2005,8 +2005,6 @@ public sealed class CoursesService : ICoursesService
             .Include(x => x.LectureHomeworks.Where(x => x.LectureId == query.LectureId).Take(1))
             .Include(x => x.LectureQuizzes.Where(x => x.LectureId == query.LectureId).Take(1))
             .Include(x => x.AttendedLessons.Where(x => x.LectureId == query.LectureId))
-            .Include(x => x.LectureAttendances.Where(x => x.LectureId == query.LectureId).Take(1))
-                .ThenInclude(a => a.Center)
             .Include(x => x.LectureEnrollments.Where(x => x.LectureId == query.LectureId).Take(1))
             .Include(x => x.QuizSubmissions.Where(x => x.Quiz.LectureId == query.LectureId))
             .ThenInclude(x => x.Quiz)
@@ -2026,11 +2024,18 @@ public sealed class CoursesService : ICoursesService
             query.PageSize
         );
 
+        var studentIds = students.Items.Select(s => s.Id).ToList();
+        var attendances = await _context.Set<LectureAttendance>()
+            .AsNoTracking()
+            .Include(a => a.Center)
+            .Where(a => a.LectureId == query.LectureId && studentIds.Contains(a.StudentId))
+            .ToDictionaryAsync(a => a.StudentId);
+
         List<SingleLectureStudent> result = new();
 
         foreach (var student in students.Items)
         {
-            var attendance = student.LectureAttendances.SingleOrDefault();
+            attendances.TryGetValue(student.Id, out var attendance);
 
             var enrollment = student.LectureEnrollments.SingleOrDefault(x => x.LectureId == query.LectureId);
 

@@ -46,15 +46,21 @@ public sealed class CallCenterService(AppDbContext context) : ICallCenterService
             .ToDictionaryAsync(c => c.StudentId);
 
         var page = await PageList<Student>.CreateAsync(studentsQuery, query.Page, query.PageSize);
+        var studentIds = page.Items.Select(s => s.Id);
 
-        var watchedOnlineIds = await GetWatchedOnlineStudentIdsAsync(
-            query.LectureId,
-            page.Items.Select(s => s.Id));
+        var watchedOnlineIds = await GetWatchedOnlineStudentIdsAsync(query.LectureId, studentIds);
+        var attendances = await GetLectureAttendancesAsync(query.LectureId, studentIds);
 
         var items = page.Items.Select(student =>
         {
             contacts.TryGetValue(student.Id, out var contact);
-            return MapStudent(student, lecture, contact, watchedOnlineIds.Contains(student.Id));
+            attendances.TryGetValue(student.Id, out var attendance);
+            return MapStudent(
+                student,
+                lecture,
+                contact,
+                watchedOnlineIds.Contains(student.Id),
+                attendance);
         }).ToList();
 
         return new PageList<CallCenterStudentDto>(items, page.Page, page.PageSize, page.TotalCount);
@@ -107,7 +113,8 @@ public sealed class CallCenterService(AppDbContext context) : ICallCenterService
         await context.SaveChangesAsync();
 
         var watchedOnline = await HasWatchedLectureOnlineAsync(command.LectureId, command.StudentId);
-        return MapStudent(student, lecture, contact, watchedOnline);
+        var attendance = await GetLectureAttendanceAsync(command.LectureId, command.StudentId);
+        return MapStudent(student, lecture, contact, watchedOnline, attendance);
     }
 
     public async Task<CallCenterStudentDto> LogNotifyAsync(LogCallCenterNotifyCommand command)
@@ -161,7 +168,8 @@ public sealed class CallCenterService(AppDbContext context) : ICallCenterService
         await context.SaveChangesAsync();
 
         var watchedOnline = await HasWatchedLectureOnlineAsync(command.LectureId, command.StudentId);
-        return MapStudent(student, lecture, contact, watchedOnline);
+        var attendance = await GetLectureAttendanceAsync(command.LectureId, command.StudentId);
+        return MapStudent(student, lecture, contact, watchedOnline, attendance);
     }
 
     public async Task<PageList<CallCenterHistoryItemDto>> QueryHistoryAsync(GetCallCenterHistoryQuery query)
@@ -214,7 +222,7 @@ public sealed class CallCenterService(AppDbContext context) : ICallCenterService
 
         var rows = await context.Set<Lecture>()
             .AsNoTracking()
-            .Where(l => l.Course.IsPublished && l.Course.Level == lecture.Course.Level)
+            .Where(l => l.Course.Level == lecture.Course.Level)
             .OrderBy(l => l.CourseId == currentCourseId ? 0 : 1)
             .ThenBy(l => l.Course.Title)
             .ThenBy(l => l.Order)
@@ -253,23 +261,50 @@ public sealed class CallCenterService(AppDbContext context) : ICallCenterService
             })
             .ToListAsync();
 
-        return rows.Select(l => new CallCenterStudentLectureDto
+        var lectureIds = rows.Select(l => l.Id).ToList();
+        var centersByLecture = lectureIds.Count == 0
+            ? new Dictionary<Guid, (Guid? CenterId, string? CenterName)>()
+            : (await context.Set<LectureAttendance>()
+                .AsNoTracking()
+                .Include(a => a.Center)
+                .Where(a =>
+                    a.StudentId == studentId
+                    && a.AttendedAt != null
+                    && lectureIds.Contains(a.LectureId))
+                .Select(a => new
+                {
+                    a.LectureId,
+                    a.CenterId,
+                    CenterName = a.Center != null ? a.Center.Name : null,
+                })
+                .ToListAsync())
+                .ToDictionary(
+                    a => a.LectureId,
+                    a => (a.CenterId, a.CenterName));
+
+        return rows.Select(l =>
         {
-            LectureId = l.Id,
-            LectureTitle = l.Title,
-            CourseId = l.CourseId,
-            CourseTitle = l.CourseTitle,
-            Order = l.Order,
-            IsCurrent = l.IsCurrent,
-            Attended = l.Attended,
-            WatchedOnline = l.WatchedOnline,
-            QuizScore = l.QuizScore,
-            QuizFullMark = l.QuizFullMark,
-            OnlineQuizCorrect = l.OnlineTotal > 0 ? l.OnlineCorrect : null,
-            OnlineQuizTotal = l.OnlineTotal > 0 ? l.OnlineTotal : null,
-            HomeworkScore = l.HomeworkScore,
-            HomeworkFullMark = l.HomeworkFullMark,
-            EnrollmentStatus = l.EnrollmentStatus,
+            centersByLecture.TryGetValue(l.Id, out var center);
+            return new CallCenterStudentLectureDto
+            {
+                LectureId = l.Id,
+                LectureTitle = l.Title,
+                CourseId = l.CourseId,
+                CourseTitle = l.CourseTitle,
+                Order = l.Order,
+                IsCurrent = l.IsCurrent,
+                Attended = l.Attended,
+                WatchedOnline = l.WatchedOnline,
+                CenterId = l.Attended ? center.CenterId : null,
+                CenterName = l.Attended ? center.CenterName : null,
+                QuizScore = l.QuizScore,
+                QuizFullMark = l.QuizFullMark,
+                OnlineQuizCorrect = l.OnlineTotal > 0 ? l.OnlineCorrect : null,
+                OnlineQuizTotal = l.OnlineTotal > 0 ? l.OnlineTotal : null,
+                HomeworkScore = l.HomeworkScore,
+                HomeworkFullMark = l.HomeworkFullMark,
+                EnrollmentStatus = l.EnrollmentStatus,
+            };
         }).ToList();
     }
 
@@ -302,14 +337,20 @@ public sealed class CallCenterService(AppDbContext context) : ICallCenterService
                 .Take(chunkSize)
                 .ToListAsync();
 
-            var watchedOnlineIds = await GetWatchedOnlineStudentIdsAsync(
-                query.LectureId,
-                students.Select(s => s.Id));
+            var studentIds = students.Select(s => s.Id);
+            var watchedOnlineIds = await GetWatchedOnlineStudentIdsAsync(query.LectureId, studentIds);
+            var attendances = await GetLectureAttendancesAsync(query.LectureId, studentIds);
 
             yield return students.Select(student =>
             {
                 contacts.TryGetValue(student.Id, out var contact);
-                var dto = MapStudent(student, lecture, contact, watchedOnlineIds.Contains(student.Id));
+                attendances.TryGetValue(student.Id, out var attendance);
+                var dto = MapStudent(
+                    student,
+                    lecture,
+                    contact,
+                    watchedOnlineIds.Contains(student.Id),
+                    attendance);
                 return ToExportRow(dto);
             }).ToList();
         }
@@ -329,7 +370,6 @@ public sealed class CallCenterService(AppDbContext context) : ICallCenterService
         return await context.Set<Student>()
             .Include(x => x.LectureHomeworks.Where(h => h.LectureId == lectureId).Take(1))
             .Include(x => x.LectureQuizzes.Where(q => q.LectureId == lectureId).Take(1))
-            .Include(x => x.LectureAttendances.Where(a => a.LectureId == lectureId).Take(1))
             .Include(x => x.QuizSubmissions.Where(s => s.Quiz.LectureId == lectureId))
                 .ThenInclude(s => s.Quiz)
             .FirstOrDefaultAsync(x => x.Id == studentId && x.Level == lecture.Course.Level)
@@ -411,7 +451,6 @@ public sealed class CallCenterService(AppDbContext context) : ICallCenterService
             .Where(x => x.Level == lecture.Course.Level)
             .Include(x => x.LectureHomeworks.Where(h => h.LectureId == lectureId).Take(1))
             .Include(x => x.LectureQuizzes.Where(q => q.LectureId == lectureId).Take(1))
-            .Include(x => x.LectureAttendances.Where(a => a.LectureId == lectureId).Take(1))
             .Include(x => x.QuizSubmissions.Where(s => s.Quiz.LectureId == lectureId))
                 .ThenInclude(s => s.Quiz)
             .OrderBy(x => x.StudentCode)
@@ -502,7 +541,9 @@ public sealed class CallCenterService(AppDbContext context) : ICallCenterService
             ParentPhoneNumber = student.ParentPhoneNumber,
             StudentType = student.IsOnline ? "Online" : "Offline",
             Attendance = student.Attended
-                ? "Present"
+                ? string.IsNullOrWhiteSpace(student.CenterName)
+                    ? "Present"
+                    : $"Present ({student.CenterName})"
                 : student.WatchedOnline
                     ? "Watched Online"
                     : "Absent",
@@ -513,6 +554,29 @@ public sealed class CallCenterService(AppDbContext context) : ICallCenterService
             Called = student.Called ? "Yes" : "No",
             CalledAt = student.CalledAt?.ToString("u") ?? "",
         };
+    }
+
+    private async Task<Dictionary<Guid, LectureAttendance>> GetLectureAttendancesAsync(
+        Guid lectureId,
+        IEnumerable<Guid> studentIds)
+    {
+        var ids = studentIds.Distinct().ToList();
+        if (ids.Count == 0)
+            return [];
+
+        return await context.Set<LectureAttendance>()
+            .AsNoTracking()
+            .Include(a => a.Center)
+            .Where(a => a.LectureId == lectureId && ids.Contains(a.StudentId))
+            .ToDictionaryAsync(a => a.StudentId);
+    }
+
+    private async Task<LectureAttendance?> GetLectureAttendanceAsync(Guid lectureId, Guid studentId)
+    {
+        return await context.Set<LectureAttendance>()
+            .AsNoTracking()
+            .Include(a => a.Center)
+            .FirstOrDefaultAsync(a => a.LectureId == lectureId && a.StudentId == studentId);
     }
 
     private async Task<HashSet<Guid>> GetWatchedOnlineStudentIdsAsync(
@@ -544,11 +608,12 @@ public sealed class CallCenterService(AppDbContext context) : ICallCenterService
         Student student,
         Lecture lecture,
         CallCenterContact? contact,
-        bool watchedOnline)
+        bool watchedOnline,
+        LectureAttendance? attendance)
     {
-        var attendance = student.LectureAttendances.FirstOrDefault(a => a.LectureId == lecture.Id);
         var onlineCorrect = student.QuizSubmissions.Sum(x => x.NumOfCorrect);
         var onlineTotal = student.QuizSubmissions.Sum(x => x.NumOfQuestions);
+        var attended = attendance is { AttendedAt: not null };
 
         return new CallCenterStudentDto
         {
@@ -556,9 +621,11 @@ public sealed class CallCenterService(AppDbContext context) : ICallCenterService
             StudentCode = student.StudentCode,
             FullName = student.FullName,
             ParentPhoneNumber = student.ParentPhoneNumber,
-            Attended = attendance is { AttendedAt: not null },
+            Attended = attended,
             WatchedOnline = watchedOnline,
             IsOnline = IsOnlineStudent(student.StudentCode),
+            CenterId = attended ? attendance?.CenterId : null,
+            CenterName = attended ? attendance?.Center?.Name : null,
             QuizScore = student.LectureQuizzes.FirstOrDefault(q => q.LectureId == lecture.Id)?.Score,
             QuizFullMark = lecture.QuizFullMark,
             OnlineQuizCorrect = onlineTotal > 0 ? onlineCorrect : null,

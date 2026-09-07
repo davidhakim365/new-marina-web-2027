@@ -337,31 +337,26 @@ public sealed class LecturesController : ControllerBase
             .FirstOrDefaultAsync(c => c.Id == request.CenterId && c.IsActive)
             ?? throw new ApiException(CentersErrors.NotFound);
 
-        var lecture = await _context
-            .Lectures
-            .Include(x => x.LectureAttendances
-                .Where(a => a.Student.StudentCode.Trim().ToLower() == code.Trim().ToLower()).Take(1)
-            )
-            .FirstOrDefaultAsync(x => x.Id == lectureId) ?? throw new ApiException(LecturesErrors.NotFound);
+        var lectureExists = await _context.Lectures.AnyAsync(x => x.Id == lectureId);
+        if (!lectureExists)
+            throw new ApiException(LecturesErrors.NotFound);
 
-        var student
-            = await _context
-                  .Students
-                  .FirstOrDefaultAsync(x => x.StudentCode.Trim().ToLower() == code.Trim().ToLower()) ??
-              throw new ApiException(StudentsErrors.NotFound);
+        var student = await _context.Students
+            .FirstOrDefaultAsync(x => x.StudentCode.Trim().ToLower() == code.Trim().ToLower())
+            ?? throw new ApiException(StudentsErrors.NotFound);
 
+        var lectureAttendance = await _context.Set<LectureAttendance>()
+            .FirstOrDefaultAsync(a => a.LectureId == lectureId && a.StudentId == student.Id);
 
-        if (lecture.LectureAttendances.FirstOrDefault(a => a.StudentId == student.Id) is not { } lectureAttendance)
+        if (lectureAttendance is null)
         {
-            lecture
-                .LectureAttendances
-                .Add(new LectureAttendance
-                {
-                    LectureId = lectureId,
-                    StudentId = student.Id,
-                    AttendedAt = DateTime.UtcNow,
-                    CenterId = center.Id
-                });
+            _context.Set<LectureAttendance>().Add(new LectureAttendance
+            {
+                LectureId = lectureId,
+                StudentId = student.Id,
+                AttendedAt = DateTime.UtcNow,
+                CenterId = center.Id
+            });
         }
         else
         {
