@@ -1263,7 +1263,9 @@ public sealed class CoursesService : ICoursesService
 
         return new StartQuizResult
         {
-            ExpiresAt = attempt.ExpiresAt,
+            ExpiresAt = attempt.ExpiresAt is { } startedExpiry
+                ? DateTime.SpecifyKind(startedExpiry, DateTimeKind.Utc)
+                : null,
             ExpiryMinutes = quiz.ExpiryMinutes
         };
     }
@@ -2156,7 +2158,7 @@ public sealed class CoursesService : ICoursesService
                 // "not started" so the student can start / retake instead of
                 // sitting on Time left 00:00.
                 ExpiresAt = attempt?.ExpiresAt is { } exp && exp > DateTime.UtcNow
-                    ? exp
+                    ? DateTime.SpecifyKind(exp, DateTimeKind.Utc)
                     : null
             };
         }

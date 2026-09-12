@@ -116,10 +116,23 @@ function formatTime(ms: number) {
   return h > 0 ? `${h}:${mm}:${ss}` : `${mm}:${ss}`;
 }
 
+/** Parse API dates as UTC so Egypt (UTC+3) phones do not treat a fresh timer as already over. */
+function parseExpiryMs(value?: string | Date | null): number | null {
+  if (!value) return null;
+  if (value instanceof Date) {
+    const t = value.getTime();
+    return Number.isFinite(t) && t > 0 ? t : null;
+  }
+  const raw = String(value).trim();
+  if (!raw || raw.startsWith("0001-01-01")) return null;
+  const hasZone = /[zZ]|[+-]\d{2}:?\d{2}$/.test(raw);
+  const t = new Date(hasZone ? raw : `${raw}Z`).getTime();
+  return Number.isFinite(t) && t > 0 ? t : null;
+}
+
 function isStillLive(value?: string | Date | null) {
-  if (!value) return false;
-  const t = new Date(value).getTime();
-  return Number.isFinite(t) && t > Date.now();
+  const t = parseExpiryMs(value);
+  return t != null && t > Date.now();
 }
 
 export function AssessmentTakeForm({
@@ -133,14 +146,13 @@ export function AssessmentTakeForm({
   onConfirmStart,
   onSubmit,
 }: Props) {
-  const isTimed = expiryMinutes > 0 || !!expiresAtProp;
+  const isTimed = expiryMinutes > 0 || isStillLive(expiresAtProp);
   const initiallyLive = isStillLive(expiresAtProp);
   const [started, setStarted] = useState(
     () => !requireStartConfirm || !isTimed || initiallyLive
   );
-  const [timedOut, setTimedOut] = useState(
-    () => !!expiresAtProp && !initiallyLive
-  );
+  // Only flip to "Retake" after this session's timer hits 0 — never on first open.
+  const [timedOut, setTimedOut] = useState(false);
   const [starting, setStarting] = useState(false);
   const [expiresAt, setExpiresAt] = useState<string | Date | null | undefined>(
     initiallyLive ? expiresAtProp : null
@@ -154,10 +166,7 @@ export function AssessmentTakeForm({
       setExpiresAt(expiresAtProp);
       setStarted(true);
       setTimedOut(false);
-      return;
     }
-    setExpiresAt(expiresAtProp ?? null);
-    if (expiresAtProp) setTimedOut(true);
   }, [expiresAtProp]);
 
   const schema = useMemo(() => {
@@ -187,7 +196,11 @@ export function AssessmentTakeForm({
       setRemainingMs(null);
       return;
     }
-    const end = new Date(expiresAt).getTime();
+    const end = parseExpiryMs(expiresAt);
+    if (end == null) {
+      setRemainingMs(null);
+      return;
+    }
     const tick = () => {
       const left = end - Date.now();
       setRemainingMs(Math.max(0, left));
@@ -239,12 +252,17 @@ export function AssessmentTakeForm({
     setStarting(true);
     try {
       const result = await onConfirmStart?.();
-      const nextExpiry =
-        result ||
-        (expiryMinutes > 0
+      const serverMs = parseExpiryMs(result ?? null);
+      const fallbackIso =
+        expiryMinutes > 0
           ? new Date(Date.now() + expiryMinutes * 60_000).toISOString()
-          : null);
-      if (nextExpiry && !isStillLive(nextExpiry)) {
+          : null;
+      const nextExpiry =
+        serverMs != null && serverMs > Date.now() - 5_000
+          ? new Date(serverMs).toISOString()
+          : fallbackIso;
+
+      if (!nextExpiry) {
         setTimedOut(true);
         return;
       }

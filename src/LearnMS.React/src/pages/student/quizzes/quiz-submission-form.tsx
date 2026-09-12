@@ -61,32 +61,25 @@ export function QuizSubmissionForm({
   );
 
   const expiryMinutes = quiz.expiryMinutes ?? 0;
-  const liveExpiresAt =
-    quiz.expiresAt && new Date(quiz.expiresAt).getTime() > Date.now()
-      ? quiz.expiresAt
-      : null;
 
   return (
     <AssessmentTakeForm
       title={quiz.title}
       description={quiz.description}
       questions={questions}
-      expiresAt={liveExpiresAt}
+      expiresAt={quiz.expiresAt}
       expiryMinutes={expiryMinutes}
       requireStartConfirm={expiryMinutes > 0}
       isSubmitting={isPending}
       onConfirmStart={async () => {
-        try {
-          await api.post(
-            `/api/courses/${courseId}/lectures/${lectureId}/quizzes/${quiz.id}/retake`
-          );
-        } catch {
-          /* no previous attempt/submission */
-        }
         const res = await api.post(
           `/api/courses/${courseId}/lectures/${lectureId}/quizzes/${quiz.id}/start`
         );
-        return res.data?.data?.expiresAt ?? null;
+        return (
+          res.data?.data?.expiresAt ??
+          res.data?.data?.ExpiresAt ??
+          null
+        );
       }}
       onSubmit={(questionAnswers) => {
         submitQuiz(
