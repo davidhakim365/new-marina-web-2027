@@ -67,7 +67,6 @@ export function QuizSubmissionForm({
       title={quiz.title}
       description={quiz.description}
       questions={questions}
-      expiresAt={quiz.expiresAt}
       expiryMinutes={expiryMinutes}
       requireStartConfirm={expiryMinutes > 0}
       isSubmitting={isPending}

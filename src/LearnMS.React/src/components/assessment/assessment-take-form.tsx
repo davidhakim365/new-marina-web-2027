@@ -147,27 +147,18 @@ export function AssessmentTakeForm({
   onSubmit,
 }: Props) {
   const isTimed = expiryMinutes > 0 || isStillLive(expiresAtProp);
-  const initiallyLive = isStillLive(expiresAtProp);
   const [started, setStarted] = useState(
-    () => !requireStartConfirm || !isTimed || initiallyLive
+    () => !requireStartConfirm || !isTimed
   );
-  // Only flip to "Retake" after this session's timer hits 0 — never on first open.
   const [timedOut, setTimedOut] = useState(false);
   const [starting, setStarting] = useState(false);
   const [expiresAt, setExpiresAt] = useState<string | Date | null | undefined>(
-    initiallyLive ? expiresAtProp : null
+    null
   );
   const [index, setIndex] = useState(0);
   const [remainingMs, setRemainingMs] = useState<number | null>(null);
   const autoSubmitted = useRef(false);
-
-  useEffect(() => {
-    if (isStillLive(expiresAtProp)) {
-      setExpiresAt(expiresAtProp);
-      setStarted(true);
-      setTimedOut(false);
-    }
-  }, [expiresAtProp]);
+  const startedAtMs = useRef(0);
 
   const schema = useMemo(() => {
     const shape: Record<string, z.ZodTypeAny> = {};
@@ -205,6 +196,8 @@ export function AssessmentTakeForm({
       const left = end - Date.now();
       setRemainingMs(Math.max(0, left));
       if (left > 0) return;
+      // Ignore a bogus 00:00 in the first seconds after Start (clock / UTC skew).
+      if (Date.now() - startedAtMs.current < 5_000) return;
       if (!autoSubmitted.current) {
         autoSubmitted.current = true;
         const data = form.getValues();
@@ -258,7 +251,7 @@ export function AssessmentTakeForm({
           ? new Date(Date.now() + expiryMinutes * 60_000).toISOString()
           : null;
       const nextExpiry =
-        serverMs != null && serverMs > Date.now() - 5_000
+        serverMs != null && serverMs > Date.now() + 30_000
           ? new Date(serverMs).toISOString()
           : fallbackIso;
 
@@ -268,6 +261,7 @@ export function AssessmentTakeForm({
       }
       setExpiresAt(nextExpiry);
       autoSubmitted.current = false;
+      startedAtMs.current = Date.now();
       setIndex(0);
       form.reset();
       setRemainingMs(null);

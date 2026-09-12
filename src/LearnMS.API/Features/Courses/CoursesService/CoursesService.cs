@@ -1236,7 +1236,6 @@ public sealed class CoursesService : ICoursesService
 
         var attempt = quiz.QuizAttempts.FirstOrDefault(x => x.StudentId == command.StudentId);
         var now = DateTime.UtcNow;
-        var attemptExpired = attempt?.ExpiresAt is { } existingExpiry && existingExpiry < now;
 
         if (attempt is null)
         {
@@ -1252,7 +1251,7 @@ public sealed class CoursesService : ICoursesService
             await _context.Set<QuizAttempt>().AddAsync(attempt);
             await _context.SaveChangesAsync();
         }
-        else if (attemptExpired)
+        else if (QuizAttemptRules.MustReset(attempt, quiz.ExpiryMinutes, now))
         {
             attempt.StartedAt = now;
             attempt.ExpiresAt = quiz.ExpiryMinutes > 0
@@ -1263,9 +1262,7 @@ public sealed class CoursesService : ICoursesService
 
         return new StartQuizResult
         {
-            ExpiresAt = attempt.ExpiresAt is { } startedExpiry
-                ? DateTime.SpecifyKind(startedExpiry, DateTimeKind.Utc)
-                : null,
+            ExpiresAt = QuizAttemptRules.ToUtcOffset(attempt.ExpiresAt),
             ExpiryMinutes = quiz.ExpiryMinutes
         };
     }
@@ -2143,6 +2140,12 @@ public sealed class CoursesService : ICoursesService
         if (submission is null)
         {
             var attempt = quiz.QuizAttempts.FirstOrDefault(x => x.StudentId == query.StudentId);
+            if (QuizAttemptRules.MustReset(attempt, quiz.ExpiryMinutes, DateTime.UtcNow) &&
+                attempt is not null)
+            {
+                _context.Remove(attempt);
+                await _context.SaveChangesAsync();
+            }
 
             return new QuizNotAnswered
             {
@@ -2154,12 +2157,9 @@ public sealed class CoursesService : ICoursesService
                 EssayQuestions = AssessmentHelpers.MapEssayNotAnswered(quiz.Questions),
                 PassCount = quiz.PassCount,
                 ExpiryMinutes = quiz.ExpiryMinutes,
-                // Only expose a live timer. An expired attempt is treated as
-                // "not started" so the student can start / retake instead of
-                // sitting on Time left 00:00.
-                ExpiresAt = attempt?.ExpiresAt is { } exp && exp > DateTime.UtcNow
-                    ? DateTime.SpecifyKind(exp, DateTimeKind.Utc)
-                    : null
+                // Never send a leftover timer. Old phones treated any expiresAt
+                // as "already over" and opened on Retake. Start creates a new one.
+                ExpiresAt = null
             };
         }
 

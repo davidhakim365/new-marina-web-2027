@@ -10,6 +10,6 @@ public sealed record StartQuizCommand
 
 public sealed record StartQuizResult
 {
-    public required DateTime? ExpiresAt { get; set; }
+    public DateTimeOffset? ExpiresAt { get; set; }
     public required int ExpiryMinutes { get; set; }
 }
