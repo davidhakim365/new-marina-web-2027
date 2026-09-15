@@ -110,7 +110,7 @@ const LessonDetailsPage = () => {
         />
       }
     >
-      <div className="grid w-full grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-2">
+      <div className="grid w-full min-w-0 grid-cols-1 gap-4 sm:gap-6 xl:grid-cols-2">
         <DashboardCard padding="sm" className="min-w-0">
           <LessonDetailsContent
             {...lesson?.data!}

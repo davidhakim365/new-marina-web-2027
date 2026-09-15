@@ -28,6 +28,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { ImageUploadField } from "@/components/image-upload-field";
+import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/components/ui/use-toast";
 import { Lesson } from "@/types/lessons";
 import { Quiz } from "@/types/quiz";
@@ -129,11 +130,11 @@ const LectureDetailsPage = () => {
         }}
         value={searchParams.get("view") ?? "details"}
       >
-        <TabsList className="mb-2 h-auto w-full justify-start overflow-x-auto bg-color2/5">
-          <TabsTrigger value="details" className="shrink-0">
+        <TabsList className="mb-2 grid h-auto w-full grid-cols-2 bg-color2/5">
+          <TabsTrigger value="details" className="text-xs sm:text-sm">
             Details
           </TabsTrigger>
-          <TabsTrigger value="students" className="shrink-0">
+          <TabsTrigger value="students" className="text-xs sm:text-sm">
             Students
           </TabsTrigger>
         </TabsList>
@@ -635,14 +636,14 @@ const LectureDetailsTab: React.FC<TabProps> = ({ lecture }) => {
         </Button>
       </div>
 
-      <div className="mt-4 grid w-full grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-2">
+      <div className="mt-4 grid w-full min-w-0 grid-cols-1 gap-4 sm:gap-6 xl:grid-cols-2">
         <DashboardCard padding="sm" className="min-w-0">
           <LectureDetailsForm {...lecture} />
         </DashboardCard>
         <DashboardCard padding="sm" className="min-w-0">
           <LectureContentForm {...lecture} />
         </DashboardCard>
-        <DashboardCard padding="sm" className="min-w-0 lg:col-span-2">
+        <DashboardCard padding="sm" className="min-w-0 xl:col-span-2">
           <LectureAssetsFrom {...lecture} />
         </DashboardCard>
       </div>
@@ -740,8 +741,8 @@ function LectureDetailsForm({
           <fieldset
             className="flex flex-col gap-3 p-1 sm:flex-row sm:items-center sm:gap-2"
             disabled={isPending}>
-            <div className="flex min-w-0 items-center gap-2 text-lg sm:text-xl">
-              <Settings2 className="h-9 w-9 shrink-0 rounded-full bg-color2/15 p-1 text-color2" />
+            <div className="flex min-w-0 items-center gap-2 text-base sm:text-xl">
+              <Settings2 className="h-8 w-8 shrink-0 rounded-full bg-color2/15 p-1 text-color2 sm:h-9 sm:w-9" />
               <span className="truncate">Session Details</span>
             </div>
             {form.formState.isDirty && (
@@ -761,7 +762,7 @@ function LectureDetailsForm({
             control={form.control}
             name='title'
             render={({ field }) => (
-              <FormItem className='p-3 bg-color2/15 border-2 border-color2/30 rounded'>
+              <FormItem className="min-w-0 overflow-hidden rounded-lg border border-color2/30 bg-color2/15 p-2.5 sm:border-2 sm:p-3">
                 <FormLabel className='text-primary'>Title</FormLabel>
                 <FormControl>
                   <Input className='text-primary' {...field} />
@@ -774,21 +775,13 @@ function LectureDetailsForm({
             control={form.control}
             name='description'
             render={({ field }) => (
-              <FormItem className='p-3 bg-color2/15 border-2 border-color2/30 rounded '>
+              <FormItem className="min-w-0 overflow-hidden rounded-lg border border-color2/30 bg-color2/15 p-2.5 sm:border-2 sm:p-3">
                 <FormLabel className='text-primary'>Description</FormLabel>
                 <FormControl>
-                  <div style={{ height: "200px", width: "100%" }}>
-                    <textarea
-                      className='text-color2'
-                      style={{
-                        height: "100%",
-                        width: "100%",
-                        resize: "none",
-                        fontSize: "14px",
-                      }} // Fill the container
-                      {...field}
-                    />
-                  </div>
+                  <Textarea
+                    className="min-h-28 resize-y text-color2 sm:min-h-40"
+                    {...field}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -798,13 +791,13 @@ function LectureDetailsForm({
             control={form.control}
             name='homeworkVideoUrl'
             render={({ field }) => (
-              <FormItem className='p-3 bg-color2/15 border-2 border-color2/30 rounded'>
+              <FormItem className="min-w-0 overflow-hidden rounded-lg border border-color2/30 bg-color2/15 p-2.5 sm:border-2 sm:p-3">
                 <FormLabel className='text-primary'>
                   Lecture Video Homework (YouTube)
                 </FormLabel>
                 <FormControl>
                   <Input
-                    className='text-primary'
+                    className='min-w-0 text-primary'
                     placeholder='https://www.youtube.com/watch?v=...'
                     {...field}
                     value={field.value ?? ""}
@@ -814,50 +807,52 @@ function LectureDetailsForm({
               </FormItem>
             )}
           />
-          <FormField
-            control={form.control}
-            name='price'
-            render={({ field }) => (
-              <FormItem className='p-3 bg-color2/15 border-2 border-color2/30 rounded'>
-                <FormLabel className='text-primary'>Price</FormLabel>
-                <FormControl>
-                  <Input type='number' className='text-primary' {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name='renewalPrice'
-            render={({ field }) => (
-              <FormItem className='p-3 bg-color2/15 border-2 border-color2/30 rounded'>
-                <FormLabel className='text-primary'>RenewalPrice</FormLabel>
-                <FormControl>
-                  <Input type='number' className='text-primary' {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name='expirationDays'
-            render={({ field }) => (
-              <FormItem className='p-3 bg-color2/15 border-2 border-color2/30 rounded'>
-                <FormLabel className='text-primary'>Expiration Days</FormLabel>
-                <FormControl>
-                  <Input type='number' className='text-primary' {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          <div className="grid min-w-0 grid-cols-1 gap-2 sm:grid-cols-2">
+            <FormField
+              control={form.control}
+              name='price'
+              render={({ field }) => (
+                <FormItem className="min-w-0 overflow-hidden rounded-lg border border-color2/30 bg-color2/15 p-2.5 sm:border-2 sm:p-3">
+                  <FormLabel className='text-primary'>Price</FormLabel>
+                  <FormControl>
+                    <Input type='number' className='text-primary' {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name='renewalPrice'
+              render={({ field }) => (
+                <FormItem className="min-w-0 overflow-hidden rounded-lg border border-color2/30 bg-color2/15 p-2.5 sm:border-2 sm:p-3">
+                  <FormLabel className='text-primary'>Renewal Price</FormLabel>
+                  <FormControl>
+                    <Input type='number' className='text-primary' {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name='expirationDays'
+              render={({ field }) => (
+                <FormItem className="min-w-0 overflow-hidden rounded-lg border border-color2/30 bg-color2/15 p-2.5 sm:border-2 sm:p-3">
+                  <FormLabel className='text-primary'>Expiration Days</FormLabel>
+                  <FormControl>
+                    <Input type='number' className='text-primary' {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
           <FormField
             control={form.control}
             name='imageUrl'
             render={({ field }) => (
-              <FormItem className='p-3 bg-color2/15 border-2 border-color2/30 rounded'>
+              <FormItem className="min-w-0 overflow-hidden rounded-lg border border-color2/30 bg-color2/15 p-2.5 sm:border-2 sm:p-3">
                 <FormLabel className='text-primary'>Image</FormLabel>
                 <FormControl>
                   <ImageUploadField
@@ -885,8 +880,8 @@ function LectureContentForm({
   return (
     <div className="flex min-w-0 flex-col gap-4">
       <div className="flex items-center justify-between gap-2">
-        <div className="flex min-w-0 items-center gap-2 text-lg sm:text-xl">
-          <ListCollapse className="h-9 w-9 shrink-0 rounded-full bg-color2/15 p-1 text-color2" />
+        <div className="flex min-w-0 items-center gap-2 text-base sm:text-xl">
+          <ListCollapse className="h-8 w-8 shrink-0 rounded-full bg-color2/15 p-1 text-color2 sm:h-9 sm:w-9" />
           <span className="truncate">Session Content</span>
         </div>
         <div className="flex shrink-0 items-center gap-2">
@@ -978,11 +973,9 @@ function LectureItem({
   };
 
   return (
-    <div className="flex w-full min-w-0 items-center justify-between gap-2 rounded border border-color2/25 bg-color2/10 text-primary">
-      <div className="min-w-0 flex-1 p-2">
-        <p className="truncate">{item.title}</p>
-      </div>
-      <div className="flex shrink-0 items-center gap-2 pe-2">
+    <div className="flex w-full min-w-0 flex-col gap-2 rounded border border-color2/25 bg-color2/10 p-2 text-primary sm:flex-row sm:items-center sm:justify-between">
+      <p className="min-w-0 flex-1 break-words">{item.title}</p>
+      <div className="flex shrink-0 items-center gap-2 self-end sm:self-auto">
         {item.type === "Lesson" && (
           <Confirmation
             title="Delete Lesson"
@@ -1066,7 +1059,7 @@ function AddLessonForm({
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)}>
         <fieldset
-          className='p-2 space-y-2 border-2 border-color2/30 rounded'
+          className='min-w-0 space-y-2 rounded border-2 border-color2/30 p-2'
           disabled={createLessonMutation.isPending}>
           <FormField
             control={form.control}
@@ -1169,13 +1162,13 @@ function LectureAssetsFrom({
   return (
     <div className="h-full w-full min-w-0">
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-2 text-xl sm:text-2xl">
-          <div className="rounded-full border-primary/40 bg-primary/30 p-2.5 sm:p-3">
+        <div className="flex items-center gap-2 text-lg sm:text-2xl">
+          <div className="rounded-full border-primary/40 bg-primary/30 p-2 sm:p-3">
             <FaFile className="text-primary" />
           </div>
           PDF
         </div>
-        <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+        <div className="grid grid-cols-1 gap-2 sm:flex sm:flex-row sm:flex-wrap">
           {isDirty && (
             <Button className="w-full sm:w-auto" onClick={onUpdate}>
               Update
@@ -1201,19 +1194,19 @@ function LectureAssetsFrom({
           </Button>
         </div>
       </div>
-      <div className="flex flex-wrap items-center gap-3 rounded border-[3px] border-primary/50 bg-primary/30 p-4 sm:gap-4 sm:p-6 md:p-10">
+      <div className="grid min-w-0 grid-cols-1 gap-3 rounded-lg border-[3px] border-primary/50 bg-primary/30 p-3 sm:grid-cols-2 sm:p-4 md:grid-cols-3 xl:grid-cols-4">
         {assets.length === 0 && (
-          <p className="self-center text-2xl text-primary/40 sm:text-4xl md:text-5xl">
+          <p className="col-span-full self-center py-6 text-center text-xl text-primary/40 sm:text-3xl">
             NO PDFs
           </p>
         )}
         {assets.map((asset) => (
           <div
             key={asset.id}
-            className="relative h-fit w-full rounded-xl bg-card/85 p-4 sm:w-52 sm:p-5"
+            className="relative min-w-0 rounded-xl bg-card/85 p-3 sm:p-4"
           >
             <Button
-              className="absolute right-0 top-0"
+              className="absolute right-1 top-1"
               size="icon"
               onClick={() => removeAsset(asset.id)}
               variant="destructive"
@@ -1222,20 +1215,20 @@ function LectureAssetsFrom({
             </Button>
             {asset.type === "Image" && (
               <a href={assetHref(asset)} target="_blank" rel="noreferrer">
-                <FaImage className="h-16 w-full text-primary/40 sm:h-full" />
+                <FaImage className="mx-auto h-14 w-14 text-primary/40 sm:h-16 sm:w-16" />
               </a>
             )}
             {asset.type === "Pdf" && (
               <a href={assetHref(asset)} target="_blank" rel="noreferrer">
-                <FaFilePdf className="h-16 w-full text-primary/40 sm:h-full" />
+                <FaFilePdf className="mx-auto h-14 w-14 text-primary/40 sm:h-16 sm:w-16" />
               </a>
             )}
             {asset.type === "Unknown" && (
               <a href={assetHref(asset)} target="_blank" rel="noreferrer">
-                <FaFile className="h-16 w-full text-primary/40 sm:h-full" />
+                <FaFile className="mx-auto h-14 w-14 text-primary/40 sm:h-16 sm:w-16" />
               </a>
             )}
-            <p className="mt-2 break-words font-medium">{asset.name}</p>
+            <p className="mt-2 break-all pr-8 text-sm font-medium sm:text-base">{asset.name}</p>
             {asset.lectureName && (
               <p className="break-words text-xs text-muted-foreground">
                 {asset.lectureName}

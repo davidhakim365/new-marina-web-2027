@@ -158,7 +158,7 @@ const DashboardCoursePage = () => {
         ) : undefined
       }
     >
-      <div className="grid w-full grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-2">
+      <div className="grid w-full min-w-0 grid-cols-1 gap-4 sm:gap-6 xl:grid-cols-2">
         {canManageCourses && (
           <DashboardCard padding="sm" className="min-w-0">
             <CourseDetailsForm {...course} />
@@ -248,8 +248,8 @@ function CourseDetailsForm({
           <fieldset
             className="flex flex-col gap-3 p-1 sm:flex-row sm:items-center sm:gap-2"
             disabled={updateCourseMutation.isPending}>
-            <div className="flex min-w-0 items-center gap-2 text-lg sm:text-xl">
-              <Settings2 className="h-9 w-9 shrink-0 rounded-full bg-color2/15 p-1 text-color2" />
+            <div className="flex min-w-0 items-center gap-2 text-base sm:text-xl">
+              <Settings2 className="h-8 w-8 shrink-0 rounded-full bg-color2/15 p-1 text-color2 sm:h-9 sm:w-9" />
               <span className="truncate">Course Details</span>
             </div>
             {form.formState.isDirty && (
@@ -269,7 +269,7 @@ function CourseDetailsForm({
             control={form.control}
             name='title'
             render={({ field }) => (
-              <FormItem className='p-3 bg-color2/15 border-2 border-color2/30 rounded'>
+              <FormItem className="min-w-0 overflow-hidden rounded-lg border border-color2/30 bg-color2/15 p-2.5 sm:border-2 sm:p-3">
                 <FormLabel className='text-color2'>Title</FormLabel>
                 <FormControl>
                   <Input className='text-color2' {...field} />
@@ -282,7 +282,7 @@ function CourseDetailsForm({
             control={form.control}
             name='description'
             render={({ field }) => (
-              <FormItem className='p-3 bg-color2/15 border-2 border-color2/30 rounded'>
+              <FormItem className="min-w-0 overflow-hidden rounded-lg border border-color2/30 bg-color2/15 p-2.5 sm:border-2 sm:p-3">
                 <FormLabel className='text-color2'>Description</FormLabel>
                 <FormControl>
                   <Input className='text-color2' {...field} />
@@ -291,50 +291,53 @@ function CourseDetailsForm({
               </FormItem>
             )}
           />
-          <FormField
-            name='level'
-            render={({ field }) => (
-              <FormItem className='p-3 bg-color2/15 border-2 border-color2/30 rounded'>
-                <FormLabel className='text-color2'>Level</FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}>
+          <div className="grid min-w-0 grid-cols-1 gap-2 sm:grid-cols-2">
+            <FormField
+              control={form.control}
+              name='expirationDays'
+              render={({ field }) => (
+                <FormItem className="min-w-0 overflow-hidden rounded-lg border border-color2/30 bg-color2/15 p-2.5 sm:border-2 sm:p-3">
+                  <FormLabel className='text-primary'>Expiration Days</FormLabel>
                   <FormControl>
-                    <SelectTrigger className='text-color2'>
-                      <SelectValue placeholder='Select a level' />
-                    </SelectTrigger>
+                    <Input type='number' className='text-primary' {...field} />
                   </FormControl>
-                  <SelectContent>
-                    <SelectItem value='Level0'>2nd Prep</SelectItem>
-                    <SelectItem value='Level1'>3rd Prep</SelectItem>
-                    <SelectItem value='Level2'>1st Secondary General</SelectItem>
-                    <SelectItem value='Level4'>1st Secondary Baccalaureate</SelectItem>
-                    <SelectItem value='Level3'>2nd Secondary General</SelectItem>
-                    <SelectItem value='Level5'>2nd Secondary Baccalaureate</SelectItem>
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name='expirationDays'
-            render={({ field }) => (
-              <FormItem className='p-3 bg-color2/15 border-2 border-color2/30 rounded'>
-                <FormLabel className='text-primary'>Expiration Days</FormLabel>
-                <FormControl>
-                  <Input type='number' className='text-primary' {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name='level'
+              render={({ field }) => (
+                <FormItem className="min-w-0 overflow-hidden rounded-lg border border-color2/30 bg-color2/15 p-2.5 sm:border-2 sm:p-3">
+                  <FormLabel className='text-color2'>Level</FormLabel>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger className='min-w-0 text-color2'>
+                        <SelectValue placeholder='Select a level' />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value='Level0'>2nd Prep</SelectItem>
+                      <SelectItem value='Level1'>3rd Prep</SelectItem>
+                      <SelectItem value='Level2'>1st Secondary General</SelectItem>
+                      <SelectItem value='Level4'>1st Secondary Baccalaureate</SelectItem>
+                      <SelectItem value='Level3'>2nd Secondary General</SelectItem>
+                      <SelectItem value='Level5'>2nd Secondary Baccalaureate</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
           <FormField
             control={form.control}
             name='imageUrl'
             render={({ field }) => (
-              <FormItem className='p-3 bg-color2/15 border-2 border-color2/30 rounded'>
+              <FormItem className="min-w-0 overflow-hidden rounded-lg border border-color2/30 bg-color2/15 p-2.5 sm:border-2 sm:p-3">
                 <FormLabel className='text-color2'>Image</FormLabel>
                 <FormControl>
                   <ImageUploadField
@@ -370,8 +373,8 @@ function CourseContentForm({
   return (
     <div className="flex min-w-0 flex-col gap-4">
       <div className="flex items-center justify-between gap-2">
-        <div className="flex min-w-0 items-center gap-2 text-lg sm:text-xl">
-          <ListCollapse className="h-9 w-9 shrink-0 rounded-full bg-color2/15 p-1 text-color2" />
+        <div className="flex min-w-0 items-center gap-2 text-base sm:text-xl">
+          <ListCollapse className="h-8 w-8 shrink-0 rounded-full bg-color2/15 p-1 text-color2 sm:h-9 sm:w-9" />
           <span className="truncate">{t("admin.courses.content")}</span>
         </div>
         <div className="flex shrink-0 items-center gap-2">
@@ -454,11 +457,9 @@ function CourseItem({
   const canOpen = isExam ? canManageCourses : canManageLectures;
 
   return (
-    <div className="flex w-full min-w-0 items-center justify-between gap-2 rounded border border-color2/25 bg-color2/10 text-color2">
-      <div className="min-w-0 flex-1 p-2">
-        <p className="truncate">{item.title}</p>
-      </div>
-      <div className="flex shrink-0 items-center gap-2 pe-2">
+    <div className="flex w-full min-w-0 flex-col gap-2 rounded border border-color2/25 bg-color2/10 p-2 text-color2 sm:flex-row sm:items-center sm:justify-between">
+      <p className="min-w-0 flex-1 break-words">{item.title}</p>
+      <div className="flex shrink-0 items-center gap-2 self-end sm:self-auto">
         <Badge className="h-5">{item.type}</Badge>
         {canOpen && (
           <Link
@@ -513,7 +514,7 @@ function AddLectureForm({
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)}>
         <fieldset
-          className='p-2 space-y-2 border-2 border-color2/30 rounded'
+          className='min-w-0 space-y-2 rounded border-2 border-color2/30 p-2'
           disabled={createLectureMutation.isPending}>
           <FormField
             control={form.control}

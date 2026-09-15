@@ -66,7 +66,7 @@ export const DashboardLayout = () => {
         </SheetContent>
       </Sheet>
 
-      <div className="relative z-10 flex min-h-0 flex-1 gap-0 p-2 md:p-3">
+      <div className="relative z-10 flex min-h-0 min-w-0 flex-1 gap-0 p-1.5 sm:p-2 md:p-3">
         <div className="hidden h-full shrink-0 lg:block">
           <DashboardSideBar variant="desktop" />
         </div>

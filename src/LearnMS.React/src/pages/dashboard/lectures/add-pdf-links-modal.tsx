@@ -90,7 +90,7 @@ const AddPdfLinksModal: React.FC<AddPdfLinksModalProps> = ({
 
   return (
     <Dialog open onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-xl text-foreground">
+      <DialogContent className="max-h-[90dvh] overflow-y-auto text-foreground sm:max-w-xl">
         <DialogHeader>
           <DialogTitle>Add PDF links</DialogTitle>
           <DialogDescription>
@@ -149,12 +149,13 @@ const AddPdfLinksModal: React.FC<AddPdfLinksModalProps> = ({
           Add another PDF
         </Button>
 
-        <DialogFooter>
-          <Button type="button" variant="outline" onClick={onClose}>
+        <DialogFooter className="gap-2">
+          <Button type="button" variant="outline" className="w-full sm:w-auto" onClick={onClose}>
             Cancel
           </Button>
           <Button
             type="button"
+            className="w-full sm:w-auto"
             onClick={onSubmit}
             disabled={addPdfLinksMutation.isPending}
           >

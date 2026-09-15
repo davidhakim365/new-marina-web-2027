@@ -41,7 +41,7 @@ export function DashboardPageShell({
 
       <div
         className={cn(
-          "relative z-10 mx-auto flex w-full flex-col gap-4 p-3 sm:gap-6 sm:p-4 md:p-6",
+          "relative z-10 mx-auto flex w-full min-w-0 flex-col gap-4 p-2 sm:gap-6 sm:p-4 md:p-6",
           !fullWidth && "max-w-7xl"
         )}
       >

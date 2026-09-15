@@ -1,9 +1,8 @@
-import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/use-toast";
 import { cn } from "@/lib/utils";
 import { uploadToImgBb } from "@/lib/imgbb-upload";
 import { ImageIcon, Loader2, X } from "lucide-react";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 
 type Props = {
@@ -21,6 +20,7 @@ export function ImageUploadField({
   disabled,
 }: Props) {
   const [uploading, setUploading] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const handleFile = async (file: File | undefined) => {
     if (!file) return;
@@ -49,39 +49,51 @@ export function ImageUploadField({
   };
 
   return (
-    <div className={cn("space-y-3", className)}>
-      <div className="flex min-w-0 max-w-full flex-wrap items-center gap-3">
-        <Input
-          type="file"
-          accept="image/*"
-          className="min-w-0 max-w-full"
-          disabled={disabled || uploading}
-          onChange={(e) => {
-            const f = e.target.files?.[0];
-            void handleFile(f);
-            e.target.value = "";
-          }}
-        />
-        {uploading && (
-          <span className="flex items-center gap-2 text-sm text-muted-foreground">
+    <div className={cn("min-w-0 max-w-full space-y-3", className)}>
+      <input
+        ref={inputRef}
+        type="file"
+        accept="image/*"
+        className="sr-only"
+        disabled={disabled || uploading}
+        onChange={(e) => {
+          const f = e.target.files?.[0];
+          void handleFile(f);
+          e.target.value = "";
+        }}
+      />
+      <Button
+        type="button"
+        variant="outline"
+        className="w-full justify-center sm:w-auto"
+        disabled={disabled || uploading}
+        onClick={() => inputRef.current?.click()}
+      >
+        {uploading ? (
+          <>
             <Loader2 className="h-4 w-4 animate-spin" />
             Uploading…
-          </span>
+          </>
+        ) : (
+          <>
+            <ImageIcon className="h-4 w-4" />
+            {value ? "Replace image" : "Choose image"}
+          </>
         )}
-      </div>
+      </Button>
 
       {value ? (
         <div className="relative inline-block max-w-full">
           <img
             src={value}
             alt="Preview"
-            className="max-h-48 max-w-full rounded-lg border object-contain bg-background"
+            className="max-h-40 w-full max-w-full rounded-lg border bg-background object-contain sm:max-h-48"
           />
           <Button
             type="button"
             size="icon"
             variant="destructive"
-            className="absolute -right-2 -top-2 h-7 w-7"
+            className="absolute right-1 top-1 h-7 w-7 sm:-right-2 sm:-top-2"
             disabled={disabled || uploading}
             onClick={() => onChange("")}
             aria-label="Remove image"
@@ -90,9 +102,9 @@ export function ImageUploadField({
           </Button>
         </div>
       ) : (
-        <div className="flex h-28 items-center justify-center gap-2 rounded-lg border border-dashed text-sm text-muted-foreground">
-          <ImageIcon className="h-4 w-4" />
-          Choose an image to upload
+        <div className="flex h-24 items-center justify-center gap-2 rounded-lg border border-dashed px-3 text-center text-sm text-muted-foreground sm:h-28">
+          <ImageIcon className="h-4 w-4 shrink-0" />
+          <span>Choose an image to upload</span>
         </div>
       )}
     </div>

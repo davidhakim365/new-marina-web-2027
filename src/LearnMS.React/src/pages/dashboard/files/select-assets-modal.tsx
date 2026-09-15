@@ -14,7 +14,7 @@ type SelectAssetsModalProps = {
 const SelectAssetsModal: React.FC<SelectAssetsModalProps> = ({ onClose }) => {
   return (
     <Dialog open onOpenChange={onClose}>
-      <DialogContent className='min-w-[90%]'>
+      <DialogContent className="max-h-[90dvh] min-w-0 overflow-y-auto sm:min-w-[min(90%,72rem)]">
         <DialogHeader>
           <DialogTitle>Select PDFs from Files</DialogTitle>
         </DialogHeader>

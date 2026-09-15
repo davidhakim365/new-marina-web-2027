@@ -38,7 +38,7 @@ export function DashboardCard({
       onMouseEnter={() => spotlight && setOpacity(0.5)}
       onMouseLeave={() => setOpacity(0)}
       className={cn(
-        "relative overflow-hidden rounded-2xl border border-color2/10 bg-card/80 shadow-sm backdrop-blur-sm transition-all duration-300 hover:border-color2/20 hover:shadow-md",
+        "relative min-w-0 overflow-hidden rounded-2xl border border-color2/10 bg-card/80 shadow-sm backdrop-blur-sm transition-all duration-300 hover:border-color2/20 hover:shadow-md",
         paddingMap[padding],
         className
       )}
@@ -52,7 +52,7 @@ export function DashboardCard({
           }}
         />
       )}
-      <div className="relative z-10">{children}</div>
+      <div className="relative z-10 min-w-0">{children}</div>
     </div>
   );
 }

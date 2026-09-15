@@ -86,7 +86,7 @@ function ProgressStat({
 
   return (
     <div className="space-y-2">
-      <div className="flex items-center justify-between text-sm">
+      <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1 text-sm">
         <span className={cn("font-medium", labelClass)}>{label}</span>
         <span className="font-semibold">
           {value} / {total} ({percent}%)
