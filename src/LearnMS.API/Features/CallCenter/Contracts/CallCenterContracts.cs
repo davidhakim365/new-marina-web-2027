@@ -81,6 +81,9 @@ public sealed record CallCenterStudentDto
     public int? OnlineQuizTotal { get; init; }
     public decimal? HomeworkScore { get; init; }
     public decimal? HomeworkFullMark { get; init; }
+    [Required] public required bool HomeworkSubmitted { get; init; }
+    public string? HomeworkFileName { get; init; }
+    public DateTime? HomeworkSubmittedAt { get; init; }
     public string? Comment { get; init; }
     [Required] public required bool Called { get; init; }
     public DateTime? CalledAt { get; init; }
@@ -105,6 +108,9 @@ public sealed record CallCenterStudentLectureDto
     public int? OnlineQuizTotal { get; init; }
     public decimal? HomeworkScore { get; init; }
     public decimal? HomeworkFullMark { get; init; }
+    [Required] public required bool HomeworkSubmitted { get; init; }
+    public string? HomeworkFileName { get; init; }
+    public DateTime? HomeworkSubmittedAt { get; init; }
     [Required] public required string EnrollmentStatus { get; init; }
 }
 
@@ -151,6 +157,7 @@ public sealed record ExportCallCenterStudentRow
     public required string Attendance { get; init; }
     public string? QuizScore { get; init; }
     public string? Homework { get; init; }
+    public required string HomeworkSubmitted { get; init; }
     public required decimal Credit { get; init; }
     public string? Comment { get; init; }
     public required string Called { get; init; }

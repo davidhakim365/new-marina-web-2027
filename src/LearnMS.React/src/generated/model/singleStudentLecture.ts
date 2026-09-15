@@ -12,6 +12,9 @@ export interface SingleStudentLecture {
   enrollmentStatus?: string | null;
   expiresAt?: string | null;
   homeworkScore?: number | null;
+  homeworkSubmitted?: boolean;
+  homeworkFileName?: string | null;
+  homeworkSubmittedAt?: string | null;
   id: string;
   quizScore?: number | null;
   studentQuizzesScore?: number | null;

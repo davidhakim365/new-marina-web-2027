@@ -254,6 +254,16 @@ public sealed class CallCenterService(AppDbContext context) : ICallCenterService
                     .Select(h => (decimal?)h.Score)
                     .FirstOrDefault(),
                 l.HomeworkFullMark,
+                HomeworkSubmitted = l.LectureHomeworks.Any(h =>
+                    h.StudentId == studentId && h.SubmittedAt != null),
+                HomeworkFileName = l.LectureHomeworks
+                    .Where(h => h.StudentId == studentId)
+                    .Select(h => h.SubmissionFileName)
+                    .FirstOrDefault(),
+                HomeworkSubmittedAt = l.LectureHomeworks
+                    .Where(h => h.StudentId == studentId)
+                    .Select(h => h.SubmittedAt)
+                    .FirstOrDefault(),
                 EnrollmentStatus = l.LectureEnrollments
                     .Where(e => e.StudentId == studentId)
                     .Select(e => e.ExpiresAt >= now ? "Active" : "Expired")
@@ -303,6 +313,9 @@ public sealed class CallCenterService(AppDbContext context) : ICallCenterService
                 OnlineQuizTotal = l.OnlineTotal > 0 ? l.OnlineTotal : null,
                 HomeworkScore = l.HomeworkScore,
                 HomeworkFullMark = l.HomeworkFullMark,
+                HomeworkSubmitted = l.HomeworkSubmitted,
+                HomeworkFileName = l.HomeworkFileName,
+                HomeworkSubmittedAt = l.HomeworkSubmittedAt,
                 EnrollmentStatus = l.EnrollmentStatus,
             };
         }).ToList();
@@ -549,6 +562,7 @@ public sealed class CallCenterService(AppDbContext context) : ICallCenterService
                     : "Absent",
             QuizScore = FormatQuiz(student),
             Homework = Score(student.HomeworkScore, student.HomeworkFullMark),
+            HomeworkSubmitted = student.HomeworkSubmitted ? "Yes" : "No",
             Credit = student.Credit,
             Comment = student.Comment ?? "",
             Called = student.Called ? "Yes" : "No",
@@ -615,6 +629,8 @@ public sealed class CallCenterService(AppDbContext context) : ICallCenterService
         var onlineTotal = student.QuizSubmissions.Sum(x => x.NumOfQuestions);
         var attended = attendance is { AttendedAt: not null };
 
+        var homework = student.LectureHomeworks.FirstOrDefault(h => h.LectureId == lecture.Id);
+
         return new CallCenterStudentDto
         {
             Id = student.Id,
@@ -630,8 +646,11 @@ public sealed class CallCenterService(AppDbContext context) : ICallCenterService
             QuizFullMark = lecture.QuizFullMark,
             OnlineQuizCorrect = onlineTotal > 0 ? onlineCorrect : null,
             OnlineQuizTotal = onlineTotal > 0 ? onlineTotal : null,
-            HomeworkScore = student.LectureHomeworks.FirstOrDefault(h => h.LectureId == lecture.Id)?.Score,
+            HomeworkScore = homework?.Score,
             HomeworkFullMark = lecture.HomeworkFullMark,
+            HomeworkSubmitted = homework?.HasSubmission == true,
+            HomeworkFileName = homework?.SubmissionFileName,
+            HomeworkSubmittedAt = homework?.SubmittedAt,
             Comment = contact?.Comment,
             Called = contact?.Called ?? false,
             CalledAt = contact?.CalledAt,

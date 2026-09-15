@@ -104,6 +104,7 @@ public class StudentCoursesController(ICurrentUserService currentUserService, Ap
                             l.RenewalPrice,
                             l.ImageUrl,
                             l.HomeworkVideoUrl,
+                            l.HomeworkFullMark,
                             Assets = l.Assets.Select(a => new StudentAssetDto()
                             {
                                 Id = a.Id,
@@ -186,6 +187,7 @@ public class StudentCoursesController(ICurrentUserService currentUserService, Ap
         DateTime? courseExpires = null;
         Dictionary<Guid, DateTime?> lectureExpiresById = new();
         HashSet<Guid> paidLectureIds = [];
+        Dictionary<Guid, LectureHomework> homeworkByLecture = new();
         if (user != null)
         {
             var studentId = await context.Students
@@ -271,6 +273,15 @@ public class StudentCoursesController(ICurrentUserService currentUserService, Ap
                     // Another request may have already written the missing rows.
                 }
             }
+
+            var homeworkRows = await context.Set<LectureHomework>()
+                .AsNoTracking()
+                .Where(h =>
+                    (h.StudentId == studentId || h.StudentId == user.Id)
+                    && lectureIds.Contains(h.LectureId))
+                .ToListAsync();
+            foreach (var row in homeworkRows)
+                homeworkByLecture[row.LectureId] = row;
         }
 
         var hasActiveCourseEnrollment =
@@ -291,6 +302,7 @@ public class StudentCoursesController(ICurrentUserService currentUserService, Ap
             else
                 expiresAt = lectureExpires;
 
+            homeworkByLecture.TryGetValue(l.Id, out var homework);
             return new StudentLectureDto()
             {
                 Id = l.Id,
@@ -301,6 +313,11 @@ public class StudentCoursesController(ICurrentUserService currentUserService, Ap
                 Order = l.Order,
                 ImageUrl = l.ImageUrl,
                 HomeworkVideoUrl = l.HomeworkVideoUrl,
+                HomeworkFullMark = l.HomeworkFullMark,
+                HomeworkScore = homework?.Score,
+                HomeworkSubmitted = homework?.HasSubmission == true,
+                HomeworkFileName = homework?.SubmissionFileName,
+                HomeworkSubmittedAt = homework?.SubmittedAt,
                 Assets = l.Assets,
                 ExpirationDays = l.ExpirationDays,
                 Items = l.Lessons.Cast<StudentLectureItemDto>().Union(l.Quizzes).OrderBy(i => i.Order).ToList(),

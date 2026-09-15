@@ -59,6 +59,11 @@ public sealed record StudentLectureDto : StudentCourseItemDto
     [Required] public required decimal RenewalPrice { get; init; }
     public string? ImageUrl { get; init; }
     public string? HomeworkVideoUrl { get; init; }
+    public decimal? HomeworkFullMark { get; init; }
+    public decimal? HomeworkScore { get; init; }
+    public bool HomeworkSubmitted { get; init; }
+    public string? HomeworkFileName { get; init; }
+    public DateTime? HomeworkSubmittedAt { get; init; }
 
     public int? ExpirationDays { get; init; }
     public required DateTime? ExpiresAt { get; init; }

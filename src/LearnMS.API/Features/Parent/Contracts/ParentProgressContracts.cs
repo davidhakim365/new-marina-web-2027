@@ -39,6 +39,9 @@ public sealed record ParentQuizGradeItem
     [Required] public required string CourseTitle { get; init; }
     public decimal? OfflineQuizScore { get; init; }
     public decimal? HomeworkScore { get; init; }
+    public decimal? HomeworkFullMark { get; init; }
+    [Required] public required bool HomeworkSubmitted { get; init; }
+    public DateTime? HomeworkSubmittedAt { get; init; }
     public decimal? OnlineCorrect { get; init; }
     public decimal? OnlineTotal { get; init; }
 }

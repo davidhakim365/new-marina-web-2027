@@ -346,7 +346,7 @@ public class StatisticsController(AppDbContext context) : ControllerBase
 
         return totalStudentsQuery
             .GroupBy(x => x.Lecture.Title)
-            .Select(x => new LectureAverageScore(x.Key, x.Any() ? x.Average(q => q.Score) : 0))
+            .Select(x => new LectureAverageScore(x.Key, x.Average(q => (decimal?)q.Score) ?? 0))
             .ToListAsync();
     }
 

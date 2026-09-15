@@ -102,6 +102,11 @@ public sealed record GetStudentLectureResult : GetLectureResult
     [Required]
     public required string ImageUrl { get; set; }
     public string? HomeworkVideoUrl { get; set; }
+    public decimal? HomeworkFullMark { get; set; }
+    public decimal? HomeworkScore { get; set; }
+    public bool HomeworkSubmitted { get; set; }
+    public string? HomeworkFileName { get; set; }
+    public DateTime? HomeworkSubmittedAt { get; set; }
     [Required]
     public required decimal Price { get; set; }
     [Required]

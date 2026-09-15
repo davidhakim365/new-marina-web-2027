@@ -354,7 +354,10 @@ export const studentLecturesColumns: ColumnDef<SingleStudentLecture>[] = [
     header: "Homework",
     cell({ row }) {
       const score = row.original.homeworkScore;
-      return score === 1 || score == null ? "-" : score;
+      const submitted = row.original.homeworkSubmitted;
+      if (score != null && score !== 1) return score;
+      if (submitted) return "Submitted";
+      return "-";
     },
   },
   {

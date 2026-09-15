@@ -308,7 +308,16 @@ const ParentDashboardPage = () => {
                       />
                       <GradeChip
                         label={t("parent.dashboard.homework")}
-                        value={scoreText(item.homeworkScore)}
+                        value={
+                          item.homeworkScore != null
+                            ? scoreText(
+                                item.homeworkScore,
+                                item.homeworkFullMark
+                              )
+                            : item.homeworkSubmitted
+                              ? t("parent.dashboard.homeworkSubmitted")
+                              : scoreText(item.homeworkScore)
+                        }
                       />
                       <GradeChip
                         label={t("parent.dashboard.onlineQuiz")}

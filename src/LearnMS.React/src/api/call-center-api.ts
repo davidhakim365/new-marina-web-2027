@@ -17,6 +17,9 @@ export type CallCenterStudent = {
   onlineQuizTotal?: number | null;
   homeworkScore?: number | null;
   homeworkFullMark?: number | null;
+  homeworkSubmitted?: boolean;
+  homeworkFileName?: string | null;
+  homeworkSubmittedAt?: string | null;
   comment?: string | null;
   called: boolean;
   calledAt?: string | null;
@@ -162,6 +165,9 @@ export type CallCenterStudentLecture = {
   onlineQuizTotal?: number | null;
   homeworkScore?: number | null;
   homeworkFullMark?: number | null;
+  homeworkSubmitted?: boolean;
+  homeworkFileName?: string | null;
+  homeworkSubmittedAt?: string | null;
   enrollmentStatus: "Active" | "Expired" | "NotEnrolled" | string;
 };
 
@@ -364,7 +370,9 @@ export function buildCallCenterWhatsAppMessage(student: CallCenterStudent, opts:
       ? student.homeworkFullMark != null
         ? `${student.homeworkScore}/${student.homeworkFullMark}`
         : `${student.homeworkScore}`
-      : "—";
+      : student.homeworkSubmitted
+        ? "مرفوع ولم يصحح"
+        : "غير مرفوع";
 
   return [
     "اهلا بيك في منصة ميس مارينا عاطف و دا متابعة ابن حضرتك عندنا",

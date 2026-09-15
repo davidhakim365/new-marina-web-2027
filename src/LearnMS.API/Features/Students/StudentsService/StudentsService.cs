@@ -328,7 +328,17 @@ public async Task ExecuteAsync(DeleteStudentCommand command)
         HomeworkScore = l.LectureHomeworks
             .Where(h => h.StudentId == query.StudentId)
             .Select(h => (decimal?)h.Score)
-            .FirstOrDefault(), // Homework score for the student
+            .FirstOrDefault(),
+        HomeworkSubmitted = l.LectureHomeworks.Any(h =>
+            h.StudentId == query.StudentId && h.SubmittedAt != null),
+        HomeworkFileName = l.LectureHomeworks
+            .Where(h => h.StudentId == query.StudentId)
+            .Select(h => h.SubmissionFileName)
+            .FirstOrDefault(),
+        HomeworkSubmittedAt = l.LectureHomeworks
+            .Where(h => h.StudentId == query.StudentId)
+            .Select(h => h.SubmittedAt)
+            .FirstOrDefault(),
         QuizScore = l.LectureQuizzes
             .Where(q => q.StudentId == query.StudentId)
             .Select(q => (decimal?)q.Score)

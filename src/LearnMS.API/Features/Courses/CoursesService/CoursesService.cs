@@ -602,6 +602,126 @@ public sealed class CoursesService : ICoursesService
         await _context.SaveChangesAsync();
     }
 
+    public async Task<SubmitLectureHomeworkResult> ExecuteAsync(SubmitLectureHomeworkCommand command)
+    {
+        const long maxBytes = 15L * 1024 * 1024;
+        var file = command.File;
+
+        if (file is null || file.Length <= 0 || file.Length > maxBytes)
+            throw new ApiException(LecturesErrors.InvalidHomeworkFile);
+
+        var originalName = Path.GetFileName(file.FileName ?? "");
+        var ext = Path.GetExtension(originalName);
+        var contentType = file.ContentType ?? "";
+        var isPdf =
+            ext.Equals(".pdf", StringComparison.OrdinalIgnoreCase)
+            || contentType.Equals("application/pdf", StringComparison.OrdinalIgnoreCase);
+
+        if (!isPdf)
+            throw new ApiException(LecturesErrors.InvalidHomeworkFile);
+
+        var lecture =
+            await _context
+                .Set<Lecture>()
+                .FirstOrDefaultAsync(x =>
+                    x.Id == command.LectureId && x.CourseId == command.CourseId
+                ) ?? throw new ApiException(LecturesErrors.NotFound);
+
+        _ = await _context.Students.FirstOrDefaultAsync(x => x.Id == command.StudentId)
+            ?? throw new ApiException(StudentsErrors.NotFound);
+
+        await using var stream = file.OpenReadStream();
+        await _storageService.SaveAsync(
+            Path.Combine("homework", command.LectureId.ToString()),
+            stream,
+            ".pdf",
+            $"{command.StudentId}.pdf"
+        );
+
+        var submittedAt = DateTime.UtcNow;
+        var fileName = SanitizeHomeworkFileName(originalName);
+
+        var homework = await _context
+            .Set<LectureHomework>()
+            .FirstOrDefaultAsync(x =>
+                x.LectureId == command.LectureId && x.StudentId == command.StudentId
+            );
+
+        if (homework is null)
+        {
+            homework = new LectureHomework
+            {
+                LectureId = command.LectureId,
+                StudentId = command.StudentId,
+                Score = null,
+                SubmissionFileName = fileName,
+                SubmittedAt = submittedAt
+            };
+            await _context.AddAsync(homework);
+        }
+        else
+        {
+            homework.SubmissionFileName = fileName;
+            homework.SubmittedAt = submittedAt;
+        }
+
+        await _context.SaveChangesAsync();
+
+        return new SubmitLectureHomeworkResult
+        {
+            FileName = fileName,
+            SubmittedAt = submittedAt,
+            Score = homework.Score,
+            FullMark = lecture.HomeworkFullMark
+        };
+    }
+
+    public async Task<LectureHomeworkFileResult> QueryAsync(GetLectureHomeworkFileQuery query)
+    {
+        var lectureExists = await _context
+            .Set<Lecture>()
+            .AnyAsync(x => x.Id == query.LectureId && x.CourseId == query.CourseId);
+
+        if (!lectureExists)
+            throw new ApiException(LecturesErrors.NotFound);
+
+        var homework = await _context
+            .Set<LectureHomework>()
+            .AsNoTracking()
+            .FirstOrDefaultAsync(x =>
+                x.LectureId == query.LectureId && x.StudentId == query.StudentId
+            );
+
+        if (homework is null || homework.SubmittedAt is null)
+            throw new ApiException(LecturesErrors.HomeworkFileNotFound);
+
+        var path = Path.Combine(
+            _storageCfg.Value.AssetsDirectory,
+            "homework",
+            query.LectureId.ToString(),
+            $"{query.StudentId}.pdf"
+        );
+
+        if (!File.Exists(path))
+            throw new ApiException(LecturesErrors.HomeworkFileNotFound);
+
+        return new LectureHomeworkFileResult
+        {
+            AbsolutePath = path,
+            DownloadName = homework.SubmissionFileName ?? "homework.pdf"
+        };
+    }
+
+    private static string SanitizeHomeworkFileName(string originalName)
+    {
+        var fileName = string.IsNullOrWhiteSpace(originalName) ? "homework.pdf" : originalName;
+        foreach (var c in Path.GetInvalidFileNameChars())
+            fileName = fileName.Replace(c, '_');
+        if (!fileName.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase))
+            fileName += ".pdf";
+        return fileName.Length > 180 ? fileName[^180..] : fileName;
+    }
+
     public async Task ExecuteAsync(ChangeLectureQuizScoreCommand command)
     {
         var lecture =
@@ -1787,6 +1907,13 @@ public sealed class CoursesService : ICoursesService
                 : [];
 
 
+        var homework = await _context
+            .Set<LectureHomework>()
+            .AsNoTracking()
+            .FirstOrDefaultAsync(h =>
+                h.LectureId == query.LectureId && h.StudentId == query.StudentId
+            );
+
         return new GetStudentLectureResult
         {
             Id = lecture.Id,
@@ -1799,6 +1926,11 @@ public sealed class CoursesService : ICoursesService
                 : EnrollmentRules.ToStatus(expiresAt, lecture.ExpirationDays),
             ImageUrl = lecture.ImageUrl!,
             HomeworkVideoUrl = lecture.HomeworkVideoUrl,
+            HomeworkFullMark = lecture.HomeworkFullMark,
+            HomeworkScore = homework?.Score,
+            HomeworkSubmitted = homework?.HasSubmission == true,
+            HomeworkFileName = homework?.SubmissionFileName,
+            HomeworkSubmittedAt = homework?.SubmittedAt,
             Price = lecture.Price ?? 0,
             ExpirationDays = lecture.ExpirationDays ?? 0,
             RenewalPrice = lecture.RenewalPrice ?? 0,
@@ -2054,6 +2186,9 @@ public sealed class CoursesService : ICoursesService
                     FullName = student.FullName,
                     StudentCode = student.StudentCode,
                     HomeworkScore = student.LectureHomeworks.SingleOrDefault()?.Score,
+                    HomeworkSubmitted = student.LectureHomeworks.SingleOrDefault()?.HasSubmission == true,
+                    HomeworkFileName = student.LectureHomeworks.SingleOrDefault()?.SubmissionFileName,
+                    HomeworkSubmittedAt = student.LectureHomeworks.SingleOrDefault()?.SubmittedAt,
                     QuizScore = student.LectureQuizzes.SingleOrDefault()?.Score,
                     StudentQuizzesScore = student.QuizSubmissions.Sum(x => x.NumOfCorrect),
                     TotalQuizzesScore = student.QuizSubmissions.Sum(x => x.NumOfQuestions),
@@ -2483,6 +2618,8 @@ public sealed class CoursesService : ICoursesService
                         StudentCode = student.StudentCode,
                         CourseTitle = lecture.Course.Title,
                         HomeworkScore = student.LectureHomeworks.SingleOrDefault()?.Score,
+                        HomeworkSubmitted = student.LectureHomeworks.SingleOrDefault()?.HasSubmission == true,
+                        HomeworkFileName = student.LectureHomeworks.SingleOrDefault()?.SubmissionFileName,
                         QuizScore = student.LectureQuizzes.SingleOrDefault()?.Score,
                         StudentQuizzesScore = student.QuizSubmissions.Sum(x => x.NumOfCorrect),
                         TotalQuizzesScore = student.QuizSubmissions.Sum(x => x.NumOfQuestions),

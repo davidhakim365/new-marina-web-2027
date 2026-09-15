@@ -10,7 +10,10 @@ export interface SingleLectureStudent {
   email: string;
   enrolled: boolean;
   fullName: string;
-  homeworkScore: number;
+  homeworkScore: number | null;
+  homeworkSubmitted?: boolean;
+  homeworkFileName?: string | null;
+  homeworkSubmittedAt?: string | null;
   id: string;
   quizScore: number;
   studentCode: string;

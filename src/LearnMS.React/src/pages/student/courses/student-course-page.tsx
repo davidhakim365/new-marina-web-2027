@@ -63,6 +63,7 @@ import {
   GridPattern,
 } from "@/components/ui/grid-feature-cards";
 import { MarkdownWrapper } from "@/components/ui/markdown-wrapper";
+import { HomeworkPdfUpload } from "@/components/homework-pdf-upload";
 import { SpotlightCard } from "@/components/ui/spotlight-card";
 import { cn } from "@/lib/utils";
 import { isEnrollmentActive, isEnrollmentExpired } from "@/lib/enrollment";
@@ -856,6 +857,18 @@ function LectureAccordionContent({ lecture }: { lecture: StudentLectureDto }) {
       {/* Homework YouTube video — embedded in-app */}
       {lecture.homeworkVideoUrl && (
         <HomeworkVideoSection url={lecture.homeworkVideoUrl} />
+      )}
+
+      {courseId && (
+        <HomeworkPdfUpload
+          courseId={courseId}
+          lectureId={lecture.id}
+          homeworkScore={lecture.homeworkScore}
+          homeworkFullMark={lecture.homeworkFullMark}
+          homeworkSubmitted={lecture.homeworkSubmitted}
+          homeworkFileName={lecture.homeworkFileName}
+          homeworkSubmittedAt={lecture.homeworkSubmittedAt}
+        />
       )}
 
       {/* Attachments Section */}

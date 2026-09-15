@@ -25,6 +25,7 @@ public interface ICoursesService
     public Task ExecuteAsync(RenewLessonExpirationCommand command);
     public Task ExecuteAsync(AttendLessonCommand command);
     public Task ExecuteAsync(ChangeLectureHomeworkScoreCommand command);
+    public Task<SubmitLectureHomeworkResult> ExecuteAsync(SubmitLectureHomeworkCommand command);
     public Task ExecuteAsync(ChangeLectureQuizScoreCommand command);
     public Task<UpdateQuizResult> ExecuteAsync(UpdateQuizCommand command);
     public Task ExecuteAsync(DeleteQuizCommand command);
@@ -57,6 +58,7 @@ public interface ICoursesService
     public Task<GetLessonVideoUploadPolicyResult> QueryAsync(GetLessonVideoUploadPolicyQuery query);
     public Task<ValidateLessonVideoStatusResult> QueryAsync(ValidateLessonVideoStatusQuery query);
     public Task<PageList<SingleLectureStudent>> QueryAsync(GetLectureStudentsQuery query);
+    public Task<LectureHomeworkFileResult> QueryAsync(GetLectureHomeworkFileQuery query);
     public Task<QuizResult> QueryAsync(GetQuizQuery query);
     public Task<QuizResult> QueryAsync(GetStudentQuizQuery query);
     public Task<ExamResult> QueryAsync(GetExamQuery query);

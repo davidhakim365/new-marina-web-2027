@@ -258,6 +258,7 @@
       "absent": "غاب",
       "offlineQuiz": "كويز السنتر",
       "homework": "واجب",
+      "homeworkSubmitted": "تم التسليم",
       "onlineQuiz": "كويز أونلاين",
       "stats": {
         "attendance": "الحضور",
@@ -624,7 +625,20 @@
     "noContentAvailable": "لا يوجد محتوى متاح",
     "purchaseSuccessful": "تم الشراء بنجاح",
     "description": "الوصف",
-    "clickHereToViewLink": "اضغط هنا لعرض الرابط"
+    "clickHereToViewLink": "اضغط هنا لعرض الرابط",
+    "homeworkPdf": "واجب PDF",
+    "homeworkPdfHint": "ارفع الواجب كملف PDF. المساعدون هيراجعوه ويحطوا الدرجة.",
+    "uploadHomework": "رفع الواجب PDF",
+    "replaceHomework": "استبدال الملف",
+    "homeworkUploading": "جاري الرفع…",
+    "homeworkUploaded": "تم رفع الواجب",
+    "viewHomework": "عرض PDF",
+    "homeworkNotSubmitted": "لم يُرفع",
+    "homeworkSubmitted": "تم رفع الواجب",
+    "homeworkMark": "الدرجة",
+    "homeworkInvalidFile": "ملف الواجب غير صالح",
+    "homeworkPdfOnly": "من فضلك اختر ملف PDF.",
+    "homeworkTooLarge": "حجم ملف PDF يجب ألا يتجاوز 15 ميجابايت."
   },
   "lesson": {
     "startLessonTitle": "ابدأ الدرس",
@@ -1043,6 +1057,7 @@
       },
       "quiz": "الكويز",
       "homework": "الواجب",
+      "homeworkSubmitted": "تم رفع PDF",
       "homeworkChoose": "الواجب · اختيار",
       "homeworkEssay": "الواجب · مقالي",
       "offlineHomework": "الواجب الورقي",

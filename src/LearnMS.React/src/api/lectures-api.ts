@@ -1,4 +1,5 @@
 import { ApiResponse, api } from "@/api";
+import { toast } from "@/components/ui/use-toast";
 import {
   getGetLectureQueryKey,
   getGetProfileQueryKey,
@@ -288,6 +289,92 @@ export const AddLecturePdfLinkItem = z.object({
 });
 
 export type AddLecturePdfLinkItem = z.infer<typeof AddLecturePdfLinkItem>;
+
+export type LectureHomeworkSubmission = {
+  fileName: string;
+  submittedAt: string;
+  score?: number | null;
+  fullMark?: number | null;
+};
+
+export const homeworkFileUrl = (
+  courseId: string,
+  lectureId: string,
+  studentId?: string
+) =>
+  studentId
+    ? `/api/courses/${courseId}/lectures/${lectureId}/students/${studentId}/homework-file`
+    : `/api/courses/${courseId}/lectures/${lectureId}/homework-file`;
+
+export async function openLectureHomeworkPdf(opts: {
+  courseId: string;
+  lectureId: string;
+  studentId?: string;
+  fileName?: string | null;
+}) {
+  const token = localStorage.getItem("token");
+  const deviceKey = localStorage.getItem("deviceKey");
+  const headers = new Headers();
+  if (token) headers.set("Authorization", `Bearer ${token}`);
+  if (deviceKey) headers.set("DeviceKey", deviceKey);
+
+  const response = await fetch(
+    homeworkFileUrl(opts.courseId, opts.lectureId, opts.studentId),
+    { headers }
+  );
+
+  if (!response.ok) {
+    let message = "Could not open the homework PDF";
+    try {
+      const data = await response.json();
+      if (typeof data?.message === "string") message = data.message;
+    } catch {
+      // ignore non-JSON errors
+    }
+    toast({
+      title: "Error",
+      description: message,
+      variant: "destructive",
+    });
+    return;
+  }
+
+  const blob = await response.blob();
+  const url = URL.createObjectURL(blob);
+  window.open(url, "_blank", "noopener,noreferrer");
+  window.setTimeout(() => URL.revokeObjectURL(url), 60_000);
+}
+
+export const useSubmitLectureHomeworkMutation = () => {
+  const qc = useQueryClient();
+  return useMutation<
+    ApiResponse<LectureHomeworkSubmission>,
+    Error,
+    { courseId: string; lectureId: string; file: File }
+  >({
+    mutationFn: ({ courseId, lectureId, file }) => {
+      const data = new FormData();
+      data.append("file", file);
+      return api
+        .post(
+          `/api/courses/${courseId}/lectures/${lectureId}/homework`,
+          data
+        )
+        .then((res) => res.data);
+    },
+    onSuccess: (_, { courseId, lectureId }) => {
+      qc.invalidateQueries({
+        queryKey: getGetLectureQueryKey(courseId, lectureId),
+      });
+      qc.invalidateQueries({
+        queryKey: getGetStudentCourseDetailsQueryKey(courseId),
+      });
+      qc.invalidateQueries({
+        queryKey: ["lecture", { id: lectureId, courseId }],
+      });
+    },
+  });
+};
 
 export const useAddLecturePdfLinksMutation = () => {
   const qc = useQueryClient();

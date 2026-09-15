@@ -26,6 +26,9 @@ public sealed record SingleStudentLecture
     public decimal? StudentQuizzesScore { get; init; }
     public decimal? TotalQuizzesScore { get; init; }
     public decimal? HomeworkScore { get; init; }
+    public bool HomeworkSubmitted { get; init; }
+    public string? HomeworkFileName { get; init; }
+    public DateTime? HomeworkSubmittedAt { get; init; }
     public decimal? QuizScore { get; init; }
     public string? EnrollmentStatus { get; init; }
     public DateTime? ExpiresAt { get; init; }

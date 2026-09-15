@@ -223,6 +223,84 @@ public sealed class LecturesController : ControllerBase
         return new ApiWrapper.Success<object?> { Message = "Homework score changed successfully" };
     }
 
+    [HttpPost("{lectureId:guid}/homework")]
+    [RequestSizeLimit(16L * 1024 * 1024)]
+    [RequestFormLimits(MultipartBodyLengthLimit = 16L * 1024 * 1024)]
+    [ApiAuthorize(Role = UserRole.Student)]
+    [SwaggerOperation(OperationId = "SubmitLectureHomework")]
+    public async Task<ApiWrapper.Success<SubmitLectureHomeworkResult>> SubmitHomework(
+        Guid lectureId,
+        Guid courseId,
+        [FromForm] IFormFile file
+    )
+    {
+        var currentUser = await _currentUserService.GetUserAsync();
+
+        var result = await _coursesService.ExecuteAsync(
+            new SubmitLectureHomeworkCommand
+            {
+                CourseId = courseId,
+                LectureId = lectureId,
+                StudentId = currentUser!.Id,
+                File = file
+            }
+        );
+
+        return new ApiWrapper.Success<SubmitLectureHomeworkResult>
+        {
+            Data = result,
+            Message = "Homework uploaded successfully"
+        };
+    }
+
+    [HttpGet("{lectureId:guid}/homework-file")]
+    [ApiAuthorize(Role = UserRole.Student)]
+    [SwaggerOperation(OperationId = "GetOwnLectureHomeworkFile")]
+    public async Task<IActionResult> GetOwnHomeworkFile(Guid lectureId, Guid courseId)
+    {
+        var currentUser = await _currentUserService.GetUserAsync();
+        var file = await _coursesService.QueryAsync(
+            new GetLectureHomeworkFileQuery
+            {
+                CourseId = courseId,
+                LectureId = lectureId,
+                StudentId = currentUser!.Id
+            }
+        );
+
+        return PhysicalFile(file.AbsolutePath, "application/pdf", file.DownloadName);
+    }
+
+    [HttpGet("{lectureId:guid}/students/{studentId:guid}/homework-file")]
+    [ApiAuthorize(
+        Role = UserRole.Assistant,
+        Permissions =
+        [
+            Permission.ManageLecture,
+            Permission.ManageCourses,
+            Permission.ManageCallCenter,
+            Permission.ManageStudents
+        ]
+    )]
+    [SwaggerOperation(OperationId = "GetLectureHomeworkFile")]
+    public async Task<IActionResult> GetHomeworkFile(
+        Guid lectureId,
+        Guid studentId,
+        Guid courseId
+    )
+    {
+        var file = await _coursesService.QueryAsync(
+            new GetLectureHomeworkFileQuery
+            {
+                CourseId = courseId,
+                LectureId = lectureId,
+                StudentId = studentId
+            }
+        );
+
+        return PhysicalFile(file.AbsolutePath, "application/pdf", file.DownloadName);
+    }
+
 
     [HttpPut("{lectureId:guid}/students/{studentId:guid}/quiz")]
     [ApiAuthorize(Role = UserRole.Assistant, Permissions = [Permission.ManageLecture, Permission.ManageCourses])]

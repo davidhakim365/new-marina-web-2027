@@ -16,6 +16,8 @@ public sealed record ExportSingleLectureStudentResult
     [Required] public required string FullName { get; init; }
     [Required] public required string Email { get; init; }
     [Required] public decimal? HomeworkScore { get; init; }
+    public bool HomeworkSubmitted { get; init; }
+    public string? HomeworkFileName { get; init; }
     [Required] public decimal? QuizScore { get; init; }
     [Required] public decimal? StudentQuizzesScore { get; init; }
     [Required] public string? CourseTitle { get; init; } 

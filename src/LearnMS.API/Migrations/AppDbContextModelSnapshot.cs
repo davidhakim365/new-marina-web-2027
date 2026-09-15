@@ -406,8 +406,14 @@ namespace LearnMS.API.Migrations
                     b.Property<Guid>("StudentId")
                         .HasColumnType("uuid");
 
-                    b.Property<decimal>("Score")
+                    b.Property<decimal?>("Score")
                         .HasColumnType("numeric");
+
+                    b.Property<string>("SubmissionFileName")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("SubmittedAt")
+                        .HasColumnType("timestamp with time zone");
 
                     b.HasKey("LectureId", "StudentId");
 

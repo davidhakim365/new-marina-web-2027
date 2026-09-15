@@ -25,4 +25,12 @@ public static class LecturesErrors
         "lecture/invalid-quiz-score",
         "Quiz score must be between 0 and the full mark",
         StatusCodes.Status400BadRequest);
+    public static readonly ApiError InvalidHomeworkFile = new ApiError(
+        "lecture/invalid-homework-file",
+        "Homework must be a PDF file up to 15 MB",
+        StatusCodes.Status400BadRequest);
+    public static readonly ApiError HomeworkFileNotFound = new ApiError(
+        "lecture/homework-file-not-found",
+        "No homework PDF has been submitted for this student",
+        StatusCodes.Status404NotFound);
 }

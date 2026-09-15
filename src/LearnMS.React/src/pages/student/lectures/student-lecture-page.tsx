@@ -28,6 +28,7 @@ import { AlertTriangle } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { isEnrollmentActive, isEnrollmentExpired } from "@/lib/enrollment";
 import { MarkdownWrapper } from "@/components/ui/markdown-wrapper";
+import { HomeworkPdfUpload } from "@/components/homework-pdf-upload";
 
 const StudentLecturePage = () => {
   const { lectureId, courseId } = useParams();
@@ -83,6 +84,15 @@ const StudentLecturePage = () => {
               />
             </div>
           )}
+          <HomeworkPdfUpload
+            courseId={courseId!}
+            lectureId={lectureId!}
+            homeworkScore={lecture.homeworkScore}
+            homeworkFullMark={lecture.homeworkFullMark}
+            homeworkSubmitted={lecture.homeworkSubmitted}
+            homeworkFileName={lecture.homeworkFileName}
+            homeworkSubmittedAt={lecture.homeworkSubmittedAt}
+          />
           <h2
             dir={isRTL ? "rtl" : "ltr"}
             className="mb-6 text-2xl font-bold sm:mb-8 sm:text-3xl lg:text-4xl text-foreground"

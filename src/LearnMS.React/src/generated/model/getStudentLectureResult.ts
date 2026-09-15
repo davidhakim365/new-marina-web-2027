@@ -15,6 +15,11 @@ export type GetStudentLectureResult = GetLectureResult & {
   expirationDays: number;
   expiresAt?: string | null;
   homeworkVideoUrl?: string | null;
+  homeworkFullMark?: number | null;
+  homeworkScore?: number | null;
+  homeworkSubmitted?: boolean;
+  homeworkFileName?: string | null;
+  homeworkSubmittedAt?: string | null;
   imageUrl: string;
   isPublished?: boolean | null;
   price: number;

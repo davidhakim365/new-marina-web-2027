@@ -6,6 +6,7 @@ import {
   SingleLectureStudentWithCenter,
   useToggleLectureAttendanceAtCenter,
 } from "@/api/centers-api";
+import { HomeworkPdfLink } from "@/components/homework-pdf-link";
 import Confirmation from "@/components/confirmation";
 import { Button } from "@/components/ui/button";
 import {
@@ -245,6 +246,28 @@ function ScoreCell({
   );
 }
 
+function HomeworkFileCell({
+  studentId,
+  submitted,
+  fileName,
+}: {
+  studentId: string;
+  submitted?: boolean;
+  fileName?: string | null;
+}) {
+  const { courseId, lectureId } = useParams();
+  if (!courseId || !lectureId) return null;
+  return (
+    <HomeworkPdfLink
+      courseId={courseId}
+      lectureId={lectureId}
+      studentId={studentId}
+      submitted={submitted}
+      fileName={fileName}
+    />
+  );
+}
+
 export function createLectureStudentsColumns(
   centerId?: string | null,
   options?: {
@@ -399,12 +422,19 @@ export function createLectureStudentsColumns(
         ? `Homework ( / ${homeworkFullMark})`
         : "Homework Score",
       cell: ({ row }) => (
-        <ScoreCell
-          kind="homework"
-          score={row.original.homeworkScore}
-          fullMark={homeworkFullMark}
-          studentId={row.original.id}
-        />
+        <div className="flex min-w-[11rem] flex-col gap-2">
+          <HomeworkFileCell
+            studentId={row.original.id}
+            submitted={row.original.homeworkSubmitted}
+            fileName={row.original.homeworkFileName}
+          />
+          <ScoreCell
+            kind="homework"
+            score={row.original.homeworkScore}
+            fullMark={homeworkFullMark}
+            studentId={row.original.id}
+          />
+        </div>
       ),
     },
     {

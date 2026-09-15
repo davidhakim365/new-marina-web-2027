@@ -9,6 +9,7 @@ public sealed class LectureHomeworksConfigurations : IEntityTypeConfiguration<Le
     public void Configure(EntityTypeBuilder<LectureHomework> builder)
     {
         builder.HasKey(x => new { x.LectureId, x.StudentId });
+        builder.Ignore(x => x.HasSubmission);
 
         builder.HasOne<Lecture>().WithMany().HasForeignKey(x => x.LectureId).OnDelete(DeleteBehavior.Cascade);
         builder.HasOne<Student>().WithMany().HasForeignKey(x => x.StudentId).OnDelete(DeleteBehavior.Cascade);

@@ -28,5 +28,7 @@ export type SingleLectureStudent = {
   email: string;
   attended: boolean;
   homeworkScore?: number;
+  homeworkSubmitted?: boolean;
+  homeworkFileName?: string;
   quizScore?: number;
 };

@@ -11,6 +11,7 @@ import {
   useUpdateCallCenterContact,
 } from "@/api/call-center-api";
 import { useCoursesQuery } from "@/api/courses-api";
+import { HomeworkPdfLink } from "@/components/homework-pdf-link";
 import { DashboardCard } from "@/components/dashboard/dashboard-card";
 import { DashboardPageShell } from "@/components/dashboard/dashboard-page-shell";
 import Loading from "@/components/loading/loading";
@@ -42,6 +43,7 @@ import {
   ChevronDown,
   ChevronUp,
   Download,
+  FileText,
   Globe,
   History,
   Loader2,
@@ -291,10 +293,19 @@ function StudentLectureHistory({
                               )}
                             </td>
                             <td className="py-2 pe-3">
-                              <ScoreText
-                                score={item.homeworkScore}
-                                fullMark={item.homeworkFullMark}
-                              />
+                              <div className="flex flex-col gap-1">
+                                <ScoreText
+                                  score={item.homeworkScore}
+                                  fullMark={item.homeworkFullMark}
+                                />
+                                <HomeworkPdfLink
+                                  courseId={item.courseId}
+                                  lectureId={item.lectureId}
+                                  studentId={studentId}
+                                  submitted={item.homeworkSubmitted}
+                                  fileName={item.homeworkFileName}
+                                />
+                              </div>
                             </td>
                             <td className="py-2">
                               <span className="text-xs text-muted-foreground">
@@ -543,6 +554,12 @@ function StudentCallCard({
               <Wallet className="h-3.5 w-3.5" />
               {t("admin.callCenter.credit")}: {student.credit ?? 0}
             </Badge>
+            {student.homeworkSubmitted ? (
+              <Badge className="gap-1 bg-indigo-500/15 text-indigo-700 hover:bg-indigo-500/20">
+                <FileText className="h-3.5 w-3.5" />
+                {t("admin.callCenter.homeworkSubmitted")}
+              </Badge>
+            ) : null}
           </div>
           <p className="flex items-center gap-1.5 text-sm text-muted-foreground">
             <Phone className="h-3.5 w-3.5" />
@@ -593,6 +610,15 @@ function StudentCallCard({
             score={student.homeworkScore}
             fullMark={student.homeworkFullMark}
           />
+          <div className="mt-2">
+            <HomeworkPdfLink
+              courseId={courseId}
+              lectureId={lectureId}
+              studentId={student.id}
+              submitted={student.homeworkSubmitted}
+              fileName={student.homeworkFileName}
+            />
+          </div>
         </div>
       </div>
 
