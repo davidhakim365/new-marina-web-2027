@@ -279,6 +279,14 @@ public class StudentCoursesController(ICurrentUserService currentUserService, Ap
                 .Where(h =>
                     (h.StudentId == studentId || h.StudentId == user.Id)
                     && lectureIds.Contains(h.LectureId))
+                .Select(h => new LectureHomework
+                {
+                    LectureId = h.LectureId,
+                    StudentId = h.StudentId,
+                    Score = h.Score,
+                    SubmissionFileName = h.SubmissionFileName,
+                    SubmittedAt = h.SubmittedAt
+                })
                 .ToListAsync();
             foreach (var row in homeworkRows)
                 homeworkByLecture[row.LectureId] = row;

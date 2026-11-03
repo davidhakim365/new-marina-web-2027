@@ -577,29 +577,21 @@ public sealed class CoursesService : ICoursesService
             await _context.Students.FirstOrDefaultAsync(x => x.Id == command.StudentId)
             ?? throw new ApiException(StudentsErrors.NotFound);
 
-        var homework = await _context
+        var updated = await _context
             .Set<LectureHomework>()
-            .FirstOrDefaultAsync(x =>
-                x.LectureId == command.LectureId && x.StudentId == command.StudentId
-            );
+            .Where(x => x.LectureId == command.LectureId && x.StudentId == command.StudentId)
+            .ExecuteUpdateAsync(setters => setters.SetProperty(x => x.Score, command.Score));
 
-        if (homework is null)
+        if (updated == 0)
         {
-            homework = new LectureHomework
+            await _context.AddAsync(new LectureHomework
             {
                 LectureId = command.LectureId,
                 StudentId = command.StudentId,
                 Score = command.Score
-            };
-            await _context.AddAsync(homework);
+            });
+            await _context.SaveChangesAsync();
         }
-        else
-        {
-            homework.Score = command.Score;
-            _context.Update(homework);
-        }
-
-        await _context.SaveChangesAsync();
     }
 
     public async Task<SubmitLectureHomeworkResult> ExecuteAsync(SubmitLectureHomeworkCommand command)
@@ -627,16 +619,14 @@ public sealed class CoursesService : ICoursesService
                     x.Id == command.LectureId && x.CourseId == command.CourseId
                 ) ?? throw new ApiException(LecturesErrors.NotFound);
 
-        _ = await _context.Students.FirstOrDefaultAsync(x => x.Id == command.StudentId)
-            ?? throw new ApiException(StudentsErrors.NotFound);
+        var identity = await ResolveStudentIdentityAsync(command.StudentId);
 
-        await using var stream = file.OpenReadStream();
-        await _storageService.SaveAsync(
-            Path.Combine("homework", command.LectureId.ToString()),
-            stream,
-            ".pdf",
-            $"{command.StudentId}.pdf"
-        );
+        await using var upload = file.OpenReadStream();
+        using var buffer = new MemoryStream();
+        await upload.CopyToAsync(buffer);
+        var content = buffer.ToArray();
+        if (content.Length == 0)
+            throw new ApiException(LecturesErrors.InvalidHomeworkFile);
 
         var submittedAt = DateTime.UtcNow;
         var fileName = SanitizeHomeworkFileName(originalName);
@@ -644,7 +634,7 @@ public sealed class CoursesService : ICoursesService
         var homework = await _context
             .Set<LectureHomework>()
             .FirstOrDefaultAsync(x =>
-                x.LectureId == command.LectureId && x.StudentId == command.StudentId
+                x.LectureId == command.LectureId && identity.CandidateIds.Contains(x.StudentId)
             );
 
         if (homework is null)
@@ -652,7 +642,7 @@ public sealed class CoursesService : ICoursesService
             homework = new LectureHomework
             {
                 LectureId = command.LectureId,
-                StudentId = command.StudentId,
+                StudentId = identity.StudentId,
                 Score = null,
                 SubmissionFileName = fileName,
                 SubmittedAt = submittedAt
@@ -665,7 +655,15 @@ public sealed class CoursesService : ICoursesService
             homework.SubmittedAt = submittedAt;
         }
 
+        homework.FileContent = content;
+
         await _context.SaveChangesAsync();
+
+        await TrySaveHomeworkToDiskAsync(
+            command.LectureId,
+            identity.CandidateIds.Prepend(homework.StudentId),
+            content
+        );
 
         return new SubmitLectureHomeworkResult
         {
@@ -685,31 +683,170 @@ public sealed class CoursesService : ICoursesService
         if (!lectureExists)
             throw new ApiException(LecturesErrors.NotFound);
 
+        var identity = await ResolveStudentIdentityAsync(query.StudentId);
+
         var homework = await _context
             .Set<LectureHomework>()
             .AsNoTracking()
-            .FirstOrDefaultAsync(x =>
-                x.LectureId == query.LectureId && x.StudentId == query.StudentId
-            );
+            .Where(x =>
+                x.LectureId == query.LectureId && identity.CandidateIds.Contains(x.StudentId)
+            )
+            .Select(x => new
+            {
+                x.StudentId,
+                x.SubmissionFileName,
+                x.FileContent
+            })
+            .FirstOrDefaultAsync();
 
-        if (homework is null || homework.SubmittedAt is null)
-            throw new ApiException(LecturesErrors.HomeworkFileNotFound);
+        var diskIds = identity.CandidateIds.ToList();
+        if (homework is not null)
+            diskIds.Insert(0, homework.StudentId);
 
-        var path = Path.Combine(
-            _storageCfg.Value.AssetsDirectory,
-            "homework",
-            query.LectureId.ToString(),
-            $"{query.StudentId}.pdf"
-        );
+        byte[]? content = homework?.FileContent is { Length: > 0 } ? homework.FileContent : null;
+        if (content is null)
+            content = TryReadHomeworkFromDisk(query.LectureId, diskIds);
 
-        if (!File.Exists(path))
+        if (content is null || content.Length == 0)
             throw new ApiException(LecturesErrors.HomeworkFileNotFound);
 
         return new LectureHomeworkFileResult
         {
-            AbsolutePath = path,
-            DownloadName = homework.SubmissionFileName ?? "homework.pdf"
+            Content = content,
+            DownloadName = homework?.SubmissionFileName ?? "homework.pdf"
         };
+    }
+
+    private async Task<StudentIdentity> ResolveStudentIdentityAsync(Guid userOrStudentId)
+    {
+        var studentId = await _context.Students
+            .AsNoTracking()
+            .Where(s => s.Id == userOrStudentId || s.Accounts.Any(a => a.Id == userOrStudentId))
+            .Select(s => (Guid?)s.Id)
+            .FirstOrDefaultAsync()
+            ?? throw new ApiException(StudentsErrors.NotFound);
+
+        var accountIds = await _context.Students
+            .AsNoTracking()
+            .Where(s => s.Id == studentId)
+            .SelectMany(s => s.Accounts.Select(a => a.Id))
+            .ToListAsync();
+
+        var candidateIds = new List<Guid> { userOrStudentId, studentId };
+        candidateIds.AddRange(accountIds);
+
+        return new StudentIdentity(studentId, candidateIds.Distinct().ToList());
+    }
+
+    private readonly record struct StudentIdentity(Guid StudentId, List<Guid> CandidateIds);
+
+    private async Task TrySaveHomeworkToDiskAsync(Guid lectureId, IEnumerable<Guid> studentIds, byte[] content)
+    {
+        foreach (var studentId in studentIds.Distinct())
+        {
+            try
+            {
+                await using var stream = new MemoryStream(content, writable: false);
+                await _storageService.SaveAsync(
+                    Path.Combine("homework", lectureId.ToString()),
+                    stream,
+                    ".pdf",
+                    $"{studentId}.pdf"
+                );
+            }
+            catch
+            {
+                // Disk is optional; the PDF is stored on the homework row.
+            }
+
+            try
+            {
+                var path = GetHomeworkDiskPath(lectureId, studentId);
+                if (path is null)
+                    continue;
+                var directory = Path.GetDirectoryName(path);
+                if (!string.IsNullOrEmpty(directory))
+                    Directory.CreateDirectory(directory);
+                await File.WriteAllBytesAsync(path, content);
+            }
+            catch
+            {
+                // Disk is optional; the PDF is stored on the homework row.
+            }
+        }
+    }
+
+    private byte[]? TryReadHomeworkFromDisk(Guid lectureId, IEnumerable<Guid> studentIds)
+    {
+        foreach (var studentId in studentIds.Distinct())
+        {
+            foreach (var path in GetHomeworkDiskPathCandidates(lectureId, studentId))
+            {
+                try
+                {
+                    if (File.Exists(path))
+                        return File.ReadAllBytes(path);
+                }
+                catch
+                {
+                    // Try the next candidate path.
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private IEnumerable<string> GetHomeworkDiskPathCandidates(Guid lectureId, Guid studentId)
+    {
+        var fileName = $"{studentId}.pdf";
+        var relative = Path.Combine("homework", lectureId.ToString(), fileName);
+        var roots = new List<string>();
+
+        var configured = _storageCfg.Value.AssetsDirectory;
+        if (!string.IsNullOrWhiteSpace(configured))
+            roots.Add(configured);
+
+        roots.Add(Path.Combine(AppContext.BaseDirectory, "assets"));
+        roots.Add(Path.Combine(Directory.GetCurrentDirectory(), "assets"));
+
+        foreach (var root in roots.Distinct(StringComparer.OrdinalIgnoreCase))
+            yield return Path.Combine(root, relative);
+
+        yield return relative;
+    }
+
+    private string? GetHomeworkDiskPath(Guid lectureId, Guid studentId)
+    {
+        var root = _storageCfg.Value.AssetsDirectory;
+        if (string.IsNullOrWhiteSpace(root))
+            root = Path.Combine(AppContext.BaseDirectory, "assets");
+
+        return Path.Combine(root, "homework", lectureId.ToString(), $"{studentId}.pdf");
+    }
+
+    private async Task<Dictionary<Guid, LectureHomework>> GetHomeworkMetaByStudentAsync(
+        Guid lectureId,
+        IEnumerable<Guid> studentIds
+    )
+    {
+        var ids = studentIds.Distinct().ToList();
+        if (ids.Count == 0)
+            return new Dictionary<Guid, LectureHomework>();
+
+        return await _context
+            .Set<LectureHomework>()
+            .AsNoTracking()
+            .Where(h => h.LectureId == lectureId && ids.Contains(h.StudentId))
+            .Select(h => new LectureHomework
+            {
+                LectureId = h.LectureId,
+                StudentId = h.StudentId,
+                Score = h.Score,
+                SubmissionFileName = h.SubmissionFileName,
+                SubmittedAt = h.SubmittedAt
+            })
+            .ToDictionaryAsync(h => h.StudentId);
     }
 
     private static string SanitizeHomeworkFileName(string originalName)
@@ -1910,9 +2047,19 @@ public sealed class CoursesService : ICoursesService
         var homework = await _context
             .Set<LectureHomework>()
             .AsNoTracking()
-            .FirstOrDefaultAsync(h =>
-                h.LectureId == query.LectureId && h.StudentId == query.StudentId
-            );
+            .Where(h =>
+                h.LectureId == query.LectureId
+                && (h.StudentId == query.StudentId || h.StudentId == student.Id)
+            )
+            .Select(h => new LectureHomework
+            {
+                LectureId = h.LectureId,
+                StudentId = h.StudentId,
+                Score = h.Score,
+                SubmissionFileName = h.SubmissionFileName,
+                SubmittedAt = h.SubmittedAt
+            })
+            .FirstOrDefaultAsync();
 
         return new GetStudentLectureResult
         {
@@ -2133,7 +2280,6 @@ public sealed class CoursesService : ICoursesService
             .Set<Student>()
             .Where(x => x.Level == lecture.Course.Level)
             .Include(x => x.Accounts)
-            .Include(x => x.LectureHomeworks.Where(x => x.LectureId == query.LectureId).Take(1))
             .Include(x => x.LectureQuizzes.Where(x => x.LectureId == query.LectureId).Take(1))
             .Include(x => x.AttendedLessons.Where(x => x.LectureId == query.LectureId))
             .Include(x => x.LectureEnrollments.Where(x => x.LectureId == query.LectureId).Take(1))
@@ -2156,6 +2302,7 @@ public sealed class CoursesService : ICoursesService
         );
 
         var studentIds = students.Items.Select(s => s.Id).ToList();
+        var homeworkByStudent = await GetHomeworkMetaByStudentAsync(query.LectureId, studentIds);
         var attendances = await _context.Set<LectureAttendance>()
             .AsNoTracking()
             .Include(a => a.Center)
@@ -2167,6 +2314,7 @@ public sealed class CoursesService : ICoursesService
         foreach (var student in students.Items)
         {
             attendances.TryGetValue(student.Id, out var attendance);
+            homeworkByStudent.TryGetValue(student.Id, out var homework);
 
             var enrollment = student.LectureEnrollments.SingleOrDefault(x => x.LectureId == query.LectureId);
 
@@ -2185,10 +2333,10 @@ public sealed class CoursesService : ICoursesService
                     Email = account.Email,
                     FullName = student.FullName,
                     StudentCode = student.StudentCode,
-                    HomeworkScore = student.LectureHomeworks.SingleOrDefault()?.Score,
-                    HomeworkSubmitted = student.LectureHomeworks.SingleOrDefault()?.HasSubmission == true,
-                    HomeworkFileName = student.LectureHomeworks.SingleOrDefault()?.SubmissionFileName,
-                    HomeworkSubmittedAt = student.LectureHomeworks.SingleOrDefault()?.SubmittedAt,
+                    HomeworkScore = homework?.Score,
+                    HomeworkSubmitted = homework?.HasSubmission == true,
+                    HomeworkFileName = homework?.SubmissionFileName,
+                    HomeworkSubmittedAt = homework?.SubmittedAt,
                     QuizScore = student.LectureQuizzes.SingleOrDefault()?.Score,
                     StudentQuizzesScore = student.QuizSubmissions.Sum(x => x.NumOfCorrect),
                     TotalQuizzesScore = student.QuizSubmissions.Sum(x => x.NumOfQuestions),
@@ -2585,7 +2733,6 @@ public sealed class CoursesService : ICoursesService
             .Set<Student>()
             .Where(x => x.Level == lecture.Course.Level)
             .Include(x => x.Accounts)
-            .Include(x => x.LectureHomeworks.Where(x => x.LectureId == query.LectureId).Take(1))
             .Include(x => x.LectureQuizzes.Where(x => x.LectureId == query.LectureId).Take(1))
             .Include(x => x.AttendedLessons.Where(x => x.LectureId == query.LectureId))
             .Include(x => x.LectureAttendances.Where(x => x.LectureId == query.LectureId).Take(1))
@@ -2598,6 +2745,10 @@ public sealed class CoursesService : ICoursesService
         for (var i = 0; i < chunks; i++)
         {
             var students = await q.Skip(i * chunkSize).Take(chunkSize).ToListAsync();
+            var homeworkByStudent = await GetHomeworkMetaByStudentAsync(
+                query.LectureId,
+                students.Select(s => s.Id)
+            );
 
             List<ExportSingleLectureStudentResult> result = new();
 
@@ -2608,6 +2759,7 @@ public sealed class CoursesService : ICoursesService
                 var enrollment = student.LectureEnrollments.SingleOrDefault(x =>
                     x.LectureId == query.LectureId
                 );
+                homeworkByStudent.TryGetValue(student.Id, out var homework);
 
                 result.Add(
                     new ExportSingleLectureStudentResult
@@ -2617,9 +2769,9 @@ public sealed class CoursesService : ICoursesService
                         FullName = student.FullName,
                         StudentCode = student.StudentCode,
                         CourseTitle = lecture.Course.Title,
-                        HomeworkScore = student.LectureHomeworks.SingleOrDefault()?.Score,
-                        HomeworkSubmitted = student.LectureHomeworks.SingleOrDefault()?.HasSubmission == true,
-                        HomeworkFileName = student.LectureHomeworks.SingleOrDefault()?.SubmissionFileName,
+                        HomeworkScore = homework?.Score,
+                        HomeworkSubmitted = homework?.HasSubmission == true,
+                        HomeworkFileName = homework?.SubmissionFileName,
                         QuizScore = student.LectureQuizzes.SingleOrDefault()?.Score,
                         StudentQuizzesScore = student.QuizSubmissions.Sum(x => x.NumOfCorrect),
                         TotalQuizzesScore = student.QuizSubmissions.Sum(x => x.NumOfQuestions),

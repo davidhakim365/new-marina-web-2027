@@ -27,6 +27,6 @@ public sealed record GetLectureHomeworkFileQuery
 
 public sealed record LectureHomeworkFileResult
 {
-    public required string AbsolutePath { get; init; }
+    public required byte[] Content { get; init; }
     public required string DownloadName { get; init; }
 }

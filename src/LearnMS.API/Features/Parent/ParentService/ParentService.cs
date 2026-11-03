@@ -90,7 +90,8 @@ public sealed class ParentService(AppDbContext db, IOptions<JwtBearerConfig> jwt
                     .FirstOrDefault(),
                 HomeworkFullMark = l.HomeworkFullMark,
                 HomeworkSubmitted = l.LectureHomeworks.Any(h =>
-                    h.StudentId == studentId && h.SubmittedAt != null),
+                    h.StudentId == studentId
+                    && (h.SubmittedAt != null || h.SubmissionFileName != null)),
                 HomeworkSubmittedAt = l.LectureHomeworks
                     .Where(h => h.StudentId == studentId)
                     .Select(h => h.SubmittedAt)

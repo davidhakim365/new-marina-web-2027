@@ -330,7 +330,8 @@ public async Task ExecuteAsync(DeleteStudentCommand command)
             .Select(h => (decimal?)h.Score)
             .FirstOrDefault(),
         HomeworkSubmitted = l.LectureHomeworks.Any(h =>
-            h.StudentId == query.StudentId && h.SubmittedAt != null),
+            h.StudentId == query.StudentId
+            && (h.SubmittedAt != null || h.SubmissionFileName != null)),
         HomeworkFileName = l.LectureHomeworks
             .Where(h => h.StudentId == query.StudentId)
             .Select(h => h.SubmissionFileName)

@@ -9,6 +9,8 @@ public sealed class LectureHomework
     public decimal? Score { get; set; }
     public string? SubmissionFileName { get; set; }
     public DateTime? SubmittedAt { get; set; }
+    public byte[]? FileContent { get; set; }
 
-    public bool HasSubmission => SubmittedAt != null;
+    public bool HasSubmission =>
+        SubmittedAt != null || !string.IsNullOrWhiteSpace(SubmissionFileName);
 }

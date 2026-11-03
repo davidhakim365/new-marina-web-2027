@@ -268,7 +268,7 @@ public sealed class LecturesController : ControllerBase
             }
         );
 
-        return PhysicalFile(file.AbsolutePath, "application/pdf", file.DownloadName);
+        return File(file.Content, "application/pdf", file.DownloadName);
     }
 
     [HttpGet("{lectureId:guid}/students/{studentId:guid}/homework-file")]
@@ -298,7 +298,7 @@ public sealed class LecturesController : ControllerBase
             }
         );
 
-        return PhysicalFile(file.AbsolutePath, "application/pdf", file.DownloadName);
+        return File(file.Content, "application/pdf", file.DownloadName);
     }
 
 

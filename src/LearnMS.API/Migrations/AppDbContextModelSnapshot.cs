@@ -415,9 +415,28 @@ namespace LearnMS.API.Migrations
                     b.Property<DateTime?>("SubmittedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<byte[]>("FileContent")
+                        .HasColumnType("bytea");
+
                     b.HasKey("LectureId", "StudentId");
 
                     b.ToTable("LectureHomework");
+                });
+
+            modelBuilder.Entity("LearnMS.API.Entities.LectureHomeworkFile", b =>
+                {
+                    b.Property<Guid>("LectureId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("StudentId")
+                        .HasColumnType("uuid");
+
+                    b.Property<byte[]>("Content")
+                        .HasColumnType("bytea");
+
+                    b.HasKey("LectureId", "StudentId");
+
+                    b.ToTable("LectureHomeworkFile");
                 });
 
             modelBuilder.Entity("LearnMS.API.Entities.LectureQuiz", b =>

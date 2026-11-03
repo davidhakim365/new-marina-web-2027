@@ -10,6 +10,10 @@ public sealed class LectureHomeworksConfigurations : IEntityTypeConfiguration<Le
     {
         builder.HasKey(x => new { x.LectureId, x.StudentId });
         builder.Ignore(x => x.HasSubmission);
+        builder.Property(x => x.Score);
+        builder.Property(x => x.SubmissionFileName);
+        builder.Property(x => x.SubmittedAt);
+        builder.Property(x => x.FileContent).HasColumnType("bytea");
 
         builder.HasOne<Lecture>().WithMany().HasForeignKey(x => x.LectureId).OnDelete(DeleteBehavior.Cascade);
         builder.HasOne<Student>().WithMany().HasForeignKey(x => x.StudentId).OnDelete(DeleteBehavior.Cascade);
